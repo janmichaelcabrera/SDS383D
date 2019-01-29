@@ -40,29 +40,51 @@
 
 \begin{document}
 
-      \title{SDS 383D, Exercise B}
+      \title{SDS 383D, Chapter 1: Preliminaries}
       \author{Jan-Michael Cabrera, JC7858}
       \date{\today}
       \maketitle
 
+      \section*{Bayesian inference in simple conjugate families}
 
-      \section*{Change of variables for a gamma random variable}
+      \subsection*{A: Beta prior with Bernoulli sampling distribution}
+
+            \begin{equation}\label{eq:prior}
+                  p(w) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}w^{a-1}(1-w)^{b-1}
+            \end{equation}
+
+            \begin{equation}\label{eq:likelihood}
+                  p(D|w) = \binom{n}{y} w^y (1 - w)^{n-y}
+            \end{equation}
+
+            \begin{equation}\label{eq:posterior_1}
+                  p(w|D) = p(w) \frac{p(D|w)}{p(D)} \propto p(w) p(D|w)
+            \end{equation}
+
+            \begin{align}
+                  p(w|D) &\propto w^{a-1}(1-w)^{b-1}w^y(1-w)^{n-y} \\
+                  p(w|D) &\propto w^{a+y-1}(1-w)^{n+b-y-1} \\
+                  w|d &\sim \text{Beta}(a+y, n+b-y)
+            \end{align}
+
+
+      \subsection*{B: Change of variables for a gamma random variable}
 
             \begin{equation}\label{eq:gamma}
                   p(x) = \frac{b^a}{\Gamma(a)}x^{a-1} \text{exp}(-bx)
             \end{equation}
 
             \begin{align}
-                  x_1 \sim \text{Ga}(a_1, 1)
-                  x_2 \sim \text{Ga}(a_2, 1)
+                  x_1 &\sim \text{Ga}(a_1, 1)\\
+                  x_2 &\sim \text{Ga}(a_2, 1)
             \end{align}
 
             \begin{equation}\label{eq:x_joint}
-                  f_X(x_1, x_2) = \frac{x^{a_1-1}}{\Gamma(a_1)}\frac{x^{a_2-1}}{\Gamma(a_2)}x_1^{a_1-1} x_2^{a_2-1} e^{-x_1}e^{-x_2}
+                  f_{\mathbf{X}}(x_1, x_2) = \frac{x^{a_1-1}}{\Gamma(a_1)}\frac{x^{a_2-1}}{\Gamma(a_2)}x_1^{a_1-1} x_2^{a_2-1} e^{-x_1}e^{-x_2}
             \end{equation}
 
             \begin{equation}\label{eq:change_variables}
-                  f_Y(\bf{y}) = f_X[\bf{h(y)}]\cdot|\text{det}(\nabla h(y))|
+                  f_{\mathbf{Y}}(\mathbf{y}) = f_{\mathbf{X}}[\mathbf{h(y)}]\cdot|\text{det}(\nabla \mathbf{h(y}))|
             \end{equation}
 
             \begin{align}
@@ -85,13 +107,20 @@
             \end{equation}
 
             \begin{equation}
-                  f_Y(y_1, y_2) = \frac{(y_1 y_2)^{a_1-1}}{\Gamma(a_1)}\frac{(y_2 (1-y_1))^{a_2-1}}{\Gamma(a_2)}(y_1 y_2)^{a_1-1} (y_2 (1-y_1))^{a_2-1} e^{-y_1 y_2}e^{-(y_2 - y_1 y_2)} y_2
+                  f_{\mathbf{Y}}(y_1, y_2) = \frac{(y_1 y_2)^{a_1-1}}{\Gamma(a_1)}\frac{(y_2 (1-y_1))^{a_2-1}}{\Gamma(a_2)}(y_1 y_2)^{a_1-1} (y_2 (1-y_1))^{a_2-1} e^{-y_1 y_2}e^{-(y_2 - y_1 y_2)} y_2
             \end{equation}
 
             \begin{equation}
-                  f_Y(y_1, y_2) = 
+                  f_{\mathbf{Y}}(y_1, y_2) = \frac{\Gamma(a_1 + a_2)}{\Gamma(a_1) \Gamma(a_2)} y_1^{a_1 -1} (1-y_1)^{a_2 - 1} \cdot \frac{1}{\Gamma(a_1 + a_2)} y_2^{a_1 + a_2 -1} e^{-y_2}
             \end{equation}
 
+            \begin{align}
+                  y_1 &\sim \text{Beta}(a_1, a_2)\\
+                  y_2 &\sim \text{Ga}(a_1 + a_2, 1)
+            \end{align}
 
+      \subsection*{C: Normal prior and sampling distribution with unknown mean and known variance}
+
+      \subsection*{D: Normal prior and sampling distribution with known mean and unknown variance}
 
 \end{document}
