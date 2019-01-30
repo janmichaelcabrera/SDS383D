@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}%
+\documentclass[12pt]{article}
 \usepackage{amsfonts}
 \usepackage{fancyhdr}
 \usepackage{comment}
@@ -10,33 +10,7 @@
 \usepackage{amssymb}
 \usepackage{graphicx}%
 \usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,    
-    urlcolor=cyan,
-}
-\setcounter{MaxMatrixCols}{30}
-\newtheorem{theorem}{Theorem}
-\newtheorem{acknowledgement}[theorem]{Acknowledgement}
-\newtheorem{algorithm}[theorem]{Algorithm}
-\newtheorem{axiom}{Axiom}
-\newtheorem{case}[theorem]{Case}
-\newtheorem{claim}[theorem]{Claim}
-\newtheorem{conclusion}[theorem]{Conclusion}
-\newtheorem{condition}[theorem]{Condition}
-\newtheorem{conjecture}[theorem]{Conjecture}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{criterion}[theorem]{Criterion}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-\newtheorem{exercise}[theorem]{Exercise}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{notation}[theorem]{Notation}
-\newtheorem{problem}[theorem]{Problem}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{solution}[theorem]{Solution}
-\newtheorem{summary}[theorem]{Summary}
-\newenvironment{proof}[1][Proof]{\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
 
 \begin{document}
 
@@ -49,15 +23,15 @@
 
       \subsection*{A: Beta prior with Bernoulli sampling distribution}
 
-            \begin{equation}\label{eq:prior}
+            \begin{equation}
                   p(w) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}w^{a-1}(1-w)^{b-1}
             \end{equation}
 
-            \begin{equation}\label{eq:likelihood}
+            \begin{equation}
                   p(D|w) = \binom{n}{y} w^y (1 - w)^{n-y}
             \end{equation}
 
-            \begin{equation}\label{eq:posterior_1}
+            \begin{equation}
                   p(w|D) = p(w) \frac{p(D|w)}{p(D)} \propto p(w) p(D|w)
             \end{equation}
 
@@ -70,7 +44,7 @@
 
       \subsection*{B: Change of variables for a gamma random variable}
 
-            \begin{equation}\label{eq:gamma}
+            \begin{equation}
                   p(x) = \frac{b^a}{\Gamma(a)}x^{a-1} \text{exp}(-bx)
             \end{equation}
 
@@ -79,11 +53,11 @@
                   x_2 &\sim \text{Ga}(a_2, 1)
             \end{align}
 
-            \begin{equation}\label{eq:x_joint}
+            \begin{equation}
                   f_{\mathbf{X}}(x_1, x_2) = \frac{x^{a_1-1}}{\Gamma(a_1)}\frac{x^{a_2-1}}{\Gamma(a_2)}x_1^{a_1-1} x_2^{a_2-1} e^{-x_1}e^{-x_2}
             \end{equation}
 
-            \begin{equation}\label{eq:change_variables}
+            \begin{equation}
                   f_{\mathbf{Y}}(\mathbf{y}) = f_{\mathbf{X}}[\mathbf{h(y)}]\cdot|\text{det}(\nabla \mathbf{h(y}))|
             \end{equation}
 
@@ -121,6 +95,149 @@
 
       \subsection*{C: Normal prior and sampling distribution with unknown mean and known variance}
 
+            \begin{equation}
+                  p(\theta|x_1,..., x_n) \propto p(\theta|m,v)p(x_1,...,x_n|\theta)
+            \end{equation}
+
+            \begin{equation}
+                  p(\theta|m,v) = \left(\frac{1}{2 \pi v} \right )^{1/2} \text{exp}\left( - \frac{1}{2v} (\theta - m)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  p(x_i|\theta) = \left(\frac{1}{2 \pi \sigma^2} \right )^{1/2} \text{exp}\left( - \frac{1}{2 \sigma^2} (x_i - \theta)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  p(x_1,...,x_n|\theta) = \prod_i^n p(x_i|\theta) = \left(\frac{1}{2 \pi \sigma^2} \right )^{n/2} \text{exp}\left( - \frac{1}{2 \sigma^2} \sum_i^n(x_i - \theta)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  p(\theta|x_1,...,x_n) \propto \text{exp}\left( - \frac{1}{2 \sigma^2} (x_i - \theta)^2\right ) \text{exp}\left( - \frac{1}{2 \sigma^2} \sum_i^n(x_i - \theta)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  \sum_i^n(x_i - \theta)^2 = \sum_i^n x_i^2 - 2 \theta \sum_i^n x_i + \theta^2; \hspace{10pt} \bar{x} = \frac{1}{n}\sum_i^n x_i
+            \end{equation}
+
+            \begin{equation}
+                  p(\theta|x_1,...,x_n) \propto \text{exp} \left( - \frac{n}{2 \sigma^2} (-2 \theta \bar{x} + \theta^2) - \frac{1}{2v} (\theta^2 - 2\theta m) \right)
+            \end{equation}
+
+            \begin{align}
+                  -\frac{1}{2} \left[ \left( \frac{n}{\sigma^2} + \frac{1}{v}\right) \theta^2 - 2 \left( \frac{n}{\sigma^2} \bar{x} + \frac{1}{v} m \right) \theta  \right] \\
+                  a=\frac{n}{\sigma^2} + \frac{1}{v}; \hspace{20pt} b = \frac{n}{\sigma^2} \bar{x} + \frac{1}{v}m \\
+                  -\frac{a}{2} \left [ \theta^2 - 2 \frac{b}{a} \theta \right] = -\frac{a}{2} \left[ \theta^2 - 2 \frac{b}{a} \theta + \frac{b^2}{a^2} - \frac{b^2}{a^2} \right ]
+            \end{align}
+
+            \begin{equation}
+                  p(\theta|x_1,...,x_n) \propto \text{exp} \left[ - \frac{a}{2} \left ( \theta - \frac{b}{a}\right ) ^2 \right]
+            \end{equation}
+
+            \begin{equation}
+                  \theta | x_1,...,x_n \sim \text{N} \left( \frac{\frac{n}{\sigma^2} \bar{x} + \frac{1}{v}m}{\frac{n}{\sigma^2} + \frac{1}{v}}, \left [ \frac{n}{\sigma^2} + \frac{1}{v}\right]^{-1} \right)
+            \end{equation}
+
       \subsection*{D: Normal prior and sampling distribution with known mean and unknown variance}
+
+            \begin{equation}
+                  p(\omega|x_1,..., x_n) \propto p(\omega|a,b)p(x_1,...,x_n|\omega)
+            \end{equation}
+
+            \begin{equation}
+                  p(\omega|a,b) = \frac{b^a}{\Gamma(a)} \omega^{a-1} \text{exp}(-b \omega)
+            \end{equation}
+
+            \begin{equation}
+                  p(x_i|\omega) = \left( \frac{\omega}{2 \pi}\right)^{1/2} \text{exp} \left [ -\frac{\omega}{2}(x_i - \theta)^2\right]
+            \end{equation}
+
+            \begin{equation}
+                  p(x_1,...,x_n|\omega) = \prod_i^n p(x_i|\omega) = \left( \frac{\omega}{2 \pi}\right)^{n/2} \text{exp} \left [ -\frac{\omega}{2}\sum_i^n(x_i - \theta)^2\right]
+            \end{equation}
+
+            \begin{equation}
+                  p(\omega|x_1,..., x_n) \propto \omega^{a-1} \text{exp}(-b \omega) \omega^{n/2} \text{exp} \left [ -\frac{\omega}{2}\sum_i^n(x_i - \theta)^2\right]
+            \end{equation}
+
+            \begin{equation}
+                  p(\omega|x_1,..., x_n) \propto \omega^{a + \frac{n}{2} - 1} \text{exp} \left [ -\omega \left (b+ \frac{1}{2}\sum_i^n(x_i - \theta)^2 \right )\right]
+            \end{equation}
+
+            \begin{equation}
+                  \omega | x_1,...,x_n \sim \text{Ga}\left (a + \frac{n}{2}, b+ \frac{1}{2}\sum_i^n(x_i - \theta)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  \sigma^2 | x_1,...,x_n \sim \text{IG}\left (a + \frac{n}{2}, b+ \frac{1}{2}\sum_i^n(x_i - \theta)^2\right )
+            \end{equation}
+
+      \subsection*{E: Normal prior and sampling distribution with unknown mean and known idiosyncratic variance}
+
+            \begin{equation}
+                  p(\theta|x_1,..., x_n) \propto p(\theta|m,v)p(x_1,...,x_n|\theta)
+            \end{equation}
+
+            \begin{equation}
+                  p(\theta|m,v) = \left(\frac{1}{2 \pi v} \right )^{1/2} \text{exp}\left( - \frac{1}{2v} (\theta - m)^2\right )
+            \end{equation}
+
+            \begin{equation}
+                  p(x_i|\theta) = \left(\frac{1}{2 \pi \sigma_i^2} \right )^{1/2} \text{exp}\left( - \frac{(x_i - \theta)^2}{2 \sigma_i^2} \right )
+            \end{equation}
+
+            \begin{equation}
+                  p(x_1,...,x_n|\theta) = \prod_i^n p(x_i|\theta) \propto \text{exp}\left( - \frac{1}{2} \sum_i^n\frac{(x_i - \theta)^2}{\sigma_i^2} \right )
+            \end{equation}
+
+            \begin{equation}
+                  \sum_{i=1}^3\frac{(x_i - \theta)^2}{\sigma_i^2} = \frac{\sigma_2^2 \sigma_3^2 (x_1 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2} + \frac{\sigma_1^2 \sigma_3^2 (x_2 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2} + \frac{\sigma_1^2 \sigma_2^2 (x_3 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2}
+            \end{equation}
+
+            \begin{equation}
+                  \sum_i^n \frac{(x_i - \theta)^2}{\sigma_i^2} = \frac{1}{\prod_i^n \sigma_i^2} \sum_i^n (x_i - \theta)^2 \prod_{j\neq i}^n \sigma_j^2 = \frac{1}{\prod_i^n \sigma_i^2} \left ( \sum_i^n x_i^2 \prod_{j \neq i}^n \sigma_j^2 - 2 \theta \sum_i^n x_i \prod_{j \neq i}^n \sigma_j + \theta^2 \right)
+            \end{equation}
+
+      \subsection*{F: Marginalization of likelihood with Gamma Prior and Normal Likelihood}
+
+            \begin{equation}
+                  p(x) = \int_0^{\infty} p(x,\omega)d\omega = \int_0^{\infty} p(\omega)p(x|\omega)d\omega
+            \end{equation}
+
+            \begin{equation}
+                  p(\omega) = \frac{(b/2)^{a/2}}{\Gamma(a/2)}{\omega}^{a/2-1} \text{exp}\left (-\frac{b}{2}\omega \right)
+            \end{equation}
+
+            \begin{equation}
+                  p(x|\omega) = \left( \frac{\omega}{2 \pi}\right)^{1/2} \text{exp} \left [ -\frac{\omega}{2}(x - m)^2\right]
+            \end{equation}
+
+            \begin{equation}
+                  p(x,\omega) = \frac{(b/2)^{a/2}}{\Gamma(a/2)}  \left( \frac{1}{2 \pi}\right)^{1/2} (\omega)^{a/2+1/2-1}\text{exp}\left[-\omega \left( \frac{b}{2} + \frac{1}{2}(x - m)^2\right) \right]
+            \end{equation}
+
+            \begin{equation}
+                  a' = \frac{a+1}{2}; \hspace{20pt} b'= \frac{b}{2} + \frac{1}{2}(x-m)^2
+            \end{equation}
+
+            \begin{equation}
+                  p(x) = \int_0^{\infty}p(x, \omega) d\omega = \frac{(b/2)^{a/2}}{\Gamma(a/2) \sqrt{2\pi}} \frac{\Gamma(a')}{b'^{a'}} \int_0^{\infty} \frac{b'^{a'}}{\Gamma(a')}\omega^{a'-1} \text{exp}(-b' \omega) d\omega
+            \end{equation}
+
+            \begin{equation}
+                  p(x) = \frac{(b/2)^{a/2}}{\Gamma(a/2) \sqrt{2\pi}} \frac{\Gamma(\frac{a+1}{2})}{(b/2 + (x-m)^2/2)^{(a+1)/2}} \cdot \frac{(b/2)^{1/2}}{(b/2)^{1/2}}
+            \end{equation}
+
+            \begin{equation}
+                  \left( \frac{b}{2} + \frac{1}{2} (x-m)^2\right)^{-\frac{a+1}{2}} = \left (\frac{b}{2} \right)^{-\frac{a+1}{2}} \left( 1 + \frac{(x-m)^2}{b} \right)^{-\frac{a+1}{2}}
+            \end{equation}
+
+            \begin{equation}
+                  p(x) = \frac{\Gamma \left( \frac{a+1}{2}\right)}{\Gamma(a/2)\sqrt{\pi b}} \left (1 + \frac{(x-m)^2}{b}\right)^{-\frac{a+1}{2}}
+            \end{equation}
+
+
+
+
+
 
 \end{document}
