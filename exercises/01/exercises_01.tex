@@ -182,20 +182,26 @@
         \end{equation}
 
         \begin{equation}
-              p(x_i|\theta) = \left(\frac{1}{2 \pi \sigma_i^2} \right )^{1/2} \text{exp}\left( - \frac{(x_i - \theta)^2}{2 \sigma_i^2} \right )
+              p(x_i|\theta) = \left(\frac{\omega_i}{2 \pi} \right )^{1/2} \text{exp}\left( - \frac{\omega_i(x_i - \theta)^2}{2} \right )
         \end{equation}
 
         \begin{equation}
-              p(x_1,...,x_n|\theta) = \prod_i^n p(x_i|\theta) \propto \text{exp}\left( - \frac{1}{2} \sum_i^n\frac{(x_i - \theta)^2}{\sigma_i^2} \right )
+              p(x_1,...,x_n|\theta) = \prod_i^n p(x_i|\theta) \propto \text{exp}\left( - \frac{1}{2} \sum_i^n\omega_i(x_i - \theta)^2 \right )
+        \end{equation}
+
+        \begin{align}
+            p(\theta|x_1,...,x_n) &\propto \text{exp}\left( - \frac{1}{2v} (\theta - m)^2\right) \text{exp}\left( - \frac{1}{2} \sum_i^n\omega_i(x_i - \theta)^2\right)\\
+            &\propto \text{exp}\left(-\frac{1}{2v}(\theta - m)^2 - \frac{1}{2} \sum_i^n\omega_i(x_i - \theta)^2\right)
+        \end{align}
+
+        \begin{equation}
+            -\frac{1}{2} \left[ \left(1 + \frac{1}{v} \right) \theta^2 - 2 \left ( \sum_i x_i \omega_i + \frac{1}{v}m\right) \theta\right]
         \end{equation}
 
         \begin{equation}
-              \sum_{i=1}^3\frac{(x_i - \theta)^2}{\sigma_i^2} = \frac{\sigma_2^2 \sigma_3^2 (x_1 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2} + \frac{\sigma_1^2 \sigma_3^2 (x_2 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2} + \frac{\sigma_1^2 \sigma_2^2 (x_3 - \theta)^2}{\sigma_1^2 \sigma_2^2 \sigma_3^2}
+            \theta|x_1,...,x_n \sim \text{N}\left( \frac{\sum_i x_i w_i + \frac{1}{v}m}{1 + \frac{1}{v}}, \left [ 1 + \frac{1}{v}\right]^{-1}\right)
         \end{equation}
 
-        \begin{equation}
-              \sum_i^n \frac{(x_i - \theta)^2}{\sigma_i^2} = \frac{1}{\prod_i^n \sigma_i^2} \sum_i^n (x_i - \theta)^2 \prod_{j\neq i}^n \sigma_j^2 = \frac{1}{\prod_i^n \sigma_i^2} \left ( \sum_i^n x_i^2 \prod_{j \neq i}^n \sigma_j^2 - 2 \theta \sum_i^n x_i \prod_{j \neq i}^n \sigma_j + \theta^2 \right)
-        \end{equation}
 
     \subsection*{F: Marginalization of likelihood with Gamma Prior and Normal Likelihood}
 
