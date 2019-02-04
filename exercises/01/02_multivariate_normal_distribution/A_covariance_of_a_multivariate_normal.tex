@@ -11,6 +11,8 @@
 \usepackage{graphicx}%
 \usepackage{hyperref}
 
+\newcommand{\cov}{\text{cov}}
+
 
 \begin{document}
 
@@ -22,20 +24,27 @@
     \section*{A: Covariance of the multivariate normal}
 
         \begin{align}
-            \text{cov}(x) &= \text{E}[(x-\mu)(x-\mu)^T ] = \text{E}[(x-\mu)_i (x-\mu)_j] = \text{E}[ x_i x_j - \mu_i x_j - x_i \mu_j + \mu_i \mu_j] \\
-                &= \text{E}[x_i x_j] - \mu_i \text{E}[x_j] - \text{E}[x_i] \mu_j + \mu_i \mu_j \\
-                &= \text{E}[x_i x_j] - \mu_i \mu_j
-        \end{align}
-
-        \begin{align}
-            \text{cov}(Ax+b) &= \text{cov}(A_{ij}x_j + b_i) = \text{E}[(A_{ij}x_j + b_i)(A_{ji}x_i + b_j)]; \hspace{10pt} y_i = A_{ij}x_j; \hspace{10pt} y_j = A_{ji} x_i \\
-            &= \text{E}[(y_i + b_i)(y_j + b_j)] = \text{E}[y_i y_j + y_i b_j + b_i y_j + b_i b_j] \\
-            &\text{E}[y_i b_j] = \text{E}[y_i] \text{E}[b_j] \\
-            &\text{E}[const] = 0 \\
+            \cov(x) &= \text{E}[(x-\mu)(x-\mu)^T ] \\
+            &= \text{E}[xx^T -x \mu^T - \mu x^T + \mu \mu^T]\\
+            &= \text{E}[xx^T] - \text{E}[x] \text{E}[\mu^T] - \text{E}[\mu]\text{E}[x^T] + \text{E}[\mu \mu^T]\\
         \end{align}
 
         \begin{equation}
-            \text{cov}(A_{ij}x_j + b_i) = \text{E}[y_i y_j] = A_{ij} \text{E}[x_j x_i] A_{ji}
+            \text{E}[x] = \mu; \hspace{20pt} \text{E}[\mu] = \mu
         \end{equation}
+
+        \begin{align}
+            \cov(x) &= \text{E}[xx^T] - 2\mu \mu^T + \mu\mu^T\\
+            &= \text{E}[xx^T] - \mu\mu^T
+        \end{align}
+
+        \begin{equation}
+            \cov(X, Y) = 0; \hspace{10pt} \text{ if $X$ and $Y$ are independent}
+        \end{equation}
+
+        \begin{align}
+            \cov(Ax + b) &= \cov(Ax, Ax) + \cov(Ax, b) + \cov(b, Ax) + \cov(b,b) \\
+            & = A \cov(x) A^T
+        \end{align}
 
 \end{document}
