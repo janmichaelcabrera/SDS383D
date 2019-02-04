@@ -1,0 +1,49 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\usepackage{hyperref}
+
+
+
+\begin{document}
+
+    \title{SDS 383D The Multivariate Normal Distribution}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{C: Multivariate Normal for $x$}
+
+        \begin{equation}
+            x = (x_1,...,x_p)^T; \hspace{20pt} z_i \sim \text{N}(\mu_i,\sigma_i^2)
+        \end{equation}
+
+        \begin{equation}
+            z_i = \frac{x_i-\mu_i}{\sigma_i} \hspace{20pt} x_i = z_i \sigma_i + \mu_i 
+        \end{equation}
+
+        \begin{equation}
+            f_Y(y) = f_X(h(y)) \cdot |h'(y)|
+        \end{equation}
+
+        \begin{align}
+            M_{x_i}(t_i) &= \int_{-\infty}^\infty \text{exp}(z_i \sigma_i t_i +\mu_i t_i) \frac{1}{\sqrt{2 \pi \sigma_i^2}} \text{exp}\left( -\frac{1}{2 \sigma_i^2} (z_i \sigma_i)^2 \right) \left | \frac{dx_i}{dz_i} \right | dz_i \\
+            &= \text{exp}(\mu_i t_i) \int_{-\infty}^{\infty} \text{exp}(z_i \sigma_i t_i) \frac{1}{\sqrt{2 \pi}} \text{exp} \left ( - \frac{1}{2} z_i^2\right) dz_i \\
+            & = \text{exp}(\mu_i t_i) \text{exp}\left ( \frac{1}{2} \sigma_i^2 t_i^2 \right)
+        \end{align}
+
+        \begin{align}
+            M_x(\mathbf{t}) &= \prod_i M_{x_i}(t_i) \\
+            & = \text{exp} \left (\sum_i \mu_i t_i \right ) \text{exp}\left( \sum_i \frac{1}{2} \sigma_i^2 t_i^2 \right)\\
+            & = \text{exp}(\mathbf{t^T \mu + \frac{1}{2} t^T \Sigma t}); \hspace{10pt} \text{cov}(x) = \mathbf{\Sigma}
+        \end{align}
+
+\end{document}

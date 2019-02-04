@@ -1,0 +1,39 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D The Multivariate Normal Distribution}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{D: Affine Transformation of Independent Normals}
+
+        \begin{equation}
+            x = L z + \mu; \hspace{20pt} z \sim \text{N}(0,1)
+        \end{equation}
+
+        \begin{align}
+            \E [x] &= \E[Lz] + \E[\mu] = L \E[z] + \mu = \mu
+        \end{align}
+
+        \begin{align}
+            \cov(x) &= \cov(Lz, Lz) + \cov(Lz, \mu) + \cov(\mu, Lz) + \cov(\mu \mu) \\
+            & = L \cov(z, z) L^T = L L^T
+        \end{align}
+
+\end{document}
