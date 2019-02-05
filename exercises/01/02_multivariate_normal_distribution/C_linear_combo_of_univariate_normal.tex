@@ -23,27 +23,39 @@
     \section*{C: Multivariate Normal for $x$}
 
         \begin{equation}
-            x = (x_1,...,x_p)^T; \hspace{20pt} z_i \sim \text{N}(\mu_i,\sigma_i^2)
+            x = (x_1,...,x_p)^T, \hspace{10pt} x\sim\text{N}(\mu_x, \sigma_x^2)
         \end{equation}
 
         \begin{equation}
-            z_i = \frac{x_i-\mu_i}{\sigma_i} \hspace{20pt} x_i = z_i \sigma_i + \mu_i 
+            z = a^T
         \end{equation}
 
         \begin{equation}
-            f_Y(y) = f_X(h(y)) \cdot |h'(y)|
+            \mu_z = a^T \mu_x
+        \end{equation}
+
+        \begin{equation}
+            \sigma_z^2 = a^T \sigma_x^2 a
+        \end{equation}
+
+        \begin{equation}
+            y = \frac{z - \mu_z}{\sigma_z}, \hspace{10pt} z = \sigma_z y + \mu_z
+        \end{equation}
+
+        \begin{equation}
+            f_Z(z) = \left( \frac{1}{\sqrt{2 \pi \sigma_z^2}}\right) \text{exp}\left ( -\frac{1}{2} (z - \mu_z)^2\right)
+        \end{equation}
+
+        \begin{equation}
+            f_Y(y) = f_Z(h(y)) \cdot |h'(y)|
         \end{equation}
 
         \begin{align}
-            M_{x_i}(t_i) &= \int_{-\infty}^\infty \text{exp}(z_i \sigma_i t_i +\mu_i t_i) \frac{1}{\sqrt{2 \pi \sigma_i^2}} \text{exp}\left( -\frac{1}{2 \sigma_i^2} (z_i \sigma_i)^2 \right) \left | \frac{dx_i}{dz_i} \right | dz_i \\
-            &= \text{exp}(\mu_i t_i) \int_{-\infty}^{\infty} \text{exp}(z_i \sigma_i t_i) \frac{1}{\sqrt{2 \pi}} \text{exp} \left ( - \frac{1}{2} z_i^2\right) dz_i \\
-            & = \text{exp}(\mu_i t_i) \text{exp}\left ( \frac{1}{2} \sigma_i^2 t_i^2 \right)
-        \end{align}
-
-        \begin{align}
-            M_x(\mathbf{t}) &= \prod_i M_{x_i}(t_i) \\
-            & = \text{exp} \left (\sum_i \mu_i t_i \right ) \text{exp}\left( \sum_i \frac{1}{2} \sigma_i^2 t_i^2 \right)\\
-            & = \text{exp}(\mathbf{t^T \mu + \frac{1}{2} t^T \Sigma t}); \hspace{10pt} \text{cov}(x) = \mathbf{\Sigma}
+            M_z(t) &= \int_{-\infty}^{\infty} \text{exp}(t \sigma_z y + \mu_z t) \left( \frac{1}{\sqrt{2 \pi \sigma_z^2}}\right) \text{exp}\left ( -\frac{1}{2 \sigma_z^2} (\sigma_z y)^2\right) \left | \frac{dz}{dy}\right | dy \\
+            & = \text{exp}(\mu_z t) \int_{-\infty}^{\infty} \text{exp}(t \sigma_z y) \frac{1}{\sqrt{2 \pi}}\text{exp}\left( - \frac{1}{2} y^2 \right) dy \\
+            &= \text{exp}(\mu_z t) \text{exp}\left ( \frac{1}{2} \sigma_z^2 t^2\right) \\
+            & = \text{exp}\left ( \mu_z t + \frac{1}{2} \sigma_z^2 t^2\right) \\
+            &= \text{exp}\left( t a^T \mu_x + \frac{1}{2}t^2 a^T \sigma_x^2 a\right)
         \end{align}
 
 \end{document}
