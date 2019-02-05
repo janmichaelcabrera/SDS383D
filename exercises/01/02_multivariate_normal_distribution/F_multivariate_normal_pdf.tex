@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+
+    \title{SDS 383D The Multivariate Normal Distribution}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{F: Multivariate Normal PDF}
+
+        \begin{equation}
+            f_Z(z) = \left ( \frac{1}{\sqrt{2 \pi}}\right)^{1/n} \text{exp} \left [ -\frac{1}{2} z^T z\right]
+        \end{equation}
+
+        \begin{equation}
+            x = Lz + \mu, \hspace{20pt} z = L^{-1}(x - \mu)
+        \end{equation}
+
+        \begin{align}
+            f_X(x) &= f_Z(h(z))\cdot|\text{det}(\nabla h(z))| \\
+            &= f_Z(L^{-1}(x-\mu)) \cdot |\text{det}(L^{-1})| \\
+            &= \left( \frac{1}{\sqrt{2 \pi}}\right) \text{exp}\left[ -\frac{1}{2}(L^{-1}(x-\mu))^T (L^{-1}(x-\mu))\right]\cdot |\text{det}(L^{-1})| \\
+            &= \left( \frac{1}{\sqrt{2 \pi}}\right) \text{exp}\left[ -\frac{1}{2}(x-\mu)^T (L^{-1})^T L^{-1}(x-\mu)\right]\cdot |\text{det}(L^{-1})|
+        \end{align}
+
+        \begin{equation}
+            |\text{det}(L^{-1})| = \frac{1}{\sqrt{\text{det}L^T L}}, \hspace{20pt}(L^T)^{-1} = (L^{-1})^T, \hspace{20pt} L^TL = \Sigma
+        \end{equation}
+
+        \begin{equation}
+            f_X(x) = \left ( \frac{1}{\sqrt{2 \pi}}\right)^{1/n} \frac{1}{\sqrt{\text{det}\Sigma}} \text{exp} \left [ -\frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu)\right]
+        \end{equation}
+
+\end{document}
