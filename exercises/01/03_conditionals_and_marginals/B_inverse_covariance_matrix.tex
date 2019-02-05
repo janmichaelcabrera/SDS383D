@@ -1,0 +1,89 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Conditionals and Marginals}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{B: Inverse of the Covariance Matrix}
+
+    Let $\Omega = \Sigma^{-1}$, partition $\Omega$ like $\Sigma$
+
+    \begin{equation}
+        \Omega = \begin{bmatrix} \Omega_{11} & \Omega_{12} \\ \Omega_{12}^T & \Omega_{22}\end{bmatrix}
+    \end{equation}
+
+    \begin{equation}
+        \Sigma = \begin{bmatrix} \Sigma_{11} & \Sigma_{12} \\ \Sigma_{12}^T & \Sigma_{22}\end{bmatrix}
+    \end{equation}
+
+    \begin{equation}
+        \Sigma \Omega = \begin{bmatrix} I & 0 \\ 0 & I \end{bmatrix}
+    \end{equation}
+
+    \begin{align}
+        \Sigma \Omega & =\begin{bmatrix} \Sigma_{11} & \Sigma_{12} \\ \Sigma_{12}^T & \Sigma_{22}\end{bmatrix} \begin{bmatrix} \Omega_{11} & \Omega_{12} \\ \Omega_{12}^T & \Omega_{22}\end{bmatrix} \\
+        &= \begin{bmatrix} \Sigma_{11} \Omega_{11}+ \Sigma_{12} \Omega_{12}^T & \Sigma_{11} \Omega_{12} + \Sigma_{12} \Omega_{22} \\ 
+            \Sigma_{12}^T \Omega_{11} + \Sigma_{22}\Omega_{12}^T & \Sigma_{12}^T \Omega_{12} + \Sigma_{22} \Omega_{22}
+        \end{bmatrix}
+    \end{align}
+
+    \begin{align}
+        \Sigma_{11} \Omega_{11}+ \Sigma_{12} \Omega_{12}^T &= I\\
+        \Sigma_{11} \Omega_{12} + \Sigma_{12} \Omega_{22} &= 0\\
+        \Sigma_{12}^T \Omega_{11} + \Sigma_{22}\Omega_{12}^T &= 0\\
+        \Sigma_{12}^T \Omega_{12} + \Sigma_{22} \Omega_{22} &= I
+    \end{align}
+
+    \begin{align}
+        \Omega_{12} &= -\Sigma_{11}^{-1} \Sigma_{12}\Omega_{22} \\
+        \Omega_{12}^T &= -\Sigma_{22}^{-1} \Sigma_{12}^T \Omega_{11}
+    \end{align}
+
+    \begin{equation}
+        \Sigma_{11} \Omega_{11} + \Sigma_{12} ( -\Sigma_{22}^{-1} \Sigma_{12}^T \Omega_{11}) = (\Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T )\Omega_{11} =I
+    \end{equation}
+
+    \begin{equation}
+        \Omega_{11} = (\Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T )^{-1}
+    \end{equation}
+
+    \begin{equation}
+        \Sigma_{12}^T(-\Sigma_{11}^{-1} \Sigma_{12} \Omega_{22}) + \Sigma_{22} \Omega_{22} = (\Sigma_{22} - \Sigma_{12}^T \Sigma_{11}^{-1}\Sigma_{12})\Omega_{22} = I
+    \end{equation}
+
+    \begin{equation}
+        \Omega_{22} = (\Sigma_{22} - \Sigma_{12}^T \Sigma_{11}^{-1}\Sigma_{12})^{-1}
+    \end{equation}
+
+    \begin{align}
+        \Omega_{12} &= -\Sigma_{11}^{-1} \Sigma_{12}(\Sigma_{22} - \Sigma_{12}^T \Sigma_{11}^{-1}\Sigma_{12})^{-1} \\
+        \Omega_{12}^T &= -\Sigma_{22}^{-1} \Sigma_{12}^T (\Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T )^{-1}
+    \end{align}
+
+    \begin{equation}
+        \Omega = \Sigma^{-1} = \begin{bmatrix}
+            (\Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T )^{-1} & -\Sigma_{11}^{-1} \Sigma_{12}(\Sigma_{22} - \Sigma_{12}^T \Sigma_{11}^{-1}\Sigma_{12})^{-1} \\
+            -\Sigma_{22}^{-1} \Sigma_{12}^T (\Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T )^{-1} & (\Sigma_{22} - \Sigma_{12}^T \Sigma_{11}^{-1}\Sigma_{12})^{-1}
+        \end{bmatrix}
+    \end{equation}
+
+
+
+\end{document}

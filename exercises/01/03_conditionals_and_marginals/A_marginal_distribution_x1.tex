@@ -1,0 +1,48 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Conditionals and Marginals}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{A: Marginal Distribution of $x_1$}
+
+        \begin{equation}
+            \mu = (\mu_1, \mu_2)^T \hspace{20pt} \Sigma = \begin{pmatrix}
+                                                            \Sigma_{11} & \Sigma_{12} \\
+                                                            \Sigma_{21} & \Sigma_{22}
+                                                        \end{pmatrix}
+        \end{equation}
+
+        \begin{equation}
+            x_1 = Ax \hspace{20pt} \text{let} \hspace{20pt} A = \begin{pmatrix}
+            1 & 0 
+            \end{pmatrix}
+        \end{equation}
+
+        \begin{equation}
+            \E[x_1] = \E[Ax] = A \E[x] = \begin{pmatrix} 1 & 0 \end{pmatrix} \begin{pmatrix} \mu_1 \\ \mu_2\end{pmatrix} = \mu_1
+        \end{equation}
+
+        \begin{align}
+            \cov(x_1) &= \cov(Ax) = A \cov(x) A^T \\
+            &= \begin{pmatrix} 1 & 0 \end{pmatrix} \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \\\Sigma_{21} & \Sigma_{22} \end{pmatrix} \begin{pmatrix} 1 \\ 0 \end{pmatrix} = \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \end{pmatrix}\begin{pmatrix} 1 \\ 0 \end{pmatrix} = \Sigma_{11}
+         \end{align}
+
+\end{document}
