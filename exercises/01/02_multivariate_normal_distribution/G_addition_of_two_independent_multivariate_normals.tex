@@ -1,0 +1,51 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D The Multivariate Normal Distribution}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{G: Addition of Two Independent Multivariate Normals}
+
+        \begin{equation}
+            x_1 \sim \text{N}(\mu_1, \Sigma_1), \hspace{20pt} x_2 \sim \text{N}(\mu_2, \Sigma_2)
+        \end{equation}
+
+        \begin{equation}
+            y = A x_1 + B x_2
+        \end{equation}
+
+        \begin{equation}
+            \E[y] = \E[A x_1 + B x_2] = A \E[x_1] + B\E[x_2] = A \mu_1 + B \mu_2
+        \end{equation}
+
+        \begin{align}
+            \cov(y) &= \cov(Ax_1 + Bx_2) = \E[(Ax_1 + Bx_2)(A x_1 + B x_2)^T] \\
+            &= \E[ Ax_1(Ax_1)^T + Ax_1 (Bx_2)^T + Bx_2 (Ax_1)^T + Bx_2 (Bx_2)^T]\\
+            &= \cov(Ax_1, Ax_1) + \cov(Ax_1, Bx_2) + \cov(Bx_2, Ax_1) + \cov(Bx_2, Bx_2)\\
+            &= A\cov(x_1, x_1)A^T + B \cov(x_2, x_2)B^T \\
+            &= A \Sigma_1 A^T + B \Sigma_2 B^T
+        \end{align}
+
+        \begin{equation}
+            y \sim \text{N}(A \mu_1 + B \mu_2, A \Sigma_1 A^T + B \Sigma_2 B^T)
+        \end{equation}
+
+
+\end{document}
