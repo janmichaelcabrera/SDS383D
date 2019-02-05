@@ -27,6 +27,18 @@
             x = L z + \mu; \hspace{20pt} z \sim \text{N}(0,1)
         \end{equation}
 
+        \begin{equation}
+            M_z(t) =\E[\text{exp}(t^T z)] = \text{exp}\left( \frac{1}{2} t^T t\right)
+        \end{equation}
+
+        \begin{align}
+            M_x(t) &= \E[\text{exp}(t^T (Lz + \mu))] \\
+            &= \E[ \text{exp}(t^T \mu) \text{exp}(t^T(Lz))] \\
+            &= \text{exp}(t^T \mu) M_z(L^T t) \\
+            &= \text{exp}(t^T \mu) \text{exp}\left( \frac{1}{2} (L^T t)^T (L^T t)\right) \\
+            &= \text{exp}\left ( t^T \mu + \frac{1}{2} t^T L L^T t\right)
+        \end{align}
+
         \begin{align}
             \E [x] &= \E[Lz] + \E[\mu] = L \E[z] + \mu = \mu
         \end{align}
