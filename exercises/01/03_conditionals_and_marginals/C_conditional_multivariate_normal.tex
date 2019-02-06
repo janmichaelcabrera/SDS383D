@@ -1,0 +1,69 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Conditionals and Marginals}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{C: Conditional Multivariate Normal}
+
+        \begin{equation}
+            p(x_1|x_2) = \frac{p(x_1, x_2)}{\int p(x_1, x_2) dx_1} \propto p(x_1, x_2)
+        \end{equation}
+
+        \begin{equation}
+            p(x_1, x_2) \propto \text{exp} \left [ -\frac{1}{2} (x - \mu)^T \Sigma^{-1}(x - \mu)\right]
+        \end{equation}
+
+        \begin{align}
+            & (x - \mu)^T \Sigma^{-1}(x - \mu) = \begin{bmatrix} (x_1 - \mu_1)^T, (x_2 - \mu_2)^T \end{bmatrix} \begin{bmatrix} \Omega_{11} & \Omega_{12} \\ \Omega_{12}^T & \Omega_{22} \end{bmatrix} \begin{bmatrix} (x_1 - \mu_1) \\ (x_2 - \mu_2) \end{bmatrix} \\
+            & = \begin{bmatrix} (x_1 - \mu_1)^T \Omega_{11} + (x_2 - \mu_2)^T \Omega_{12}^T, (x_1 - \mu_1)^T \Omega_{12} + (x_2 - \mu_2)^T \Omega_{22} \end{bmatrix} \begin{bmatrix} (x_1 - \mu_1) \\ (x_2 - \mu_2)\end{bmatrix} \\
+            & = ((x_1 - \mu_1)^T \Omega_{11} + (x_2 - \mu_2)^T \Omega_{12}^T)(x_1 - \mu_1) + ((x_1 - \mu_1)^T \Omega_{12} + (x_2 - \mu_2)^T \Omega_{22})(x_2 - \mu_2) \\
+            & = (x_1 - \mu_1)^T \Omega_{11} (x_1 - \mu_1) + 2 (x_1 - \mu_1)^T \Omega_{12}^T (x_2 - \mu_2) + ...
+        \end{align}
+
+        \begin{equation}
+            x^T A x + x^Tb = (x-h)^T A (x-h) + k \hspace{10pt} \text{where} \hspace{10pt} h = -\frac{1}{2}A^{-1}b \hspace{10pt} \text{and} \hspace{10pt} k = -\frac{1}{4}b^T A^{-1} b
+        \end{equation}
+
+        \begin{align}
+            & (x_1 - \mu_1)^T A (x_1 - \mu_1) + (x_1 - \mu_1) b = (x_1 - \mu_1 - h)^T A (x_1 - \mu_1 - h) + ... \\
+            & \text{where} \hspace{10pt} A = \Sigma_{11} \hspace{10pt} \text{and} \hspace{10pt} b = 2 \Sigma_{12}^T (x_2 - \mu_2)
+        \end{align}
+
+        \begin{align}
+            h &= -\frac{1}{2}A^{-1}b = -\frac{1}{2}\Omega_{11}^{-1}2 \Omega_{12} (x_2 - \mu_2) \\
+            & = -\Omega_{11}^{-1}\Omega_{12}^T (x_2 - \mu_2) \hspace{10pt} \text{where} \hspace{10pt} \Omega_{12}^T = -\Sigma_{22}^{-1} \Sigma_{12}^T \Omega_{11} \\
+            & = \Sigma_{22}^{-1} \Sigma_{12}^T (x_2 - \mu_2)
+        \end{align}
+
+        \begin{equation}
+            (x_1 - \mu_1 - h)^T A (x_1 - \mu_1 - h) = (x_1 - \mu^*)^T \Sigma_{11}^* (x_1 - \mu^*)
+        \end{equation}
+
+        \begin{align}
+            \mu^* = \mu_1 + \Sigma_{22}^{-1} \Sigma_{12}^T(x_2 - \mu_2) \\
+            \Sigma_{11}^* = \Omega_{11}^{-1} = \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{12}^T
+        \end{align}
+
+        \begin{equation}
+            x_1 | x_2 \sim \text{N}(\mu_1 + \Sigma_{22}^{-1} \Sigma_{12}^T(x_2 - \mu_2), \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{12}^T)
+        \end{equation}
+
+\end{document}

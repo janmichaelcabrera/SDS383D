@@ -32,17 +32,18 @@
 
         \begin{equation}
             x_1 = Ax \hspace{20pt} \text{let} \hspace{20pt} A = \begin{pmatrix}
-            1 & 0 
+            I_{k,k} & 0_{k, p-k} \\
+            0_{p-k, k} & 0_{p-k, p-k}
             \end{pmatrix}
         \end{equation}
 
         \begin{equation}
-            \E[x_1] = \E[Ax] = A \E[x] = \begin{pmatrix} 1 & 0 \end{pmatrix} \begin{pmatrix} \mu_1 \\ \mu_2\end{pmatrix} = \mu_1
+            \E[x_1] = \E[Ax] = A \E[x] = \begin{pmatrix} I & 0 \\ 0 & 0\end{pmatrix} \begin{pmatrix} \mu_1 \\ \mu_2\end{pmatrix} = \mu_1
         \end{equation}
 
         \begin{align}
             \cov(x_1) &= \cov(Ax) = A \cov(x) A^T \\
-            &= \begin{pmatrix} 1 & 0 \end{pmatrix} \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \\\Sigma_{21} & \Sigma_{22} \end{pmatrix} \begin{pmatrix} 1 \\ 0 \end{pmatrix} = \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \end{pmatrix}\begin{pmatrix} 1 \\ 0 \end{pmatrix} = \Sigma_{11}
+            &= \begin{pmatrix} I & 0 \\ 0 & 0 \end{pmatrix} \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \\\Sigma_{21} & \Sigma_{22} \end{pmatrix} \begin{pmatrix} I & 0 \\ 0 & 0 \end{pmatrix} = \Sigma_{11}
          \end{align}
 
 \end{document}
