@@ -1,0 +1,49 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Quantifying Uncertainty}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{A: Beta Estimator}
+
+        Suppose, as in the previous section, that we observe data from a linear regression model with Gaussian error, $y = X \beta + \epsilon$ and $\epsilon \sim \text{N}(0, \sigma^2 I)$.
+
+        Note that the sampling dist is also multivariate normal $y \sim \text{N}(x \beta, \sigma^2 I)$, and $\hat{\beta} = (x^T x)^{-1} x^T y$. Substituting the expectation for $y$, 
+
+        \begin{equation}
+            (x^T x)^{-1} x^T (x \beta) = \beta
+        \end{equation}
+
+        Next we find the covariance matrix for the sampling distribution, 
+
+        \begin{align}
+            \cov(\hat{\beta}) &= \cov( (x^Tx)^{-1} x^T y) \\
+            & = (x^Tx)^{-1} x^T \cov(y) ((x^Tx)^{-1} x^T )^T \\
+            & = (x^Tx)^{-1} x^T \sigma^2 I ((x^Tx)^{-1} x^T )^T \\
+            & = \sigma^2 (x^Tx)^{-1} x^T x ((x^Tx)^{-1} )^T \\
+            & = \sigma^2 ((x^Tx)^{-1} )^T \\
+            & = \sigma^2 (x^Tx)^{-1} \\
+        \end{align}
+
+        \begin{equation}
+            \hat{\beta} \sim \text{N}(\beta, \sigma^2 (x^Tx)^{-1})
+        \end{equation}
+
+\end{document}

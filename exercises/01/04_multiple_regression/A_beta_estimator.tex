@@ -1,0 +1,115 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Multiple Regression}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{A: Beta Estimator}
+
+        \subsection*{Least squares}
+
+        Least squares involves finding the estimator $\hat{\beta}$ that minimizes the sum of squared errors.
+
+        \begin{equation}
+            \hat{\beta} = \arg \min_{\beta \in \mathcal{R}^p} \left\{  \sum_{i=1}^n (y_i - x_i^T \beta)^2 \right\}  \,
+        \end{equation}
+
+        \noindent The term within the parenthesis can be rewritten in vector notation as 
+
+        \begin{equation}
+            f(\beta) = \sum_{i=1}^n (y_i - x_i^T \beta)^2 = (y - x\beta)^T(y-x\beta).
+        \end{equation}
+
+        This function must then be differentiated and the resultant function set to zero to find the estimator $\hat{\beta}$.
+
+        \begin{equation}
+            \frac{\partial}{\partial \beta}f(\beta) = 0
+        \end{equation}
+
+        \begin{align}
+            0 &= \frac{\partial}{\partial \beta} \left ( (y - x\beta)^T(y-x\beta) \right) \\
+            & = -x^T (y-x\beta)\\
+            & = -x^T y + x^T x \beta
+        \end{align}
+
+        \begin{equation}
+            \hat{\beta} = (x^T x)^{-1} x^T y
+        \end{equation}
+
+        \subsection*{Maximum Likelihood}
+
+        Maximum likelihood involves finding the estimator $\hat{\beta}$ that maximizes the likelihood function for a given model. Our model is of the form $y_i = x_i^T \beta + \epsilon_i$.
+        \begin{equation}
+            \hat{\beta} = \arg \max_{\beta \in \mathcal{R}^p} \left\{ \prod_{i=1}^n p(y_i \mid \beta, \sigma^2) \right\} \,
+        \end{equation}
+
+        For our model we assume that the errors are mean zero normally distributed samples each with all the same variances, $\epsilon_i \sim \text{N}(0, \sigma^2)$. This gives our error the form $\epsilon_i = y_i - x_i^T \beta$. 
+
+        The likelihood function is then of the form
+
+        \begin{align}
+            f(\beta) &= \prod_i^n p(y_i|\beta, \sigma^2) \\
+             &= \left( \frac{1}{2 \pi \sigma^2}\right)^{n/2} \text{exp}\left [ -\frac{n}{2\sigma^2} \sum_i^n(y_i - x_i^T \beta)^2 \right]
+        \end{align}
+
+        We can take the log of the above and maximize the resulting function because the logarithm is a monotonically increasing function. 
+
+        \begin{equation}
+            \frac{\partial}{\partial \beta}\text{ln}(f(\beta)) = 0
+        \end{equation}
+
+        Omitting terms that do not depend on $\beta$ for brevity,
+
+        \begin{align}
+            0 & = \frac{\partial}{\partial \beta}\left [ - \frac{n}{2 \sigma^2}\sum_i^n(y_i - x_i^T \beta)^2 + ...\right] \\
+            & = \frac{\partial}{\partial \beta}\left [ - \frac{n}{2 \sigma^2} (y - x\beta)^T(y-x\beta) \right ] \\
+            & = -x^T (y-x\beta)\\
+            & = -x^T y + x^T x \beta
+        \end{align}
+
+        \begin{equation}
+            \hat{\beta} = (x^T x)^{-1} x^T y
+        \end{equation}
+
+        \subsection*{Method of Moments}
+
+        Here we want to choose $\hat{\beta}$ so that the sample covariance between the errors and each predictor is exactly zero, $\cov(\epsilon, x_j)=0$.  
+
+        \begin{align}
+            0 &= \sum_i^n (\epsilon_i - \bar{\epsilon})(x_{ij} - \bar{x_j}) \\
+            & = \sum_i^n \epsilon_i x_{ij} - \bar{x_j} \sum_i^n \epsilon_i - \bar{\epsilon} \sum_i^n x_{ij} + \bar{\epsilon} \bar{x_j} 
+        \end{align}
+
+        We observe that $\bar{\epsilon} = \frac{1}{n}\sum_i^n \epsilon_i$ and $\bar{x}_j = \frac{1}{n} \sum_i^n x_{ij}$. We can also center our data such that $\bar{x}_j = 0$. 
+
+        \begin{align}
+            0 &= \sum_i^n \epsilon_i x_{ij} \\
+            & = \epsilon^T x \\
+            & = (y - x \beta)^T x \\
+            & = y^T x - \beta^T x^T x \\
+            & = x^Ty - x^T x \beta \hspace{10pt} \text{with} \hspace{10pt} \beta^T x^T x = x^T x \beta \hspace{10pt} \text{and} \hspace{10pt} y^T x = x^T y\\
+        \end{align}
+
+        \begin{equation}
+            \hat{\beta} = (x^T x)^{-1} x^T y
+        \end{equation}
+
+
+\end{document}

@@ -1,0 +1,96 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Multiple Regression}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{B: Weighted Errors}
+
+        \subsection*{Least squares}
+
+        Here we wish to evalue $\hat{\beta}$ for data with idiosyncratic precisions. 
+
+        \begin{equation}
+            \hat{\beta} = \arg \min_{\beta \in \mathcal{R}^p} \left\{  \sum_{i=1}^n w_i (y_i - x_i^T \beta)^2 \right\}  \,
+        \end{equation}
+
+        As in part A, the term within the parenthesis can be rewritten as
+
+        \begin{equation}
+            f(\beta) = \sum_{i=1}^n w_i (y_i - x_i^T \beta)^2 = (y - x\beta)^T W(y-x\beta).
+        \end{equation}
+
+        We differentiate the function and set the derivative to zero to find the estimator that minizes the function.
+
+        \begin{equation}
+            \frac{\partial}{\partial \beta}f(\beta) = 0
+        \end{equation}
+
+        \begin{align}
+            0 &= \frac{\partial}{\partial \beta} \left ( (y - x\beta)^TW(y-x\beta) \right) \\
+            & = -x^T (W + W^T)(y-x\beta)\\
+            & = -x^T 2W (y-x\beta)\\
+            & = -x^T W y + x^T W x \beta
+        \end{align}
+
+        We recognize in the above that $\frac{\partial}{\partial x} (x^T A x) = (A + A^T)x$ and because $W$ is a symmetric matrix $(W + W^T) = 2W$
+
+        \begin{equation}
+            \hat{\beta} = (x^T W x)^{-1} x^T W y
+        \end{equation}
+
+        \subsection*{Maximum Likelihood}
+
+        Similarly in terms of the maximimum likelihood, we have
+
+        \begin{equation}
+            \hat{\beta} = \arg \max_{\beta \in \mathcal{R}^p} \left\{ \prod_{i=1}^n p(y_i \mid \beta, \sigma^2) \right\} \,
+        \end{equation}
+
+        Our model as before is $y_i = x_i^T \beta + \epsilon_i$, however each error has it's own idiosyncratic variance, $\epsilon_i \sim \text{N}(0, \sigma_i^2)$. The resultant likelihood is then 
+
+        \begin{align}
+            f(\beta) &= \prod_i^n p(y_i|\beta, \sigma^2) \\
+             & \propto \text{exp}\left [ -\frac{1}{2} \sum_i^n \frac{(y_i - x_i^T \beta)^2}{\sigma_i^2} \right] \\
+             & \propto \text{exp} \left [ -\frac{1}{2}(y - x\beta) \Sigma^{-1} (y - x\beta) \right]
+        \end{align}
+
+        We again take the maximimize the logarithm of the likelihood, 
+
+        \begin{equation}
+            \frac{\partial}{\partial \beta}\text{ln}(f(\beta)) = 0.
+        \end{equation}
+
+        \begin{align}
+            0 & = \frac{\partial}{\partial \beta}\left [ -\frac{1}{2}(y - x\beta) \Sigma^{-1} (y - x\beta) + ... \right ] \\
+            & = -x^T (\Sigma^{-1}+ (\Sigma^{-1})^T)(y-x\beta)\\
+            & = -x^T 2\Sigma^{-1} (y-x\beta)\\
+            & = -x^T \Sigma^{-1} y + x^T \Sigma^{-1} x \beta
+        \end{align}
+
+        \begin{equation}
+            \hat{\beta} = (x^T \Sigma^{-1} x)^{-1} x^T \Sigma^{-1} y
+        \end{equation}
+
+        The result is identical to what was derived above with $w_i = 1/\sigma_i^2$. 
+
+
+
+\end{document}
