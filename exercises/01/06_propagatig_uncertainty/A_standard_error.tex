@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\cov}{\text{cov}}
+\newcommand{\var}{\text{var}}
+\newcommand{\E}{\text{E}}
+
+\begin{document}
+
+    \title{SDS 383D Propagating Uncertainty}
+    \author{Jan-Michael Cabrera, JC7858}
+    \date{\today}
+    \maketitle
+
+    \section*{A: Standard Error}
+
+        \begin{equation}
+            \hat{\Sigma} \approx \cov(\hat{\theta}) = \E \left[ (\hat{\theta} - \bar{\theta})(\hat{\theta} - \bar{\theta})^T\right]
+        \end{equation}
+
+        \begin{equation}
+            f(\theta) = \theta_1 + \theta_2
+        \end{equation}
+
+        \begin{align}
+            \hat{\Sigma}_f &= \cov(\hat{\theta}_1+\hat{\theta}_2) \\
+            &= \E \left[ (\hat{\theta}_1 + \hat{\theta}_2) (\hat{\theta}_1 + \hat{\theta}_2)\right] \\
+            &= \E \left[ \hat{\theta}_1^2 + 2 \hat{\theta}_1 \hat{\theta}_2 + \hat{\theta}_2^2\right] \\
+            &= \E \left [ \hat{\theta}_1^2 \right] + 2 \E \left [ \hat{\theta_1} \hat{\theta}_2 \right ]+ \E \left [ \hat{\theta}_2^2 \right] \\
+            & = \var(\hat{\theta_1}) + 2 \cov(\hat{\theta}_1 \hat{\theta}_2) + \var(\hat{\theta_2}) \\
+            &= \hat{\Sigma}_{11} + 2 \hat{\Sigma}_{12} + \hat{\Sigma}_{22}
+        \end{align}
+
+        \begin{equation}
+            g(\theta) = \sum_{i=1}^p \theta_p
+        \end{equation}
+
+        \begin{align}
+            \hat{\Sigma}_g = \sum_{i=1}^p \sum_{j=1}^p \hat{\Sigma}_{ij}
+        \end{align}
+
+\end{document}
