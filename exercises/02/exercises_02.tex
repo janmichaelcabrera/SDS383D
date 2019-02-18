@@ -1,0 +1,122 @@
+\documentclass[10pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\usepackage{hyperref}
+
+\newcommand{\by}{\mathbf{y}}
+
+
+\begin{document}
+
+    \title{SDS 383D, Exercises 2: Bayes and the Gaussian Linear Model}
+    \author{Jan-Michael Cabrera}
+    \date{\today}
+    \maketitle
+
+    \section*{A simple Gaussian location model}
+
+    \begin{enumerate}[label=(\Alph*)]
+      \item We have
+        $$ p(\theta) \propto \left ( 1 + \frac{1}{\nu} \frac{(x - m)^2}{s^2}\right )^{- \frac{\nu + 1}{2}}$$
+
+        $$p(\theta, \omega) \propto \omega^{(d+1)/2 - 1} \text{exp}\left( -\omega \frac{k (\theta - \mu)^2}{2}\right ) \text{exp}\left ( -\omega \frac{\eta}{2}\right)$$
+
+        \begin{align*}
+          p(\theta) &\propto \int p(\theta, \omega) d \omega \\
+          & \propto \int \omega^{a-1} \text{exp}(- \omega b) d\omega
+        \end{align*}
+
+        $a = \frac{d+1}{2}$, $b = \frac{k (\theta - \mu)^2}{2} + \frac{\eta}{2}$
+
+        \begin{align*}
+          p(\theta) & \propto \frac{\Gamma(a)}{b^a} \int \frac{b^a}{\Gamma(a)} \omega^{a-1} \text{exp}(- \omega b) d\omega \\
+          & \propto \Gamma \left ( \frac{d+1}{2} \right) \left [ \frac{\eta}{2} + \frac{k (\theta - \mu)^2}{2}\right]^{- \frac{d+1}{2}} \\
+          & \propto \left [ \frac{\eta}{2} \left (1 + \frac{kd (\theta - \mu)^2}{2 d \eta/2} \right )\right]^{- \frac{d+1}{2}} \\
+          & \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}
+        \end{align*}
+
+        \begin{align*}
+          \nu &= d \\
+          x &= \theta \\
+          s^2 & = \frac{d \eta}{k}\\
+          m & = \mu
+        \end{align*}
+
+
+      \item Show that $p(\theta, \omega | \by)$ has the form
+        $$p(\theta, \omega| \by) \propto \omega^{(d^* + 1)/2 -1} \text{exp} \left [ -\omega \frac{k^* ( \theta - \mu^*)^2}{2}\right] \text{exp} \left [ -\omega \frac{\eta^*}{2}\right] $$
+
+        let
+
+        $$p(\by| \theta, \omega) \propto \omega^{n/2} \text{exp} \left [ -\omega \left ( \frac{S_y + n (\bar{y} - \theta)}{2}\right) \right ]$$
+
+        \begin{align*}
+          p(\theta, \omega | \by) &\propto \omega^{(d+1)/2-1} \text{exp}\left [ -\omega \frac{(\theta - \mu)^2}{2}\right] \text{exp}\left [ -\omega \frac{\eta}{2}\right] \omega^{n/2} \text{exp}\left[ -\omega \left( \frac{S_y + n (\bar{y} - \theta)^2}{2}\right)\right] \\
+          &\propto \omega^{(d+n+1)/2 - 1}\text{exp}\left[ -\frac{\omega}{2} \left( k(\theta - \mu)^2 + \eta + S_y + n(\bar{y} - \theta)^2\right)\right]
+        \end{align*}
+
+        \begin{align*}
+          k(\theta - \mu)^2 + \eta + S_y + n(\bar{y} - \theta)^2 &= k \theta^2 - 2 k \mu \theta + k \mu^2 + \eta + S_y + n\bar{y}^2 - 2n \theta \bar{y} + n \theta^2 \\
+          &= (k+n) \theta^2 + (-2k\mu - 2n\bar{y}) \theta + k \mu^2 + \eta + S_y + n \bar{y}^2
+        \end{align*}
+
+        $$ax^2 + bx + c = a(x - h)^2 + l$$
+
+        $h = -\frac{b}{2a}$, $l = c - a h^2$
+
+        \begin{align*}
+          & (k+n) \theta^2 + (-2k\mu - 2n\bar{y}) \theta + k \mu^2 + \eta + S_y + n \bar{y}^2 = \\
+          &(k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + k \mu^2 + \eta + S_y + n \bar{y}^2 - (k+n)\left( \frac{k\mu + n \bar{y}}{k+n}\right)^2 = \\
+          & (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y
+        \end{align*}
+
+        \begin{align*}
+          p(\by| \theta, \omega) &\propto \omega^{(d+n+1)/2-1} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] \\
+          & \propto \omega^{(d+n+1)/2-1} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right] \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right]
+        \end{align*}
+
+        \begin{align*}
+          d^* &= d+n \\
+          k^* &= k+n \\
+          \mu^* &= \frac{k\mu + n\bar{y}}{k + n}\\
+          \eta^* &= \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y
+        \end{align*}
+
+
+      \item What is $p(\theta| \by, \omega)$?
+
+        \begin{align*}
+          p(\theta| \by, \omega) &= \int_0^{\infty} p(\theta, \omega | \by) d\omega \\
+          & \propto \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right] \int_0^{\infty} \omega^{(d+n+1)/2-1}  \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] d\omega
+        \end{align*}
+
+        $$(\theta | \by, \omega) \sim \text{N} \left( \frac{k\mu + n \bar{y}}{k+n}, (\omega(k+n))^{-1}\right) $$
+
+      \item What is $p(\omega | \by)$?
+
+        \begin{align*}
+          p(\omega| \by) &= \int_0^{\infty} p(\theta, \omega | \by) d\theta \\
+          & \propto \omega^{(d+n+1)/2-1}  \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] \int_{-\infty}^{\infty} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right]  d\theta
+        \end{align*}
+
+        $$\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right)$$
+
+        $d^* = d+n$, $\eta^* = \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y$
+
+      \item From part A we had 
+      $$p(\theta) \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}$$
+
+      by construction
+
+      $$p(\theta | \by) \propto \left ( 1 + \frac{1}{d^*} \frac{(\theta - \mu^*)^2}{(d^* \eta^* / k^*)}\right)^{- \frac{d^*+1}{2}}$$
+    \end{enumerate}
+
+\end{document}
