@@ -5,6 +5,7 @@
 \usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
 {geometry}
 \usepackage{amsmath}
+\usepackage{mathtools}
 \usepackage{changepage}
 \usepackage{enumitem}
 \usepackage{amssymb}
@@ -24,7 +25,8 @@
     \section*{A simple Gaussian location model}
 
     \begin{enumerate}[label=(\Alph*)]
-      \item We have
+      \item Show that the marginal prior, $p(\theta)$ takes on the follwing form:
+
         $$ p(\theta) \propto \left ( 1 + \frac{1}{\nu} \frac{(x - m)^2}{s^2}\right )^{- \frac{\nu + 1}{2}}$$
 
         $$p(\theta, \omega) \propto \omega^{(d+1)/2 - 1} \text{exp}\left( -\omega \frac{k (\theta - \mu)^2}{2}\right ) \text{exp}\left ( -\omega \frac{\eta}{2}\right)$$
@@ -91,7 +93,7 @@
         \end{align*}
 
 
-      \item What is $p(\theta| \by, \omega)$?
+      \item From the joint posterior, what is the conditional posterior distribution $p(\theta| \by, \omega)$?
 
         \begin{align*}
           p(\theta| \by, \omega) &= \int_0^{\infty} p(\theta, \omega | \by) d\omega \\
@@ -100,7 +102,7 @@
 
         $$(\theta | \by, \omega) \sim \text{N} \left( \frac{k\mu + n \bar{y}}{k+n}, (\omega(k+n))^{-1}\right) $$
 
-      \item What is $p(\omega | \by)$?
+      \item From the joint posterior, what is the marginal posterior distribution $p(\omega | \by)$?
 
         \begin{align*}
           p(\omega| \by) &= \int_0^{\infty} p(\theta, \omega | \by) d\theta \\
@@ -111,12 +113,139 @@
 
         $d^* = d+n$, $\eta^* = \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y$
 
-      \item From part A we had 
-      $$p(\theta) \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}$$
+      \item Show that the marginal posterior $p(\theta | \by)$ takes the form of a centered, scaled $t$ distribution and express the parameters in terms of the four parameters of the normal-gamma posterior for ($\theta, \omega$).
+        $$p(\theta) \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}$$
 
-      by construction
+        by construction
 
-      $$p(\theta | \by) \propto \left ( 1 + \frac{1}{d^*} \frac{(\theta - \mu^*)^2}{(d^* \eta^* / k^*)}\right)^{- \frac{d^*+1}{2}}$$
+        $$p(\theta | \by) \propto \left ( 1 + \frac{1}{d^*} \frac{(\theta - \mu^*)^2}{(d^* \eta^* / k^*)}\right)^{- \frac{d^*+1}{2}}$$
+
+      \item True or false: in the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the priors $p(\theta)$ and $p(\omega)$ are valid probability distributions.
+
+        $$p(\theta) \propto \left[ 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{\eta/kd}\right]^{-\frac{d+1}{2}}$$
+
+        $$\lim_{k,d,\eta \to 0} \left[ 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{\eta/kd}\right]^{-\frac{d+1}{2}} = \lim_{k,d,\eta \to 0} \left[ 1 + \frac{k (\theta - \mu)^2}{\eta}\right]^{-\frac{d+1}{2}}$$
+
+        $$\left[ 1 + \frac{0 (\theta - \mu)^2}{0}\right]^{-\frac{1}{2}}$$
+
+        $$p(\omega) \propto \omega^{d/2-1} \text{exp}\left( -\omega \frac{\eta}{2}\right)$$
+
+        $$\lim_{d, \eta \to 0} \omega^{d/2-1} \text{exp}\left( -\omega \frac{\eta}{2}\right) = \omega^{-1}$$
+
+      False
+
+      \item True or false: in the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the posteriors $p(\theta | \by)$ and $p(\omega | \by)$ are valid probability distributions.
+
+        \begin{align*}
+          d^* &= n+d \hspace{10pt}\xrightarrow[d\to0]{} \hspace{10pt} d^* = n \\
+          k^* &= k+n \hspace{10pt}\xrightarrow[k\to0]{} \hspace{10pt} k^* = n \\
+          \mu^* &= \frac{k\mu + n \bar{y}}{k+n} \hspace{5pt}\xrightarrow[k\to0]{} \hspace{10pt} \mu^* = \bar{y} \\
+          \eta^* &= \frac{nk (\mu- \bar{y})^2}{k+n} + \eta + S_y \hspace{5pt}\xrightarrow[k,\eta\to0]{} \hspace{10pt} \eta^* = S_y \\
+        \end{align*}
+
+        $$p(\theta|\by) \propto \left[1 + \frac{1}{n} \frac{(\theta - \bar{y})^2}{S_y/n^2} \right]^{-\frac{n+1}{2}}$$
+
+        $$p(\omega|\by) \propto \omega^{n/2 -1} \text{exp}\left( -\omega \frac{S_y}{2}\right)$$
+
+      \item True or false: In the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the Bayesian credible interval for $\theta$ becomes identical to the classical (frequentist) confidence interval for $\theta$ at the same confidence level.
+
+        $$\theta \in m \pm t^* \cdot s $$
+
+        \begin{align*}
+          m &= \mu^* \rightarrow \bar{y} \hspace{10pt} \text{for $k, d, \eta \to 0$} \\
+          s^{*2} &= \frac{S_y}{n^2} \rightarrow s = \frac{1}{n} \left[\sum_{i=1}^n(y_i - \bar{y})^2 \right]^{1/2}
+        \end{align*}
+
+        $$\theta \in \bar{y} \pm t^* \cdot \frac{1}{n} \left[\sum_{i=1}^n(y_i - \bar{y})^2 \right]^{1/2}$$
+    \end{enumerate}
+
+    \section*{The Conjugate Gaussian Linear Model}
+
+    \begin{enumerate}[label=(\Alph*)]
+      \item Derive the conditional posterior $p(\beta| \by, \omega)$
+      $$\beta | \omega \sim \text{N}(m, (\omega K)^{-1})$$
+      $$\omega \sim \text{Gamma}\left(\frac{d}{2}, \frac{\eta}{2} \right)$$
+      $$\by | \beta, \omega \sim \text{N}(X\beta, (\omega \Lambda)^{-1})$$
+
+      first find
+
+      \begin{align*}
+        p(\beta, \omega | \by) &\propto p(\omega) p(\beta| \omega) p(\by | \beta, \omega) \\
+        &\propto \omega^{d/2 -1} \text{exp}\left( - \omega \frac{\eta}{2}\right) \omega^{p/2} \text{exp}\left[ -\frac{\omega}{2} (\beta - m)^T K (\beta - m) \right] \omega^{n/2} \text{exp}\left[ -\frac{\omega}{2} (y - X\beta)^T \Lambda (y - X\beta) \right] \\
+        &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left[-\frac{\omega}{2} \left ( (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \right) \right]
+      \end{align*}
+
+      \begin{align*}
+        & (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \\
+        &= \beta^T K \beta - \beta^T K m - m^T K \beta + m^T K m + y^T \Lambda y - y^T \Lambda X \beta - \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
+        &= \beta^T K \beta - 2 \beta^T K m + m^T K m + y^T \Lambda y - 2 \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
+        &= \beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta
+      \end{align*}
+
+      $Q^T A Q + Q^T b + c = (Q - h)^T A (Q - h) + k$, with $h = -\frac{1}{2}A^{-1} b$ and $k = c - \frac{1}{4} b^T A^{-1} b$
+
+      let $A = ( K+ X^T \Lambda X) = K^*$, $b = - 2 (K m + X^T \Lambda y)$, and $c = m^T K m + y^T  \Lambda y + \eta$
+
+      \begin{align*}
+        h &= -\frac{1}{2} (K + X^T \Lambda X)^{-1} \cdot (- 2 (K m + X^T \Lambda y)) \\
+        &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) = m^*
+      \end{align*}
+
+      \begin{align*}
+        &\beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta \\
+        &= (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)
+      \end{align*}
+
+      \begin{align*}
+        p(\beta, \omega | \by) &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left [ -\frac{\omega}{2} \left ( (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)\right)\right] \\
+        &\propto \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right]
+      \end{align*}
+
+      \begin{align*}
+        d^* &= d+n \\
+        K^* &= ( K+ X^T \Lambda X) \\
+        \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
+        m^* &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) \\
+      \end{align*}
+
+      $$\beta | \omega, \by \sim \text{N}\left( m^*, (\omega K^*)^{-1}\right)$$
+
+      \item Derive the marginal posterior $p(\omega | \by)$
+
+      \begin{align*}
+        p(\omega | \by) & \propto \int_{-\infty}^{\infty} p(\beta, \omega | \by) d \beta \\
+        & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right] \int_{-\infty}^{\infty} \omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] \\
+        & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]
+      \end{align*}
+
+      $$\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right)$$
+
+      \begin{align*}
+        d^* &= d+n \\
+        K^* &= ( K+ X^T \Lambda X) \\
+        \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
+      \end{align*}
+
+      \item Putting these together, derive the marginal posterior $p(\beta | \by) $
+
+      \begin{align*}
+        p(\beta | \by) &\propto \int_0^{\infty} p(\beta, \omega | \by) d \omega \\
+        & \propto \int_0^{\infty} \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] d\omega \\
+        & \propto \int_0^{\infty} \omega^a \text{exp}(-b \omega) d \omega
+      \end{align*}
+
+      with $a = \frac{d^* + p}{2}$ and $b = \frac{1}{2}\left( \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right)$
+
+      \begin{align*}
+        p(\beta | \by) &\propto \frac{\Gamma(a)}{b^a} \int_0^{\infty} \frac{b^a}{\Gamma(a)} \omega^a \text{exp}(-b \omega) d \omega \\
+        & \propto \Gamma(a)b^{-a} \\
+        & \propto \left [ \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right]^{-\frac{d^*+p}{2}} \\
+        & \propto \left[ 1 + \frac{1}{d^*} \frac{(\beta - m^*)^T K^* (\beta - m^*)}{\eta^*/d^*}\right]^{-\frac{d^*+p}{2}}
+      \end{align*}
+      
+
+
+
     \end{enumerate}
 
 \end{document}
