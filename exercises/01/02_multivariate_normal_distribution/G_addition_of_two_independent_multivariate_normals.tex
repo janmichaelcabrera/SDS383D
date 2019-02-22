@@ -31,16 +31,20 @@
             y = A x_1 + B x_2
         \end{equation}
 
+        \begin{align}
+            M_y(t) &= \E \left( \text{exp}( t^T y )\right) \\
+            &= \E \left( \text{exp}( t^T (A x_1 + B x_2) )\right) \\
+            &= \E \left( \text{exp}((A^Tt)^T x_1\right)\E \left( \text{exp}((B^Tt)^T x_2\right)
+        \end{align}
+
         \begin{equation}
-            \E[y] = \E[A x_1 + B x_2] = A \E[x_1] + B\E[x_2] = A \mu_1 + B \mu_2
+            M_x(t) = \E (\text{exp}(t^T x)) = \text{exp}\left(t^T \mu + \frac{1}{2} t^T \Sigma t \right)
         \end{equation}
 
         \begin{align}
-            \cov(y) &= \cov(Ax_1 + Bx_2) = \E[(Ax_1 + Bx_2)(A x_1 + B x_2)^T] \\
-            &= \E[ Ax_1(Ax_1)^T + Ax_1 (Bx_2)^T + Bx_2 (Ax_1)^T + Bx_2 (Bx_2)^T]\\
-            &= \cov(Ax_1, Ax_1) + \cov(Ax_1, Bx_2) + \cov(Bx_2, Ax_1) + \cov(Bx_2, Bx_2)\\
-            &= A\cov(x_1, x_1)A^T + B \cov(x_2, x_2)B^T \\
-            &= A \Sigma_1 A^T + B \Sigma_2 B^T
+            M_y(t) &= \text{exp}\left( (A^Tt)^T \mu_1 + \frac{1}{2} (A^Tt)^T \Sigma_1 (A^T t) \right)\text{exp}\left( (B^Tt)^T \mu_2 + \frac{1}{2} (B^Tt)^T \Sigma_2 (B^T t) \right) \\
+            &= \text{exp}\left( (A^Tt)^T \mu_1 + \frac{1}{2} (A^Tt)^T \Sigma_1 (A^T t) + (B^Tt)^T \mu_2 + \frac{1}{2} (B^Tt)^T \Sigma_2 (B^T t) \right) \\
+            &= \text{exp}\left( t^T (A \mu_1 + B \mu_2) + \frac{1}{2} t^T (A \Sigma_1 A^T + B \Sigma_2 B^T) t\right)
         \end{align}
 
         \begin{equation}
