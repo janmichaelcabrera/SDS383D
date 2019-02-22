@@ -29,21 +29,27 @@
 
         $$ p(\theta) \propto \left ( 1 + \frac{1}{\nu} \frac{(x - m)^2}{s^2}\right )^{- \frac{\nu + 1}{2}}$$
 
+        The joint prior for $\theta$ and $\omega$ can be expressed as
+
         $$p(\theta, \omega) \propto \omega^{(d+1)/2 - 1} \text{exp}\left( -\omega \frac{k (\theta - \mu)^2}{2}\right ) \text{exp}\left ( -\omega \frac{\eta}{2}\right)$$
+
+        This joint normal-gamma prior can be marginalized over $\omega$ to obtain a distribution for $\theta$. Combining terms in the exponents and letting $a = \frac{d+1}{2}$ and $b = \frac{k (\theta - \mu)^2}{2} + \frac{\eta}{2}$, we get
 
         \begin{align*}
           p(\theta) &\propto \int p(\theta, \omega) d \omega \\
           & \propto \int \omega^{a-1} \text{exp}(- \omega b) d\omega
         \end{align*}
-
-        $a = \frac{d+1}{2}$, $b = \frac{k (\theta - \mu)^2}{2} + \frac{\eta}{2}$
+        
+        We immediately realize that the term to the right of the integral is the unnormalized form of a gamma distribution. We add these normalizing components to ensure the intergral integrates to one and reduce the result,
 
         \begin{align*}
           p(\theta) & \propto \frac{\Gamma(a)}{b^a} \int \frac{b^a}{\Gamma(a)} \omega^{a-1} \text{exp}(- \omega b) d\omega \\
           & \propto \Gamma \left ( \frac{d+1}{2} \right) \left [ \frac{\eta}{2} + \frac{k (\theta - \mu)^2}{2}\right]^{- \frac{d+1}{2}} \\
           & \propto \left [ \frac{\eta}{2} \left (1 + \frac{kd (\theta - \mu)^2}{2 d \eta/2} \right )\right]^{- \frac{d+1}{2}} \\
-          & \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}
+          & \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}.
         \end{align*}
+
+        The result can be recognized as having the form of the first equation above with the following variable relations.
 
         \begin{align*}
           \nu &= d \\
@@ -56,34 +62,44 @@
       \item Show that $p(\theta, \omega | \by)$ has the form
         $$p(\theta, \omega| \by) \propto \omega^{(d^* + 1)/2 -1} \text{exp} \left [ -\omega \frac{k^* ( \theta - \mu^*)^2}{2}\right] \text{exp} \left [ -\omega \frac{\eta^*}{2}\right] $$
 
-        let
+        The sampling distribution is given as the following, with the term in the exponent reduced to sufficient statistics for a normal distribution,
 
         $$p(\by| \theta, \omega) \propto \omega^{n/2} \text{exp} \left [ -\omega \left ( \frac{S_y + n (\bar{y} - \theta)^2}{2}\right) \right ]$$
+
+        We multiply our normal-gamma prior with the normal sampling distribution and collect similar terms in the exponents.
 
         \begin{align*}
           p(\theta, \omega | \by) &\propto \omega^{(d+1)/2-1} \text{exp}\left [ -\omega \frac{(\theta - \mu)^2}{2}\right] \text{exp}\left [ -\omega \frac{\eta}{2}\right] \omega^{n/2} \text{exp}\left[ -\omega \left( \frac{S_y + n (\bar{y} - \theta)^2}{2}\right)\right] \\
           &\propto \omega^{(d+n+1)/2 - 1}\text{exp}\left[ -\frac{\omega}{2} \left( k(\theta - \mu)^2 + \eta + S_y + n(\bar{y} - \theta)^2\right)\right]
         \end{align*}
 
+        We expand the term in the $e^{(...)}$ term and collect terms together,
+
         \begin{align*}
           k(\theta - \mu)^2 + \eta + S_y + n(\bar{y} - \theta)^2 &= k \theta^2 - 2 k \mu \theta + k \mu^2 + \eta + S_y + n\bar{y}^2 - 2n \theta \bar{y} + n \theta^2 \\
-          &= (k+n) \theta^2 + (-2k\mu - 2n\bar{y}) \theta + k \mu^2 + \eta + S_y + n \bar{y}^2
+          &= (k+n) \theta^2 + (-2k\mu - 2n\bar{y}) \theta + k \mu^2 + \eta + S_y + n \bar{y}^2.
         \end{align*}
 
-        $$ax^2 + bx + c = a(x - h)^2 + l$$
+        The result from expanding the terms can be reduced to the following form to recover the normal part of the posterior for $\theta$,
 
-        $h = -\frac{b}{2a}$, $l = c - a h^2$
+        $$ax^2 + bx + c = a(x - h)^2 + l, \hspace{10pt} h = -\frac{b}{2a}, \hspace{10pt} l = c - a h^2$$
+
+        We carry out the process of completing the square the $\theta$ term and reduce other parts of the expression,
 
         \begin{align*}
           & (k+n) \theta^2 + (-2k\mu - 2n\bar{y}) \theta + k \mu^2 + \eta + S_y + n \bar{y}^2 = \\
           &(k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + k \mu^2 + \eta + S_y + n \bar{y}^2 - (k+n)\left( \frac{k\mu + n \bar{y}}{k+n}\right)^2 = \\
-          & (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y
+          & (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y.
         \end{align*}
+
+        The result is plugged back into the exponential term, and the terms are collected to obtain the form of a normal-gamma posterior.
 
         \begin{align*}
           p(\by| \theta, \omega) &\propto \omega^{(d+n+1)/2-1} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 + \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] \\
           & \propto \omega^{(d+n+1)/2-1} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right] \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right]
         \end{align*}
+
+        The normal-gamma posterior has the form of the normal-gamma prior with the following variable relations.
 
         \begin{align*}
           d^* &= d+n \\
@@ -100,27 +116,44 @@
           & \propto \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right] \int_0^{\infty} \omega^{(d+n+1)/2-1}  \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] d\omega
         \end{align*}
 
+        The conditional posterior distribution is simply the joint posterior marginalized over $\omega$. We also can recognize that the normal distribution can be completely characterized by its mean and variance. Therefore, 
+
         $$(\theta | \by, \omega) \sim \text{N} \left( \frac{k\mu + n \bar{y}}{k+n}, (\omega(k+n))^{-1}\right) $$
 
       \item From the joint posterior, what is the marginal posterior distribution $p(\omega | \by)$?
 
         \begin{align*}
           p(\omega| \by) &= \int_0^{\infty} p(\theta, \omega | \by) d\theta \\
-          & \propto \omega^{(d+n+1)/2-1}  \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] \int_{-\infty}^{\infty} \text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right]  d\theta
+          & \propto \omega^{(d+n)/2-1}  \text{exp}\left[ - \frac{\omega}{2}\left( \frac{nk(\mu - \bar{y})^2}{k+n} + \eta + S_y\right) \right] \int_{-\infty}^{\infty} \omega^{1/2}\text{exp}\left[  -\frac{\omega}{2} \left( (k+n) \left( \theta - \frac{k\mu + n\bar{y}}{k+n}\right)^2 \right) \right]  d\theta
         \end{align*}
 
-        $$\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right)$$
+        The marginal posterior for $\omega$ is found in a similar fashion as above, noting that part of the normal distribution to be marginalized depends on $\omega$. Including this term in the integral ensures that it integrates to a constant not dependent on $\omega$. The distribution then has the following form,
 
-        $d^* = d+n$, $\eta^* = \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y$
+        \begin{align*}
+        &\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right) \\
+        &d^* = d+n \\
+        &\eta^* = \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y
+        \end{align*}
+
+
 
       \item Show that the marginal posterior $p(\theta | \by)$ takes the form of a centered, scaled $t$ distribution and express the parameters in terms of the four parameters of the normal-gamma posterior for ($\theta, \omega$).
         $$p(\theta) \propto \left ( 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{(d \eta/ k)}\right)^{- \frac{d+1}{2}}$$
 
-        by construction
+        This simply reqiures plugging in the respective starred values into the result above producing,
 
         $$p(\theta | \by) \propto \left ( 1 + \frac{1}{d^*} \frac{(\theta - \mu^*)^2}{(d^* \eta^* / k^*)}\right)^{- \frac{d^*+1}{2}}$$
 
+        \begin{align*}
+          d^* &= d+n \\
+          k^* &= k+n \\
+          \mu^* &= \frac{k\mu + n\bar{y}}{k + n}\\
+          \eta^* &= \frac{nk (\mu - \bar{y})^2}{k+n} + \eta + S_y
+        \end{align*}
+
       \item True or false: in the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the priors $p(\theta)$ and $p(\omega)$ are valid probability distributions.
+
+        To check this result we simply check to see if the resultant distribution integrates to one or a constant in the limit. The prior for $\theta$ is,
 
         $$p(\theta) \propto \left[ 1 + \frac{1}{d} \frac{(\theta - \mu)^2}{\eta/kd}\right]^{-\frac{d+1}{2}}$$
 
@@ -128,13 +161,21 @@
 
         $$\left[ 1 + \frac{0 (\theta - \mu)^2}{0}\right]^{-\frac{1}{2}}$$
 
+        In the limit as the parameters approach zero, we have an undefined function that cannot be integrated. For $\omega$ we have,
+
         $$p(\omega) \propto \omega^{d/2-1} \text{exp}\left( -\omega \frac{\eta}{2}\right)$$
+
+        Taking the limit for this expression,
 
         $$\lim_{d, \eta \to 0} \omega^{d/2-1} \text{exp}\left( -\omega \frac{\eta}{2}\right) = \omega^{-1}$$
 
-      False
+        The resultant expression has a singularity at $\omega=0$ and will therefore integrate to infinity. 
+
+        \textbf{False}
 
       \item True or false: in the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the posteriors $p(\theta | \by)$ and $p(\omega | \by)$ are valid probability distributions.
+
+        We first take the limit in the starred expressions,
 
         \begin{align*}
           d^* &= n+d \hspace{10pt}\xrightarrow[d\to0]{} \hspace{10pt} d^* = n \\
@@ -143,11 +184,19 @@
           \eta^* &= \frac{nk (\mu- \bar{y})^2}{k+n} + \eta + S_y \hspace{5pt}\xrightarrow[k,\eta\to0]{} \hspace{10pt} \eta^* = S_y \\
         \end{align*}
 
+        Plugging in these values into our posteriors we get,
+
         $$p(\theta|\by) \propto \left[1 + \frac{1}{n} \frac{(\theta - \bar{y})^2}{S_y/n^2} \right]^{-\frac{n+1}{2}}$$
 
         $$p(\omega|\by) \propto \omega^{n/2 -1} \text{exp}\left( -\omega \frac{S_y}{2}\right)$$
 
+        Both are kernels for valid probability distributions
+
+        \textbf{True}
+
       \item True or false: In the limit as the prior parameters $k$, $d$, and $\eta$ approach zero, the Bayesian credible interval for $\theta$ becomes identical to the classical (frequentist) confidence interval for $\theta$ at the same confidence level.
+
+
 
         $$\theta \in m \pm t^* \cdot s $$
 
@@ -157,91 +206,119 @@
         \end{align*}
 
         $$\theta \in \bar{y} \pm t^* \cdot \frac{1}{n} \left[\sum_{i=1}^n(y_i - \bar{y})^2 \right]^{1/2}$$
+
+        \textbf{True}
     \end{enumerate}
+
+    \clearpage
 
     \section*{The Conjugate Gaussian Linear Model}
 
     \begin{enumerate}[label=(\Alph*)]
+
       \item Derive the conditional posterior $p(\beta| \by, \omega)$
-      $$\beta | \omega \sim \text{N}(m, (\omega K)^{-1})$$
-      $$\omega \sim \text{Gamma}\left(\frac{d}{2}, \frac{\eta}{2} \right)$$
-      $$\by | \beta, \omega \sim \text{N}(X\beta, (\omega \Lambda)^{-1})$$
 
-      first find
+        $$\beta | \omega \sim \text{N}(m, (\omega K)^{-1})$$
+        $$\omega \sim \text{Gamma}\left(\frac{d}{2}, \frac{\eta}{2} \right)$$
+        $$\by | \beta, \omega \sim \text{N}(X\beta, (\omega \Lambda)^{-1})$$
 
-      \begin{align*}
-        p(\beta, \omega | \by) &\propto p(\omega) p(\beta| \omega) p(\by | \beta, \omega) \\
-        &\propto \omega^{d/2 -1} \text{exp}\left( - \omega \frac{\eta}{2}\right) \omega^{p/2} \text{exp}\left[ -\frac{\omega}{2} (\beta - m)^T K (\beta - m) \right] \omega^{n/2} \text{exp}\left[ -\frac{\omega}{2} (y - X\beta)^T \Lambda (y - X\beta) \right] \\
-        &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left[-\frac{\omega}{2} \left ( (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \right) \right]
-      \end{align*}
+        First we find the joint posterior for $\beta$ and $\omega$ given the multivariate sampling distribution. 
 
-      \begin{align*}
-        & (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \\
-        &= \beta^T K \beta - \beta^T K m - m^T K \beta + m^T K m + y^T \Lambda y - y^T \Lambda X \beta - \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
-        &= \beta^T K \beta - 2 \beta^T K m + m^T K m + y^T \Lambda y - 2 \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
-        &= \beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta
-      \end{align*}
+        \begin{align*}
+          p(\beta, \omega | \by) &\propto p(\omega) p(\beta| \omega) p(\by | \beta, \omega) \\
+          &\propto \omega^{d/2 -1} \text{exp}\left( - \omega \frac{\eta}{2}\right) \omega^{p/2} \text{exp}\left[ -\frac{\omega}{2} (\beta - m)^T K (\beta - m) \right] \omega^{n/2} \text{exp}\left[ -\frac{\omega}{2} (y - X\beta)^T \Lambda (y - X\beta) \right] \\
+          &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left[-\frac{\omega}{2} \left ( (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \right) \right]
+        \end{align*}
 
-      $Q^T A Q + Q^T b + c = (Q - h)^T A (Q - h) + k$, with $h = -\frac{1}{2}A^{-1} b$ and $k = c - \frac{1}{4} b^T A^{-1} b$
+        After combining exponents, we distribute the terms and collect the $\beta$ terms together,
 
-      let $A = ( K+ X^T \Lambda X) = K^*$, $b = - 2 (K m + X^T \Lambda y)$, and $c = m^T K m + y^T  \Lambda y + \eta$
+        \begin{align*}
+          & (\beta - m)^T K (\beta - m) + (y - X\beta)^T \Lambda (y - X\beta) + \eta \\
+          &= \beta^T K \beta - \beta^T K m - m^T K \beta + m^T K m + y^T \Lambda y - y^T \Lambda X \beta - \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
+          &= \beta^T K \beta - 2 \beta^T K m + m^T K m + y^T \Lambda y - 2 \beta^T X^T \Lambda y + \beta^T X^T \Lambda X \beta + \eta \\
+          &= \beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta
+        \end{align*}
 
-      \begin{align*}
-        h &= -\frac{1}{2} (K + X^T \Lambda X)^{-1} \cdot (- 2 (K m + X^T \Lambda y)) \\
-        &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) = m^*
-      \end{align*}
+        As before, we can realize we need to get the expression in the proper form that characterizes the multivariate normal distribution. We do this by completing the square. The equation has the from $Q^T A Q + Q^T b + c = (Q - h)^T A (Q - h) + k$, with $h = -\frac{1}{2}A^{-1} b$ and $k = c - \frac{1}{4} b^T A^{-1} b$. 
+        \\\\
+        Let $A = ( K+ X^T \Lambda X) = K^*$, $b = - 2 (K m + X^T \Lambda y)$, and $c = m^T K m + y^T  \Lambda y + \eta$. The term $h$ reduces to the following,
 
-      \begin{align*}
-        &\beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta \\
-        &= (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)
-      \end{align*}
+        \begin{align*}
+          h &= -\frac{1}{2} (K + X^T \Lambda X)^{-1} \cdot (- 2 (K m + X^T \Lambda y)) \\
+          &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) = m^*
+        \end{align*}
 
-      \begin{align*}
-        p(\beta, \omega | \by) &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left [ -\frac{\omega}{2} \left ( (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)\right)\right] \\
-        &\propto \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right]
-      \end{align*}
+        Plugging these terms back into the equation we get,
 
-      \begin{align*}
-        d^* &= d+n \\
-        K^* &= ( K+ X^T \Lambda X) \\
-        \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
-        m^* &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) \\
-      \end{align*}
+        \begin{align*}
+          &\beta^T ( K+ X^T \Lambda X) \beta - 2 \beta^T (K m + X^T \Lambda y) + m^TKm + y^T\Lambda y + \eta \\
+          &= (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)
+        \end{align*}
 
-      $$\beta | \omega, \by \sim \text{N}\left( m^*, (\omega K^*)^{-1}\right)$$
+        These are then reintroduced into the posterior,
+
+        \begin{align*}
+          p(\beta, \omega | \by) &\propto \omega^{\frac{d+p+n}{2}-1} \text{exp}\left [ -\frac{\omega}{2} \left ( (\beta - m^*)^T K^* (\beta - m) + m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)\right)\right] \\
+          &\propto \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right]
+        \end{align*}
+
+        We see that the form of the posterior is also multivariate normal-gamma with the following variables
+
+        \begin{align*}
+          d^* &= d+n \\
+          K^* &= ( K+ X^T \Lambda X) \\
+          \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
+          m^* &= (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y) \\
+        \end{align*}
+
+        From this distribution, again since the multivariate normal is completely characterized by it's mean vector and covariance matrix, we get that the conditional posterior has the form,
+
+        $$\beta | \omega, \by \sim \text{N}\left( m^*, (\omega K^*)^{-1}\right).$$
 
       \item Derive the marginal posterior $p(\omega | \by)$
 
-      \begin{align*}
-        p(\omega | \by) & \propto \int_{-\infty}^{\infty} p(\beta, \omega | \by) d \beta \\
-        & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right] \int_{-\infty}^{\infty} \omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] d \beta\\
-        & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]
-      \end{align*}
+        The marginal posterior for $\omega$ can be found by marginalizing the joint posterior over $\beta$,
 
-      $$\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right)$$
+        \begin{align*}
+          p(\omega | \by) & \propto \int_{-\infty}^{\infty} p(\beta, \omega | \by) d \beta \\
+          & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right] \int_{-\infty}^{\infty} \omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] d \beta\\
+          & \propto \omega^{\frac{d^*}{2}-1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right].
+        \end{align*}
 
-      \begin{align*}
-        d^* &= d+n \\
-        K^* &= ( K+ X^T \Lambda X) \\
-        \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
-      \end{align*}
+        Note that again here we must be careful of the terms included within the integral when marginalizing. From this we find that the posterior also has the form of a gamma distribution,
+
+        $$\omega | \by \sim \text{Gamma}\left ( \frac{d^*}{2}, \frac{\eta^*}{2}\right).$$
+
+        This distribution is characterized by the following
+
+        \begin{align*}
+          d^* &= d+n \\
+          K^* &= ( K+ X^T \Lambda X) \\
+          \eta^* &= m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y) \\
+        \end{align*}
 
       \item Putting these together, derive the marginal posterior $p(\beta | \by) $
 
-      \begin{align*}
-        p(\beta | \by) &\propto \int_0^{\infty} p(\beta, \omega | \by) d \omega \\
-        & \propto \int_0^{\infty} \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] d\omega \\
-        & \propto \int_0^{\infty} \omega^a \text{exp}(-b \omega) d \omega
-      \end{align*}
+        The process here closely matches that of part A in the previous section. We marginalize the joint posterior over $\omega$. 
 
-      with $a = \frac{d^* + p}{2}$ and $b = \frac{1}{2}\left( \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right)$
+        \begin{align*}
+          p(\beta | \by) &\propto \int_0^{\infty} p(\beta, \omega | \by) d \omega \\
+          & \propto \int_0^{\infty} \omega^{\frac{d^*}{2} - 1} \text{exp}\left[-\omega \frac{\eta^*}{2} \right]\omega^{\frac{p}{2}} \text{exp} \left[ -\frac{\omega}{2} (\beta - m^*)^T K^* (\beta - m^*) \right] d\omega \\
+          & \propto \int_0^{\infty} \omega^a \text{exp}(-b \omega) d \omega
+        \end{align*}
 
-      \begin{align*}
-        p(\beta | \by) &\propto \frac{\Gamma(a)}{b^a} \int_0^{\infty} \frac{b^a}{\Gamma(a)} \omega^a \text{exp}(-b \omega) d \omega \\
-        & \propto \Gamma(a)b^{-a} \\
-        & \propto \left [ \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right]^{-\frac{d^*+p}{2}} \\
-        & \propto \left[ 1 + \frac{1}{d^*} \frac{(\beta - m^*)^T K^* (\beta - m^*)}{\eta^*/d^*}\right]^{-\frac{d^*+p}{2}}
-      \end{align*}
+        Letting $a = \frac{d^* + p}{2}$ and $b = \frac{1}{2}\left( \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right)$ we see that the terms in the integral form an unnormalized gamma distribution. Normalizing the distribution we obtain,
+
+        \begin{align*}
+          p(\beta | \by) &\propto \frac{\Gamma(a)}{b^a} \int_0^{\infty} \frac{b^a}{\Gamma(a)} \omega^a \text{exp}(-b \omega) d \omega \\
+          & \propto \Gamma(a)b^{-a} \\
+          & \propto \left [ \eta^* + (\beta - m^*)^T K^* (\beta - m^*) \right]^{-\frac{d^*+p}{2}} \\
+          & \propto \left[ 1 + \frac{1}{d^*} \frac{(\beta - m^*)^T K^* (\beta - m^*)}{\eta^*/d^*}\right]^{-\frac{d^*+p}{2}}.
+        \end{align*}
+
+        This has the form of a multivariate t distribution. 
+
+      \item Bayesian linear model fit to data in "gdpgrowth.csv"
       
 
 
