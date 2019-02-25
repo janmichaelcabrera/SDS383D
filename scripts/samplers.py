@@ -42,6 +42,7 @@ class Trace:
                 plt.figure()
                 plt.plot(self.trace[:,i], '-b', label=self.name+'_'+str(i))
                 plt.savefig(figures_directory+self.name+'_'+str(i)+'_trace.png')
+                plt.close()
 
     def update_trace(self, index, value):
         """
@@ -128,16 +129,15 @@ class Gibbs:
         m = np.zeros(self.X.shape[1])
 
         lambda_diag = np.ones(self.X.shape[0])
-        
+
         #### Iteratively sample conditional distributions
         for i in range(iterations):
-
             Lambda = np.diag(lambda_diag)
 
             # m^* = (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y)            
             m_star = inv(K + np.transpose(self.X) @ Lambda @ self.X) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
 
-            # K^* = ( K+ X^T \Lambda X)
+            # K^* = (K+ X^T \Lambda X)
             K_star = K + np.transpose(self.X) @ Lambda @ self.X
 
             # d^* = d + n
@@ -147,7 +147,7 @@ class Gibbs:
             eta_star = np.transpose(m) @ K @ m + np.transpose(self.Y) @ Lambda @ self.Y + eta - np.transpose(K @ m + np.transpose(self.X) @ (Lambda @ self.Y)) @ inv(K_star) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
 
             ### Sample posterior values
-            beta = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega* K_star))
+            beta = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega*K_star))
             omega = stats.gamma.rvs(d_star/2, (2/eta_star))
             for j in range(len(lambda_diag)):
                 lambda_diag[j] = stats.gamma.rvs((h+1)/2, (2/(h+omega*(self.Y[j] - np.transpose(self.X[j])@beta)**2)))
