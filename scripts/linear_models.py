@@ -46,7 +46,7 @@ class linear_model:
         -------
             m_star: float
                 Represents the slope and intercept coefficients to a linear model
-                .. math:: m^* = (K + X^T \Lambda X)^{-1} (K m + X^T \Lambda Y)
+                .. math:: m^* = (K + X^T \\Lambda X)^{-1} (K m + X^T \\Lambda Y)
                 .. math:: y = m^*[0] + x m^*[1]
         """
         m = np.zeros(self.X.shape[1])
