@@ -214,6 +214,8 @@
 
     \section*{The Conjugate Gaussian Linear Model}
 
+    \subsection*{Basics}
+
     \begin{enumerate}[label=(\Alph*)]
 
       \item Derive the conditional posterior $p(\beta| \by, \omega)$
@@ -319,9 +321,57 @@
         This has the form of a multivariate t distribution. 
 
       \item Bayesian linear model fit to data in "gdpgrowth.csv"
-      
 
 
+
+    \end{enumerate}
+
+    \subsection*{A heavy-tailed error model}
+
+    \begin{align*}
+      \by| \beta \omega, \Lambda &\sim \text{N}(X \beta, (\omega \Lambda)^{-1}))\\
+      \Lambda &= \text{diag}(\lambda_1,...,\lambda_n)\\
+      \lambda &\stackrel{iid}{\sim} \text{Gamma}(h/2, h/2)\\
+      \beta | \omega &\sim \text{N}(m, (\omega K)^{-1})\\
+      \omega &\sim \text{Gamma}(d/2, \eta/2)
+    \end{align*}
+
+    \begin{enumerate}[label=(\Alph*)]
+
+    \item Under this model, what is the implied conditional distribution $p(y_i | X, \beta, \omega)$?
+
+      \begin{align*}
+        p(y_i | \beta, \omega) &= \int p(\lambda_i) p(\omega) p(\beta | \omega) p(y_i | \beta, \omega, \lambda_i) d \lambda_i \\
+         &\propto \int \lambda_i^{h/2 -1} \text{exp}\left(- \frac{h}{2} \lambda_i \right) (\omega \lambda_i)^{1/2} \text{exp}\left[-\frac{1}{2} (\omega \lambda_i)(y_i - x_i^T \beta)^2 \right] d\lambda_i \\
+         &\propto \int \omega^{1/2} \lambda_i^{\frac{h+1}{2}-1} \text{exp}\left(-\frac{\lambda_i}{2} \left[h + \omega(y_i - x_i^T \beta)^2 \right] \right) d\lambda_i
+      \end{align*}
+
+      let $a = \frac{h+1}{2}$ and $b=\frac{1}{2} \left[h + \omega(y_i - x_i^T \beta)^2 \right]$
+
+      \begin{align*}
+        p(y_i | \beta, \omega) &\propto \int \lambda_i^{a-1} \text{exp}(-b \lambda_i) d \lambda_i \\
+        & \propto b^{-a}\\
+        & \propto \left[h + \omega(y_i - x_i^T \beta)^2 \right]^{-\frac{h+1}{2}} \\
+        & \propto \left[1 + \frac{\omega(y_i - x_i^T \beta)^2}{h} \right]^{-\frac{h+1}{2}}
+      \end{align*}
+
+    \item What is the conditional posterior distribution $p(\lambda_i | \by, \beta, \omega)$?
+
+      \begin{align*}
+        p(\lambda_i | y_i, \beta, \omega) &\propto p(\lambda_i) p(y_i | \beta, \omega, \lambda_i) \\
+        &\propto \lambda_i^{h/2 -1} \text{exp}\left(- \frac{h}{2} \lambda_i \right) (\omega \lambda_i)^{1/2} \text{exp}\left[-\frac{1}{2} (\omega \lambda_i)(y_i - x_i^T \beta)^2 \right] \\
+        &\propto \lambda_i^{\frac{h+1}{2}-1} \text{exp}\left(-\frac{\lambda_i}{2} \left[h + \omega(y_i - x_i^T \beta)^2 \right] \right)
+      \end{align*}
+
+      $$\lambda_i | y_i \beta, \omega \sim \text{Gamma}\left(\frac{h+1}{2}, \frac{h + \omega(y_i - x_i^T \beta)^2}{2} \right)$$
+
+    \item Code up a Gibbs sampler that repeatedly cycles through sampling the following three sets of conditional distributions.
+
+    \begin{itemize}
+      \item $p(\beta | \by, \omega, \Lambda)$
+      \item $p(\omega | \by, \Lambda)$
+      \item $p(\lambda_i | \by, \beta, \omega)$
+    \end{itemize}
 
     \end{enumerate}
 

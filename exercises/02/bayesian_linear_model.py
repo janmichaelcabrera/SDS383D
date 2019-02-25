@@ -19,9 +19,7 @@ m = np.zeros(2)
 
 Lambda = np.eye(len(X))
 
-pre = inv(K + np.matmul(np.matmul(np.transpose(X), Lambda),X))
-
-m_star = np.matmul(pre,(np.matmul(K, m) + np.matmul(np.transpose(X), Lambda).dot(Y)))
+m_star = inv(K + np.transpose(X) @ Lambda @ X) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
 
 x = np.linspace(X[:,1].min(), X[:,1].max())
 
