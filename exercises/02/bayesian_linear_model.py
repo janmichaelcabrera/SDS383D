@@ -33,14 +33,14 @@ x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
 #### Model responses
 y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
 y2 = m_star_2[0] + x * m_star_2[1] # Uninformed Bayesian Linear Model
-y3 = b0 + x * b1 # Ordinary Least Squared Linear Model
+y3 = b0 + x * b1 # Ordinary Least Squares Linear Model
 
 #### Plot models
 plt.figure()
 plt.plot(X[:,1], Y, '.k', label='GDP Growth Rate Vs. Defense Spending')
 plt.plot(x, y1, '-b', label='Informed Bayesian Linear Model')
 plt.plot(x, y2, '-r', label='Uninformed Bayesian Linear Model')
-plt.plot(x[0:-1:2], y3[0:-1:2], '*g', label='Ordinary Least Squared Linear Model')
+plt.plot(x[0:-1:2], y3[0:-1:2], '*g', label='Ordinary Least Squares Linear Model')
 plt.xlabel('Defense Spending')
 plt.ylabel('GDP Growth Rate')
 plt.legend(loc=0)

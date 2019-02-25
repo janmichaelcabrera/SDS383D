@@ -39,7 +39,7 @@ m_star_1 = informed.bayesian() # Calculate linear model intercept and slope usin
 #### Model responses
 x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
 y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
-y2 = b_0 + x * b_1 # Uninformed Bayesian Linear Model
+y2 = b_0 + x * b_1 # Heavy Tailed Error Model
 
 plt.figure()
 plt.plot(X[:,1], Y, '.k', label='GDP Growth Rate Vs. Defense Spending')

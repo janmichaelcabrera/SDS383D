@@ -9,8 +9,35 @@
 \usepackage{changepage}
 \usepackage{enumitem}
 \usepackage{amssymb}
-\usepackage{graphicx}%
+\usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\usepackage{courier}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=Python,
+        basicstyle=\footnotesize\ttfamily,
+        upquote=true,
+        aboveskip={1.0\baselineskip},
+        columns=fixed,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
 
 \newcommand{\by}{\mathbf{y}}
 
@@ -322,6 +349,82 @@
 
       \item Bayesian linear model fit to data in "gdpgrowth.csv"
 
+      Important libraries for the model are first imported.
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+from numpy.linalg import inv
+import pandas as pd
+import matplotlib.pyplot as plt
+import sys
+sys.path.append('../../scripts/')
+from linear_models import linear_model
+        \end{lstlisting}
+
+        The data is read into the program and variables are assigned accordingly.
+
+        \begin{lstlisting}
+data = pd.read_csv('../../data/gdpgrowth.csv', delimiter=',') # Import data
+
+Y = data['GR6096'] # Y
+X = data['DEF60'] # X without intercept feature 
+        \end{lstlisting}
+
+        The feature matrix is prepended with a column of ones for later determining the intercept. The precision matrix is also constructed and weighted.
+
+        \begin{lstlisting}
+intercept = np.ones(len(X)) # create intercept feature column
+X = np.transpose(np.array((intercept, X))) # build matrix from intercept and X features
+
+k = np.ones(X.shape[1])*0.1
+K = np.diag(k) # K, precision matrix for multivariate normal prior on beta
+        \end{lstlisting}
+
+        The feature matrix, response vector, and prior precision matrix are passed to an informed Bayesian Linear Model which calculates the posterior mean.
+
+        \begin{lstlisting}
+#### Informed Bayesian Model
+informed = linear_model(X, Y, K) # Pass feature matrix, response vector, and precision matrix to create linear model object
+m_star_1 = informed.bayesian() # Calculate linear model intercept and slope using the bayesian method
+        \end{lstlisting}
+
+        The feature matrix and response vector are also passed to an uninformed Bayesian Linear Model (precisions of $O (10^{-4})$) and to a least squares method.
+
+        \begin{lstlisting}
+#### Uninformed Bayesian Model
+uninformed = linear_model(X, Y) # Pass feature matrix and response vector to create linear_model object
+m_star_2 = uninformed.bayesian() # Calculate linear model intercept and slope using the bayesian method
+b0, b1 = uninformed.frequentist() # Calculate linear model intercept and slope using an ordinary least squares method
+        \end{lstlisting}
+
+        Model responses are calculated from the model outputs and plotted.
+
+        \begin{lstlisting}
+x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
+
+#### Model responses
+y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
+y2 = m_star_2[0] + x * m_star_2[1] # Uninformed Bayesian Linear Model
+y3 = b0 + x * b1 # Ordinary Least Squared Linear Model
+
+#### Plot models
+plt.figure()
+plt.plot(X[:,1], Y, '.k', label='GDP Growth Rate Vs. Defense Spending')
+plt.plot(x, y1, '-b', label='Informed Bayesian Linear Model')
+plt.plot(x, y2, '-r', label='Uninformed Bayesian Linear Model')
+plt.plot(x[0:-1:2], y3[0:-1:2], '*g', label='Ordinary Least Squares Linear Model')
+plt.xlabel('Defense Spending')
+plt.ylabel('GDP Growth Rate')
+plt.legend(loc=0)
+plt.savefig('figures/bayesian_linear_model.pdf')
+        \end{lstlisting}
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/bayesian_linear_model}
+          \caption{\label{fig:bayesian_linear_model}Linear models for GDP Growth Rate vs Defense Spending}
+        \end{figure}
 
 
     \end{enumerate}
@@ -367,12 +470,346 @@
 
     \item Code up a Gibbs sampler that repeatedly cycles through sampling the following three sets of conditional distributions.
 
-    \begin{itemize}
-      \item $p(\beta | \by, \omega, \Lambda)$
-      \item $p(\omega | \by, \Lambda)$
-      \item $p(\lambda_i | \by, \beta, \omega)$
-    \end{itemize}
+      \begin{itemize}
+        \item $p(\beta | \by, \omega, \Lambda)$
+        \item $p(\omega | \by, \Lambda)$
+        \item $p(\lambda_i | \by, \beta, \omega)$
+      \end{itemize}
+
+      Imports necessary libraries for running models.
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+from numpy.linalg import inv
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+import sys
+sys.path.append('../../scripts/')
+from linear_models import linear_model
+from samplers import Gibbs, Trace
+        \end{lstlisting}
+
+      Read data and assign to necessary vectors as well as prepend the feature matrix with a column of ones. 
+
+        \begin{lstlisting}
+data = pd.read_csv('../../data/gdpgrowth.csv', delimiter=',')
+
+Y = data['GR6096'] # X without intercept feature
+X = data['DEF60'] # Y 
+
+intercept = np.ones(len(Y)) # create intercept feature column
+X = np.transpose(np.array((intercept, X))) # build matrix from intercept and X features
+        \end{lstlisting}
+
+        Pass feature matrix and response vector to Gibbs sampler and sample 5000 times. Runs the model, plots the omega trace and beta traces and returns the means from the beta trace.
+
+        \begin{lstlisting}
+#### Heavy Tailed Error Model
+model = Gibbs(X, Y, samples=5000) # instantiate the model from the Gibbs class
+
+beta_trace, omega_trace, Lambda_trace = model.heavy_tailed() # run the heavy tailed error model
+
+omega_trace.plot('figures/') # plots omega trace
+beta_trace.plot('figures/') # plots beta traces
+
+b_0, b_1 = beta_trace.mean() # returns the means from each beta trace
+        \end{lstlisting}
+
+        Runs the linear model from the previous section for comparison to the Heavy Tailed Error Model. 
+
+        \begin{lstlisting}
+#### Informed Bayesian Model
+k = np.ones(X.shape[1])*0.1
+K = np.diag(k) # K, precision matrix for multivariate normal prior on beta
+
+informed = linear_model(X, Y, K) # Pass feature matrix, response vector, and precision matrix to create linear model object
+m_star_1 = informed.bayesian() # Calculate linear model intercept and slope using the bayesian method
+        \end{lstlisting}
+
+        Plots model responses for comparison.
+
+        \begin{lstlisting}
+#### Model responses
+x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
+y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
+y2 = b_0 + x * b_1 # Heavy Tailed Error Model
+
+plt.figure()
+plt.plot(X[:,1], Y, '.k', label='GDP Growth Rate Vs. Defense Spending')
+plt.plot(x, y1, '-b', label='Informed Bayesian Linear Model')
+plt.plot(x, y2, '-r', label='Heavy Tailed Error Model')
+plt.xlabel('Defense Spending')
+plt.ylabel('GDP Growth Rate')
+plt.legend(loc=0)
+plt.savefig('figures/heavy_tailed.pdf')
+        \end{lstlisting}
+
+      \begin{figure}[ht] 
+        \centering 
+        \includegraphics[width=0.5\columnwidth]{figures/heavy_tailed}
+        \caption{\label{fig:heavy_tailed}Linear models for GDP Growth Rate vs Defense Spending}
+      \end{figure}
 
     \end{enumerate}
+
+  \clearpage
+  \appendix
+  \section{Bayesian Linear Model}
+
+    \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+from numpy.linalg import inv
+
+class linear_model:
+    """
+    This class fits linear models using bayesian and frequentist methods to data sets
+    """
+    def __init__(self, X, Y, K=[]):
+        """
+        Parameters
+        ----------
+            X:  float
+                feature matrix
+
+            Y:  float
+                response vector
+
+            K:  float, optional
+                precision matrix for multivariate normal prior on beta
+                if not specified, sets a low precision, approximating the frequentist fit
+        
+        Raises
+        ------
+            ValueError
+                If precision matrix shape does not match shape of feature matrix
+
+        """
+        self.X = X
+        self.Y = Y
+        self.K = np.array(K)
+
+        if self.K.shape[0]==0:
+            k = np.ones(self.X.shape[1])*0.0001
+            self.K = np.diag(k)
+        else:
+            if self.K.shape[0] != self.X.shape[1]:
+                raise ValueError('Precision matrix shape, %i does not match feature matrix shape, %i'%(self.K.shape[0], self.X.shape[1]))
+
+    def bayesian(self):
+        """
+        Returns
+        -------
+            m_star: float
+                Represents the slope and intercept coefficients to a linear model
+                .. math:: m^* = (K + X^T \\Lambda X)^{-1} (K m + X^T \\Lambda Y)
+                .. math:: y = m^*[0] + x m^*[1]
+        """
+        m = np.zeros(self.X.shape[1])
+
+        Lambda = np.eye(len(self.X))
+
+        m_star = inv(self.K + np.transpose(self.X) @ Lambda @ self.X) @ (self.K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
+
+        return m_star
+
+    def frequentist(self):
+        """
+        Returns
+        -------
+            b_0: float
+                intercept to an ordinary least squares linear model
+
+            b_1: float
+                slope to an ordinary least squares linear model
+
+            .. math:: y = b_0 + x b_1
+
+        [1] Adapted from https://www.geeksforgeeks.org/linear-regression-python-implementation/ 
+
+        """
+
+        n = np.size(self.X[:,1]) 
+      
+        m_x, m_y = np.mean(self.X[:,1]), np.mean(self.Y) 
+      
+        SS_xy = np.sum(self.Y*self.X[:,1]) - n*m_y*m_x 
+        SS_xx = np.sum(self.X[:,1]*self.X[:,1]) - n*m_x*m_x 
+      
+        b_1 = SS_xy / SS_xx 
+        b_0 = m_y - b_1*m_x 
+      
+        return b_0, b_1
+    \end{lstlisting}
+
+  \section{Heavy Tailed Error Model}
+
+    \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+from numpy.linalg import inv
+
+class Trace:
+  """
+    This class instantiates traces
+    """
+    def __init__(self, name, iterations, shape=1):
+        """
+        Parameters
+        ----------
+            name: str
+                name of the trace for file i/o purposes
+
+            iterations: int
+                number of iterations to be ran for a given trace
+
+            shape: int
+                sets size of trace, default=1
+
+        """
+        self.name = name
+        self.trace = np.zeros((iterations, shape))
+
+    def plot(self, figures_directory=''):
+        """
+        Parameters
+        ----------
+            figures_directory: str
+                sets the directory for which figures are to be saved in
+                default behavior is to show the figure rather than saving
+
+        """
+        if len(figures_directory) == 0:
+            plt.show()
+        else:
+            for i in range(self.trace.shape[1]):
+                plt.figure()
+                plt.plot(self.trace[:,i], '-b', label=self.name+'_'+str(i))
+                plt.savefig(figures_directory+self.name+'_'+str(i)+'_trace.png')
+
+    def update_trace(self, index, value):
+        """
+        Parameters
+        ----------
+            index: int
+                point in trace to update
+            value: float
+                the value passed to trace at index
+
+        """
+        self.trace[index] = value
+
+    def mean(self):
+        """
+        Returns
+        ----------
+            mean: float
+                calculates the mean for each column in a given trace
+
+        """
+        mean = np.zeros(self.trace.shape[1])
+        for i in range(len(mean)):
+            mean[i] = self.trace[:,i].mean()
+        return mean
+
+class Gibbs:
+    """
+  This class will use a Gibbs sampling methods to draw posterior distributions
+    """
+    def __init__(self, X, Y, samples=100):
+        """
+        Parameters
+        ----------
+            X:  float
+                feature matrix
+
+            Y:  float
+                response vector
+
+            samples: int
+                number of samples to be drawn from posteriors, default is 100 for debugging purposes
+
+        """
+        self.X = X
+        self.Y = Y
+        self.samples = samples
+
+    def heavy_tailed(self):
+        """
+        Returns
+        -------
+            beta_trace: float
+                samples from posterior of the form
+                .. math:: \\beta | \\bar{y} \\omega ~ N(m^*, (\\omega K^*)^{-1})
+
+            omega_trace: float
+                samples from the posterior of the form
+                .. math:: \\omega | \\bar{y} ~ Gamma(d^*/2, \\eta^*/2)
+
+            Lambda_trace: float
+                samples from the posterior of the form
+                .. math:: \\lambda_i | \\bar{y}, \\beta, \\omega ~ Gamma(\\frac{h+1}{2}, \\frac{h + \\omega(y_i + x_i^T \\beta)^2}{2})
+        """
+
+        #### Instantiate Traces
+        iterations = self.samples
+        beta_trace = Trace('beta', iterations = iterations, shape=self.X.shape[1])
+        omega_trace = Trace('omega', iterations = iterations)
+        Lambda_trace = Trace('Lambda', iterations=iterations, shape=len(self.Y))
+
+        #### Instantiate Prior values
+        d = 1
+        eta = 1
+
+        n = self.X.shape[0]
+
+        k = np.ones(self.X.shape[1])*0.1
+        K = np.diag(k)
+
+        h = 1
+        omega = 1
+
+        m = np.zeros(self.X.shape[1])
+
+        lambda_diag = np.ones(self.X.shape[0])
+        
+        #### Iteratively sample conditional distributions
+        for i in range(iterations):
+
+            Lambda = np.diag(lambda_diag)
+
+            # m^* = (K + X^T \Lambda X)^{-1}(K m + X^T \Lambda y)            
+            m_star = inv(K + np.transpose(self.X) @ Lambda @ self.X) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
+
+            # K^* = ( K+ X^T \Lambda X)
+            K_star = K + np.transpose(self.X) @ Lambda @ self.X
+
+            # d^* = d + n
+            d_star = d + n
+
+            # \eta^* = m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)
+            eta_star = np.transpose(m) @ K @ m + np.transpose(self.Y) @ Lambda @ self.Y + eta + np.transpose(K @ m + np.transpose(self.X) @ (Lambda @ self.Y)) @ inv(K_star) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
+
+            ### Sample posterior values
+            beta = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega* K_star))
+            omega = stats.gamma.rvs(d_star/2, (2/eta_star))
+            for j in range(len(lambda_diag)):
+                lambda_diag[j] = stats.gamma.rvs((h+1)/2, (2/(h+omega*(self.Y[j] - np.transpose(self.X[j])@beta)**2)))
+
+            ### Update traces with posterior values
+            beta_trace.update_trace(i, beta)
+            omega_trace.update_trace(i, omega)
+            Lambda_trace.update_trace(i, lambda_diag)
+
+        return beta_trace, omega_trace, Lambda_trace
+    \end{lstlisting}
 
 \end{document}
