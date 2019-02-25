@@ -27,7 +27,6 @@ beta_trace.plot('figures/') # plots beta traces
 
 b_0, b_1 = beta_trace.mean() # returns the means from each beta trace
 
-
 #### Informed Bayesian Model
 k = np.ones(X.shape[1])*0.1
 K = np.diag(k) # K, precision matrix for multivariate normal prior on beta

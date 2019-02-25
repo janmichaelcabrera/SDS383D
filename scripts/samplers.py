@@ -6,21 +6,21 @@ import scipy.stats as stats
 from numpy.linalg import inv
 
 class Trace:
-	"""
+    """
     This class instantiates traces
     """
     def __init__(self, name, iterations, shape=1):
         """
         Parameters
         ----------
-            name: str
-                name of the trace for file i/o purposes
+        name: str
+            name of the trace for file i/o purposes
 
-            iterations: int
-                number of iterations to be ran for a given trace
+        iterations: int
+            number of iterations to be ran for a given trace
 
-            shape: int
-                sets size of trace, default=1
+        shape: int
+            sets size of trace, default=1
 
         """
         self.name = name
@@ -144,7 +144,7 @@ class Gibbs:
             d_star = d + n
 
             # \eta^* = m^T K m + y^T \Lambda y + \eta - (K m + X^T \Lambda y)^T  {K^*}^{-1} (K m + X^T \Lambda y)
-            eta_star = np.transpose(m) @ K @ m + np.transpose(self.Y) @ Lambda @ self.Y + eta + np.transpose(K @ m + np.transpose(self.X) @ (Lambda @ self.Y)) @ inv(K_star) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
+            eta_star = np.transpose(m) @ K @ m + np.transpose(self.Y) @ Lambda @ self.Y + eta - np.transpose(K @ m + np.transpose(self.X) @ (Lambda @ self.Y)) @ inv(K_star) @ (K @ m + np.transpose(self.X) @ (Lambda @ self.Y))
 
             ### Sample posterior values
             beta = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega* K_star))

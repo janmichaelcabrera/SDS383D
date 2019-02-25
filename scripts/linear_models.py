@@ -61,27 +61,15 @@ class linear_model:
         """
         Returns
         -------
-            b_0: float
-                intercept to an ordinary least squares linear model
-
-            b_1: float
-                slope to an ordinary least squares linear model
-
-            .. math:: y = b_0 + x b_1
-
-        [1] Adapted from https://www.geeksforgeeks.org/linear-regression-python-implementation/ 
+            beta_hat: float
+                Represents the slope and intercept coefficients to a linear model
+                .. math:: y = beta_hat[0] + x beta_hat[1]
 
         """
 
-        n = np.size(self.X[:,1]) 
+        Lambda = np.eye(len(self.X))
+
+        beta_hat = inv(np.transpose(self.X) @ Lambda @ self.X) @ np.transpose(self.X) @ (Lambda @ self.Y)
       
-        m_x, m_y = np.mean(self.X[:,1]), np.mean(self.Y) 
-      
-        SS_xy = np.sum(self.Y*self.X[:,1]) - n*m_y*m_x 
-        SS_xx = np.sum(self.X[:,1]*self.X[:,1]) - n*m_x*m_x 
-      
-        b_1 = SS_xy / SS_xx 
-        b_0 = m_y - b_1*m_x 
-      
-        return b_0, b_1
+        return beta_hat
 

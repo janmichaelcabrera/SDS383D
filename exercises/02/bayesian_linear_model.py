@@ -26,14 +26,14 @@ m_star_1 = informed.bayesian() # Calculate linear model intercept and slope usin
 #### Uninformed Bayesian Model
 uninformed = linear_model(X, Y) # Pass feature matrix and response vector to create linear_model object
 m_star_2 = uninformed.bayesian() # Calculate linear model intercept and slope using the bayesian method
-b0, b1 = uninformed.frequentist() # Calculate linear model intercept and slope using an ordinary least squared method
+beta_hat = uninformed.frequentist() # Calculate linear model intercept and slope using an ordinary least squared method
 
 x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
 
 #### Model responses
 y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
 y2 = m_star_2[0] + x * m_star_2[1] # Uninformed Bayesian Linear Model
-y3 = b0 + x * b1 # Ordinary Least Squares Linear Model
+y3 = beta_hat[0] + x * beta_hat[1] # Ordinary Least Squares Linear Model
 
 #### Plot models
 plt.figure()
