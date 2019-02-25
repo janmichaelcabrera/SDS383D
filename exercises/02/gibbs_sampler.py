@@ -15,7 +15,7 @@ X = np.transpose(np.array((intercept, X))) # build matrix from intercept and X f
 
 
 
-def gibbs_sampler(X, Y, iterations=10):
+def gibbs_sampler(X, Y, iterations=5000):
 	beta_trace = np.zeros((iterations, 2))
 	omega_trace = np.ones(iterations)
 	Lambda_trace = np.zeros((iterations, len(Y)))
@@ -29,17 +29,34 @@ def gibbs_sampler(X, Y, iterations=10):
 
 	m = np.zeros(2)
 
+	for i in range(iterations):
 	
-	lambda_diag = np.ones(len(X))
-	Lambda = np.diag(lambda_diag)
+		lambda_diag = np.ones(len(X))
+		Lambda = np.diag(lambda_diag)
 
-	m_star = inv(K + np.transpose(X) @ Lambda @ X) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
-	K_star = K + np.transpose(X) @ Lambda @ X
-	d_star = d + n
-	eta_star = np.transpose(m) @ K @ m + np.transpose(Y) @ Lambda @ Y + eta + np.transpose(K @ m + np.transpose(X) @ (Lambda @ Y)) @ inv(K_star) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
+		m_star = inv(K + np.transpose(X) @ Lambda @ X) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
+		K_star = K + np.transpose(X) @ Lambda @ X
+		d_star = d + n
+		eta_star = np.transpose(m) @ K @ m + np.transpose(Y) @ Lambda @ Y + eta + np.transpose(K @ m + np.transpose(X) @ (Lambda @ Y)) @ inv(K_star) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
 
-	beta_trace[0] = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega_trace[0]* K_star))
-	omega_trace[0] = stats.gamma.rvs(d_star/2, (2/eta_star))
-	Lambda_trace[0] = stats.gamma.rvs((h+1)/2, (2/(h+omega_trace[0]*(Y - np.transpose(X)@beta_trace[0])**2)))
+		beta_trace[i] = stats.multivariate_normal.rvs(mean = m_star, cov=inv(omega_trace[i]* K_star))
+		omega_trace[i] = stats.gamma.rvs(d_star/2, (2/eta_star))
 
-gibbs_sampler(X, Y)
+		for j in range(len(lambda_diag)):
+			lambda_diag[j] = stats.gamma.rvs((h+1)/2, (2/(h+omega_trace[i]*(Y[j] - np.transpose(X[j])@beta_trace[i])**2)))
+
+		Lambda_trace[i] = lambda_diag
+
+	return beta_trace, omega_trace, Lambda_trace
+
+b, o, L, = gibbs_sampler(X, Y)
+
+print(b[:,0].mean(), b[:,1].mean())
+
+# plt.figure()
+# plt.plot(b[:,0])
+# plt.show()
+
+# plt.figure()
+# plt.plot(b[:,1])
+# plt.show()
