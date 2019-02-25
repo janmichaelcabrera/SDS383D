@@ -3,29 +3,46 @@ import numpy as np
 from numpy.linalg import inv
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+sys.path.append('../../scripts/')
+from linear_models import linear_model
 
-data = pd.read_csv('../../data/gdpgrowth.csv', delimiter=',')
+data = pd.read_csv('../../data/gdpgrowth.csv', delimiter=',') # Import data
 
-Y = data['GR6096'] # X without intercept feature
-X = data['DEF60'] # Y 
+Y = data['GR6096'] # Y
+X = data['DEF60'] # X without intercept feature 
 
-intercept = np.ones(len(Y)) # create intercept feature column
+intercept = np.ones(len(X)) # create intercept feature column
 X = np.transpose(np.array((intercept, X))) # build matrix from intercept and X features
 
-k = np.ones(2)*0.1
-K = np.diag(k) # K
+k = np.ones(X.shape[1])*0.1
+K = np.diag(k) # K, precision matrix for multivariate normal prior on beta
 
-m = np.zeros(2)
+#### Informed Bayesian Model
+informed = linear_model(X, Y, K) # Pass feature matrix, response vector, and precision matrix to create linear model object
+m_star_1 = informed.bayesian() # Calculate linear model intercept and slope using the bayesian method
 
-Lambda = np.eye(len(X))
 
-m_star = inv(K + np.transpose(X) @ Lambda @ X) @ (K @ m + np.transpose(X) @ (Lambda @ Y))
+#### Uninformed Bayesian Model
+uninformed = linear_model(X, Y) # Pass feature matrix and response vector to create linear_model object
+m_star_2 = uninformed.bayesian() # Calculate linear model intercept and slope using the bayesian method
+b0, b1 = uninformed.frequentist() # Calculate linear model intercept and slope using an ordinary least squared method
 
-x = np.linspace(X[:,1].min(), X[:,1].max())
+x = np.linspace(X[:,1].min(), X[:,1].max()) # vector for plotting purposes
 
-y = m_star[0] + x * m_star[1]
+#### Model responses
+y1 = m_star_1[0] + x * m_star_1[1] # Informed Bayesian Linear Model
+y2 = m_star_2[0] + x * m_star_2[1] # Uninformed Bayesian Linear Model
+y3 = b0 + x*b1 # Ordinary Least Squared Linear Model
 
+#### Plot models
 plt.figure()
-plt.plot(X[:,1], Y, '.')
-plt.plot(x, y)
-plt.show()
+plt.plot(X[:,1], Y, '.k', label='GDP Growth Rate Vs. Defense Spending')
+plt.plot(x, y1, '-b', label='Informed Bayesian Linear Model')
+plt.plot(x, y2, '-r', label='Uninformed Bayesian Linear Model')
+plt.plot(x[0:-1:2], y3[0:-1:2], '*g', label='Ordinary Least Squared Linear Model')
+plt.xlabel('Defense Spending')
+plt.ylabel('GDP Growth Rate')
+plt.legend(loc=0)
+# plt.show()
+plt.savefig('bayesian_linear_model.pdf')
