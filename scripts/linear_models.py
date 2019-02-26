@@ -63,6 +63,7 @@ class linear_model:
         -------
             beta_hat: float
                 Represents the slope and intercept coefficients to a linear model
+                .. math:: \\hat{\\beta} = (X^T \\Lambda X)^{-1} X^T \\Lambda Y
                 .. math:: y = beta_hat[0] + x beta_hat[1]
 
         """
