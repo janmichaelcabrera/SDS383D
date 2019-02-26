@@ -25,11 +25,12 @@ for i in range(len(h)):
 # Plots data 
 plt.figure()
 plt.plot(x, y, '.k', label='Noisy response')
-
+plt.plot(x, np.sin(x), '--k', label='True function')
 # Iterates over the smoother objects and plots functions for the uniform and gaussian kernels
 for i in range(len(h)):
-    plt.plot(x_star, H[i].predictor(), label='Uniform Kernel, h='+str(h[i]))
+    plt.plot(x_star, H[i].predictor(kernel='uniform'), label='Uniform Kernel, h='+str(h[i]))
     plt.plot(x_star, H[i].predictor(kernel='gaussian'), label='Gaussian Kernel, h='+str(h[i]))
 plt.legend(loc=0)
+# plt.show()
 plt.savefig('figures/kernel_smoother.pdf')
 plt.close()

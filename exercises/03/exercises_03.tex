@@ -39,8 +39,6 @@
         stringstyle=\color[rgb]{0.627,0.126,0.941},
 }
 
-\newcommand{\by}{\mathbf{y}}
-
 
 \begin{document}
 
@@ -52,7 +50,201 @@
     \section*{Curve fitting by linear smoothing}
 
     \begin{enumerate}[label=(\Alph*)]
-      \item \textit{K-nearest-neighbor smoothing}
+      \item Linear smoothing
+
+        $y_i = \beta x_i + \epsilon_i$
+
+        $$\hat{y}^* = \hat{f}(x^*) = \hat{\beta} x^*$$
+
+        $$\hat{f}(x^*) = \sum_{i=1}^n w(x_i, x^*) y_i$$
+
+        $$\hat{\beta} = (X^T X)^{-1} X^T Y$$
+
+        \begin{align*}
+            \hat{y}^* &= x^* (X^T X)^{-1} X^T Y \\
+            &= \frac{X^T Y}{X^T X} \\
+            &= \frac{\sum_{i=1}^n x_i x^* y_i}{\sum_{i=1}^n x_i^2}
+        \end{align*}
+
+        $$w(x_i, x^*) = \frac{\sum_{i=1}^n x_i x^*}{\sum_{i=1}^n x_i^2}$$
+
+        $$
+        w_K(x_i, x^*) = \left \{
+        \begin{array}{l l}
+        1/K, & \mbox{$x_i$ one of the $K$ closest sample points to $x^*$} \, ,\\
+        0, & \mbox{otherwise.} \\
+        \end{array}
+        \right.
+        $$
+
+      \item Kernel Smoothing
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+import sys
+sys.path.append('../../scripts/')
+from smoothers import kernel_smoother
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Create noisy data, y_i = sin(x_i) + e_i
+x = np.linspace(0, 2*np.pi, num = 20)
+y = np.sin(x) + np.random.normal(scale=0.2, size=x.shape)
+
+# Create vector for fitting purposes
+x_star = np.linspace(0, 2*np.pi)
+
+# Instantiate array of bandwidths
+h = np.array([0.25, 1.0])
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Instantiate a list to append kernel_smoother objects
+H = []
+
+# Iterates through array of bandwidths and passes the feature vector, response vector, and bandwidth to kernel_smoother object
+for i in range(len(h)):
+    H.append(kernel_smoother(x, y, x_star, h=h[i]))
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Plots data 
+plt.figure()
+plt.plot(x, y, '.k', label='Noisy response')
+plt.plot(x, np.sin(x), '--k', label='True function')
+# Iterates over the smoother objects and plots functions for the uniform and gaussian kernels
+for i in range(len(h)):
+    plt.plot(x_star, H[i].predictor(kernel='uniform'), label='Uniform Kernel, h='+str(h[i]))
+    plt.plot(x_star, H[i].predictor(kernel='gaussian'), label='Gaussian Kernel, h='+str(h[i]))
+plt.legend(loc=0)
+# plt.show()
+plt.savefig('figures/kernel_smoother.pdf')
+plt.close()
+        \end{lstlisting}
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/kernel_smoother}
+          \caption{\label{fig:kernel_smoother}Uniform and Gaussian Kernel smoothing for different bandwidths}
+        \end{figure}
+
     \end{enumerate}
+
+    \clearpage
+    \appendix
+    \section{Kernel Smoothing Code}
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np
+
+class kernels:
+    """
+    This class contains kernel functions for kernel smoothing
+    """
+    def __init__(self):
+        pass
+
+    def uniform(x):
+        """
+        Parameters
+        ----------
+            x: float
+                argument to be evaluated
+
+        Returns
+        ----------
+            k: float
+                uniform kernel evaluation at x
+                .. math:: k(x) = 1/2 I(x), with I(x) = 1, if |x| \\leq 1, 0 otherwise
+        """
+        if np.abs(x) <= 1:
+            k = 0.5
+        else:
+            k = 0
+        return k
+
+    def gaussian(x):
+        """
+        Parameters
+        ----------
+            x: float
+                argument to be evaluated
+
+        Returns
+        ----------
+            k: float
+                gaussian kernel evaluation at x
+                .. math:: k(x) = \\frac{1}{\\sqrt{2 \\pi}} e^{-x^2/2}
+        """
+        return 1/np.sqrt(2*np.pi)*np.exp(-x**2/2)
+
+class kernel_smoother:
+    """
+    This class returns a vector of smoothed values given feature and response vectors
+    """
+    def __init__(self, x, y, x_star, h=0.5):
+        """
+        Parameters
+        ----------
+            x: float
+                Feature vector
+
+            y: float
+                Response vector
+
+            x_star: float
+                Scalar or vector to be evaluated
+
+            h: float (optional)
+                Bandwidth
+        """
+        self.x = x
+        self.y = y
+        self.x_star = x_star
+        self.h = h
+
+    def predictor(self, kernel='gaussian'):
+        """
+        Parameters
+        ----------
+            kernel: str (optional)
+                Kernel type to be used: Available kernels are uniform, gaussian, 
+
+        Returns
+        ----------
+            y_star: float, len(x_star)
+                Predictor for x_star
+                .. math:: y_i^* = \\sum_{i=1}^n w(x_i, x^*) y_i
+                .. math:: w(x_i, x^*) = \\frac{1}{2}K( \\frac{x_i - x^*}{h}), \\sum_{i=1}^n w(x_i, x^*) = 1
+        """
+        # Instantiate y_star
+        y_star = np.zeros(self.x_star.shape)
+
+        # Iterate through each value in y_star
+        for i in range(y_star.shape[0]):
+            
+            # Instantiate a weights vector
+            weights = np.zeros(self.x.shape)
+            
+            # Iterates through feature/response vectors
+            for j in range(self.x.shape[0]):
+
+                # X = \frac{(x_i - x^*)}{h}
+                X = (self.x[j] - self.x_star[i])/self.h
+
+                # w(x_i, x^*) = \frac{1}{h}K(X)
+                weights[j] = 1/self.h*getattr(kernels, kernel)(X)
+
+            # Normalizes weights such that \sum_{i=1}^n w(x_i, x^*) = 1    
+            weights = weights/weights.sum()
+
+            # y_i^* = \sum_{i=1}^n w(x_i, x^*) y_i
+            y_star[i] = (weights*self.y).sum()
+
+        return y_star
+        \end{lstlisting}
 
 \end{document}

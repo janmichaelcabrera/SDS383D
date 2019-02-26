@@ -46,7 +46,7 @@ class kernel_smoother:
     """
     This class returns a vector of smoothed values given feature and response vectors
     """
-    def __init__(self, x, y, x_star, h=1):
+    def __init__(self, x, y, x_star, h=0.5):
         """
         Parameters
         ----------
@@ -67,11 +67,11 @@ class kernel_smoother:
         self.x_star = x_star
         self.h = h
 
-    def predictor(self, kernel='uniform'):
+    def predictor(self, kernel='gaussian'):
         """
         Parameters
         ----------
-            kernel: str
+            kernel: str (optional)
                 Kernel type to be used: Available kernels are uniform, gaussian, 
 
         Returns
