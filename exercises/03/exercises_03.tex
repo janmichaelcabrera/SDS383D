@@ -51,14 +51,17 @@
 
     \begin{enumerate}[label=(\Alph*)]
       \item Linear smoothing
+        Suppose we want to estimate the value of the regression function $y^*$ at some new point $x^*$, denoted $\hat{f}(x^*)$. Assume for the moment that $f(x)$ is linear, and that $y$ and $x$ have already had their means subtracted, in which case $y_i = \beta x_i + \epsilon_i$.
 
-        $y_i = \beta x_i + \epsilon_i$
-
-        $$\hat{y}^* = \hat{f}(x^*) = \hat{\beta} x^*$$
+        Show that for the one-predictor case, your prediction $\hat{y}^* = \hat{f}(x^*) = \hat{\beta} x^*$ may be expressed as:
 
         $$\hat{f}(x^*) = \sum_{i=1}^n w(x_i, x^*) y_i$$
 
-        $$\hat{\beta} = (X^T X)^{-1} X^T Y$$
+        We can express $\hat{\beta}$ in matrix notation as,
+
+        $$\hat{\beta} = (X^T X)^{-1} X^T Y.$$
+
+        Plugging this in to find our predictor, $\hat{y}^*$ we get,
 
         \begin{align*}
             \hat{y}^* &= x^* (X^T X)^{-1} X^T Y \\
@@ -66,7 +69,11 @@
             &= \frac{\sum_{i=1}^n x_i x^* y_i}{\sum_{i=1}^n x_i^2}
         \end{align*}
 
-        $$w(x_i, x^*) = \frac{\sum_{i=1}^n x_i x^*}{\sum_{i=1}^n x_i^2}$$
+        The result is of the form $\hat{f}(x^*) = \sum_{i=1}^n w(x_i, x^*) y_i$ with the weights expressed as,
+
+        $$w(x_i, x^*) = \frac{\sum_{i=1}^n x_i x^*}{\sum_{i=1}^n x_i^2}.$$
+
+        This resultant \textit{smoother} has constant weights and produces predictions that lie on the line with slope $\hat{\beta}$. If the data is binned, this estimate is similar to a running line average.
 
         $$
         w_K(x_i, x^*) = \left \{
@@ -77,7 +84,32 @@
         \right.
         $$
 
-      \item Kernel Smoothing
+        With \textit{K-nearest-neighbor smoothing} $\hat{y}^*$ is essentially the arithmetic mean of the $K$ $y_i$'s nearest $x^*$. 
+
+      \item A \textit{kernel function} $K(x)$ is a smooth function satisyfing
+        $$
+        \int_\mathbb{R} K(x) dx = 1 \; , \quad \int_\mathbb{R} x K(x) dx = 0 \; , \quad \int_\mathbb{R} x^2 K(x) dx > 0 \, .
+        $$
+        A very simple example is the uniform kernel,
+        $$
+        K(x) = \frac{1}{2} I(x) \quad \mbox{where} \quad I(x) = 
+        \left\{
+        \begin{array}{l l}
+        1, & |x| \leq 1 \\
+        0, & \mbox{otherwise} \, . \\
+        \end{array}
+        \right.
+        $$
+        Another common example is the Gaussian kernel:
+        $$
+        K(x) = \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} \, .
+        $$
+
+        Kernels are used as weighting functions for taking local averages.  Specifically, define the weighting function
+        $$
+        w(x_i, x^{\star}) = \frac{1}{h} K \left( \frac{x_i - x^{\star}}{h} \right)  \, ,
+        $$
+        where $h$ is the bandwidth.    Using this weighting function in a linear smoother is called \textit{kernel regression}.  (The weighting function gives the unnormalized weights; you should normalize the weights so that they sum to 1.)
 
         \begin{lstlisting}
 from __future__ import division
