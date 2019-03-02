@@ -10,8 +10,26 @@ from smoothers import kernel_smoother
 def func(x, period = 1):
 	return np.sin(x*2*np.pi*period)
 
+np.random.seed(3)
 
+# w = wiggly
+# s = smooth
+# h = high noise
+# l = low noise
 
+x = np.linspace(0, 1, num=50)
+y_wh = func(x, period=3) + np.random.normal(scale=0.25, size=x.shape)
+y_sh = func(x, period=0.5) + np.random.normal(scale=0.25, size=x.shape)
+y_wl = func(x, period=3) + np.random.normal(scale=0.05, size=x.shape)
+y_sl = func(x, period=0.5) + np.random.normal(scale=0.05, size=x.shape)
+
+Y = [y_wh, y_sh, y_wl, y_sl]
+
+plt.figure()
+for i in range(len(Y)):
+	plt.plot(x, Y[i])
+plt.show()
+plt.close()
 # np.random.seed(3)
 # x = np.linspace(0, 1, num=20)
 # y_training = func(x) + np.random.normal(scale=0.2, size=x.shape)
