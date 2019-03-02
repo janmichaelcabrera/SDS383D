@@ -71,9 +71,9 @@
 
         The result is of the form $\hat{f}(x^*) = \sum_{i=1}^n w(x_i, x^*) y_i$ with the weights expressed as,
 
-        $$w(x_i, x^*) = \frac{\sum_{i=1}^n x_i x^*}{\sum_{i=1}^n x_i^2}.$$
+        $$w(x_i, x^*) = \frac{x_i x^*}{\sum_{i=1}^n x_i^2}.$$
 
-        This resultant \textit{smoother} has constant weights and produces predictions that lie on the line with slope $\hat{\beta}$. If the data is binned, this estimate is similar to a running line average.
+        This resultant \textit{smoother} has constant weights and produces predictions that lie on the line with slope $\hat{\beta}$. If the data is binned and locality preserved, this estimate is similar to a running line average.
 
         $$
         w_K(x_i, x^*) = \left \{
@@ -107,7 +107,7 @@
 
         Kernels are used as weighting functions for taking local averages.  Specifically, define the weighting function
         $$
-        w(x_i, x^{\star}) = \frac{1}{h} K \left( \frac{x_i - x^{\star}}{h} \right)  \, ,
+        w(x_i, x^{\star}) = \frac{1}{h} K \left( \frac{x_j - x^{\star}}{h} \right)  \, ,
         $$
         where $h$ is the bandwidth.    Using this weighting function in a linear smoother is called \textit{kernel regression}.  (The weighting function gives the unnormalized weights; you should normalize the weights so that they sum to 1.)
 
@@ -158,7 +158,7 @@ plt.close()
 
         \begin{figure}[ht] 
           \centering 
-          \includegraphics[width=0.5\columnwidth]{figures/kernel_smoother}
+          \includegraphics[width=0.5\columnwidth]{figures/kernel_smoother.pdf}
           \caption{\label{fig:kernel_smoother}Uniform and Gaussian Kernel smoothing for different bandwidths}
         \end{figure}
 
