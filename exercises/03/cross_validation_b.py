@@ -12,40 +12,33 @@ def func(x, period = 1):
 
 np.random.seed(3)
 
-# w = wiggly
-# s = smooth
-# h = high noise
-# l = low noise
-
 x = np.linspace(0, 1, num=50)
-y_wh = func(x, period=3) + np.random.normal(scale=0.25, size=x.shape)
-y_sh = func(x, period=0.5) + np.random.normal(scale=0.25, size=x.shape)
-y_wl = func(x, period=3) + np.random.normal(scale=0.05, size=x.shape)
-y_sl = func(x, period=0.5) + np.random.normal(scale=0.05, size=x.shape)
 
-Y = [y_wh, y_sh, y_wl, y_sl]
+noise = np.array([0.05, 0.25])
+period = np.array([3, 0.5])
 
-plt.figure()
-for i in range(len(Y)):
-	plt.plot(x, Y[i])
-plt.show()
-plt.close()
-# np.random.seed(3)
-# x = np.linspace(0, 1, num=20)
-# y_training = func(x) + np.random.normal(scale=0.2, size=x.shape)
-# y_test = func(x) + np.random.normal(scale=0.2, size=x.shape)
+Y_training = []
+Y_test = []
+T = []
 
-# y_smooth = kernel_smoother(x, y_training, x)
-# y_smooth.predictor()
-# y_smooth.optimize_h(y_test)
-# y_smooth.predictor()
-# y_pred = y_smooth.y_star
+for n in range(len(noise)):
+	for p in range(len(period)):
+		Y_training.append(func(x, period=period[p]) + np.random.normal(scale=noise[n], size=x.shape))
+		Y_test.append(func(x, period=period[p]) + np.random.normal(scale=noise[n], size=x.shape))
+		T.append(func(x, period=period[p]))
 
-# print(y_smooth.h)
+for i in range(len(Y_training)):
 
-# plt.figure()
-# plt.plot(x, func(x), '--k')
-# plt.plot(x, y_training, '.r')
-# plt.plot(x, y_test, '.k')
-# plt.plot(x, y_pred)
-# plt.show()
+	y_smooth = kernel_smoother(x, Y_training[i], x)
+	y_smooth.predictor()
+	y_smooth.optimize_h(Y_test[i])
+	y_smooth.predictor()
+	y_pred = y_smooth.y_star
+
+	plt.figure()
+	plt.plot(x, Y_training[i], '.k')
+	plt.plot(x, Y_test[i], '.r')
+	plt.plot(x, T[i], '--k')
+	plt.plot(x, y_pred)
+	plt.show()
+	plt.close()
