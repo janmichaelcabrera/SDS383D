@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+from scipy.optimize import minimize
 
 class kernels:
     """
@@ -58,7 +59,7 @@ class kernel_smoother:
 
             x_star: float
                 Scalar or vector to be evaluated
-
+                
             h: float (optional)
                 Bandwidth
         """
@@ -67,7 +68,7 @@ class kernel_smoother:
         self.x_star = x_star
         self.h = h
 
-    def predictor(self, kernel='gaussian'):
+    def predictor(self,kernel='gaussian'):
         """
         Parameters
         ----------
@@ -82,10 +83,10 @@ class kernel_smoother:
                 .. math:: w(x_i, x^*) = \\frac{1}{2}K( \\frac{x_i - x^*}{h}), \\sum_{i=1}^n w(x_i, x^*) = 1
         """
         # Instantiate y_star
-        y_star = np.zeros(self.x_star.shape)
+        self.y_star = np.zeros(self.x_star.shape)
 
         # Iterate through each value in y_star
-        for i in range(y_star.shape[0]):
+        for i in range(self.y_star.shape[0]):
             
             # Instantiate a weights vector
             weights = np.zeros(self.x.shape)
@@ -103,6 +104,18 @@ class kernel_smoother:
             weights = weights/weights.sum()
 
             # y_i^* = \sum_{i=1}^n w(x_i, x^*) y_i
-            y_star[i] = (weights*self.y).sum()
+            self.y_star[i] = (weights*self.y).sum()
 
-        return y_star
+    def MSE(self, y_test):
+        self.y_test = y_test
+        return np.mean((y_test - self.y_star)**2)
+
+    def optimize_h(self, y_test):
+        self.y_test = y_test
+        def func(x):
+            Y = kernel_smoother(self.x, self.y, self.x_star, h=x)
+            Y.predictor()
+            return Y.MSE(self.y_test)
+        h_star = minimize(func, self.h)
+        self.h = h_star.x
+        return h_star.x
