@@ -15,6 +15,7 @@
 \usepackage{color}
 \usepackage{textcomp}
 \usepackage{courier}
+\usepackage{subcaption}
 \definecolor{listinggray}{gray}{0.9}
 \definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
 \lstset{
@@ -164,6 +165,305 @@ plt.close()
 
     \end{enumerate}
 
+\clearpage
+    \section*{Cross validation}
+
+    \begin{enumerate}[label=(\Alph*)]
+        \item Presumably a good choice of $h$ would be one that led to smaller predictive errors on fresh data.  Write a function or script that will: (1) accept an old (``training'') data set and a new (``testing'') data set as inputs; (2) fit the kernel-regression estimator to the training data for specified choices of $h$; and (3) return the estimated functions and the realized prediction error on the testing data for each value of $h$.  This should involve a fairly straightforward ``wrapper'' of the function you've already written.
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import sys
+sys.path.append('../../scripts/')
+from smoothers import kernel_smoother
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Function for testing smoothers
+def func(x):
+    return np.sin(x)
+
+# Initialize random seed
+np.random.seed(3)
+
+# Initialize x-vector
+x = np.linspace(0, 2*np.pi, num=20)
+
+# Training data of the form, y_i = f(x_i) + \epsilon_i
+y_training = func(x) + np.random.normal(scale=0.2, size=x.shape)
+
+# Testing data of the form, y_i = f(x_i) + \epsilon_i
+y_test = func(x) + np.random.normal(scale=0.2, size=x.shape)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Initialize list for storing kernel_smoother objects
+H =[]
+
+# Array of differing bandwidths to evaluate
+h = np.array([0.2, 0.3, 0.4, 0.5, 0.6])
+
+# Initialize MSE vector
+mse = np.zeros(len(h))
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Iterates over bandwidth array and finds approximate MSE for each
+for i in range(len(h)):
+    H.append(kernel_smoother(x, y_training, x, h=h[i]))
+    H[i].predictor()
+    mse[i] = H[i].MSE(y_test)
+
+print(mse)
+        \end{lstlisting}
+
+        \verb|jancabrera@phoenix$ python cross_validation_a.py| \\
+        \verb|[0.07662882 0.0815833  0.0892882  0.10014996 0.11362704]|
+
+        \item Imagine a conceptual two-by-two table for the unknown, true state of affairs.  The rows of the table are ``wiggly function'' and ``smooth function,'' and the columns are ``highly noisy observations'' and ``not so noisy observations.''  Simulate one data set (say, 500 points) for each of the four cells of this table, where the $x$'s take values in the unit interval.  Then split each data set into training and testing subsets.  You choose the functions. Apply your method to each case, using the testing data to select a bandwidth parameter.  Choose the estimate that minimizes the average squared error in prediction, which estimates the mean-squared error:
+        $$
+        L_n(\hat{f}) = \frac{1}{n}\sum_{i=1}^{n^{\star}} (y^{\star}_i - \hat{y}_i^{\star} )^2 \, ,
+        $$
+        where $(y_i^{\star}, x_i^{\star})$ are the points in the test set, and $ \hat{y}_i^{\star}$ is your predicted value arising from the model you fit using only the training data.  Does your out-of-sample predictive validation method lead to reasonable choices of $h$ for each case?
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+import sys
+sys.path.append('../../scripts/')
+from smoothers import kernel_smoother
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Function for testing smoothers
+def func(x, period = 1):
+    return np.sin(x*2*np.pi*period)
+
+# Initialize random seed
+np.random.seed(3)
+
+# Initialize x-vector
+x = np.linspace(0, 1, num=100)
+
+# Noise level array, low and high
+noise = np.array([0.05, 0.25])
+noise_label = ['Low', 'High']
+
+# Period of function, high period (wiggly), low period (smooth)
+period = np.array([3, 0.5])
+period_label = ['Wiggly', 'Smooth']
+
+### Initialize lists for storing the different responses
+# Training responses
+Y_training = []
+# Testing responses
+Y_test = []
+# True response
+T = []
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Iterates over noise and period arrays to assign data to lists
+for n in range(len(noise)):
+    for p in range(len(period)):
+        Y_training.append(func(x, period=period[p]) + np.random.normal(scale=noise[n], size=x.shape))
+        Y_test.append(func(x, period=period[p]) + np.random.normal(scale=noise[n], size=x.shape))
+        T.append(func(x, period=period[p]))
+
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Generates plots 
+i = 0
+for n in range(len(noise)):
+    for p in range(len(period)):
+
+        # Instantiate kernel_smoother object
+        y_smooth = kernel_smoother(x, Y_training[i], x)
+        # Perform initial curve fit
+        y_smooth.predictor()
+
+        # Optimize bandwidth given the test data
+        y_smooth.optimize_h(Y_test[i])
+
+        # Perform curve fit with optimized bandwidth
+        y_smooth.predictor()
+
+        # Predicted values for opimized bandwidth
+        y_pred = y_smooth.y_star
+        h_star = y_smooth.h
+
+        plt.figure()
+        plt.title(noise_label[n]+' Noise, '+ period_label[p] + ': h={:.2f}'.format(h_star[0]))
+        plt.plot(x, Y_training[i], '.k', label='Training Data')
+        plt.plot(x, Y_test[i], '.r', label='Test Data')
+        plt.plot(x, T[i], '--k', label='True Response')
+        plt.plot(x, y_pred, '-b', label='Predicted Response')
+        plt.legend(loc=0)
+        # plt.show()
+        plt.savefig('figures/cross_validation_'+noise_label[n]+'_'+period_label[p]+'.pdf')
+        plt.close()
+        i += 1
+
+        \end{lstlisting}
+
+        \begin{figure}
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/cross_validation_High_Wiggly}
+            \end{subfigure}%
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/cross_validation_Low_Wiggly}
+            \end{subfigure}
+            \hspace{-20pt}
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/cross_validation_High_Smooth}
+            \end{subfigure}%
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/cross_validation_Low_Smooth}
+            \end{subfigure}
+
+        \caption{Bandwidths for various functions and noise levels}
+        \label{fig:cross_validation}
+        \end{figure}
+
+    \end{enumerate}
+
+    \section*{Local polynomial regression}
+
+    Kernel regression has a nice interpretation as a ``locally constant'' estimator, obtained from locally weighted least squares.  To see this, suppose we observe pairs $(x_i, y_i)$ for $i = 1, \ldots, n$ from our new favorite model, $y_i = f(x_i) + \epsilon_i$ and wish to estimate the value of the underlying function $f(x)$ at some point $x$ by weighted least squares.  Our estimate is the scalar quantity
+    $$
+    \hat{f}(x) = a = \arg \min_{\mathbb{R}} \sum_{i=1}^n w_i (y_i - a)^2 \, ,
+    $$
+    where the $w_i$ are the normalized weights (i.e.~they have been rescaled to sum to 1 for fixed $x$).  Clearly if $w_i = 1/n$, the estimate is simply $\bar{y}$, the sample mean, which is the ``best'' globally constant estimator.  Using elementary calculus, it is easy to see that if the unnormalized weights are
+    $$
+    w_i \equiv w(x, x_i) = \frac{1}{h} K \left( \frac{x_i - x}{h} \right)  \, ,
+    $$
+    then the solution is exactly the kernel-regression estimator.
+
+    \begin{enumerate}[label=(\Alph*)]
+        \item  A natural generalization of locally constant regression is local polynomial regression.  For points $u$ in a neighborhood of the target point $x$, define the polynomial
+        $$
+        g_{x}(u; a) = a_0 + \sum_{k=1}^D a_j(u-x)^k 
+        $$
+        for some vector of coefficients $a = (a_0, \ldots, a_D)$.  As above, we will estimate the coefficients $a$ in $g_{x}(u; a)$ at some target point $x$ using weighted least squares:
+        $$
+        \hat{a} = \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left\{ y_i - g_{x}(x_i; a)  \right\}^2 \, ,
+        $$
+        where $w_i \equiv w(x_i, x)$ are the kernel weights defined just above, normalized to sum to one. Derive a concise (matrix) form of the weight vector $\hat{a}$, and by extension, the local function estimate $\hat{f}(x)$ at the target value $x$. Life will be easier if you define the matrix $R_x$ whose $(i,j)$ entry is $(x_i-x)^{j-1}$, and remember that (weighted) polynomial regression is the same thing as (weighted) linear regression with a polynomial basis.
+
+        \begin{align*}
+            \hat{a} &= \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left \{ y_i - \left [a_0 + \sum_{k=1}^D a_j (x_i - x)^k \right] \right \} \\
+            &= \arg \min_{R^{D+1}}\sum_{i=1}^n w_i \left \{y_i - a_0 - a_1(x_i - x) - a_2 (x_i - x)^2 - ... - a_D (x_i - x)^D \right\} \\
+            &= \arg \min_{R^{D+1}} (y - X a)^T W (y - X a)
+        \end{align*}
+
+        \begin{align*}
+            0 &= \frac{d}{da} \left [ (y - X a)^T W (y - X a) \right] \\
+            &= \frac{d}{da} \left[ (y^T - a^T X^T) W (y - X a) \right] \\
+            &= \frac{d}{da} \left[ y^T W y - y^T W X a - a^T X^T W y + a^T X^T W X a \right] \\
+            &= \frac{d}{da} \left[ y^T W y - 2 y^T W X a + a^T X^T W X a\right] \\
+        \end{align*}
+
+        $\frac{\partial (z^T A z)}{dz} = (A + A^T) z$, $ \frac{\partial b^T z}{dz} = b$
+
+        \begin{align*}
+            0 &= -2y^T W X + 2 X^T W X a \\
+            y^T W X&= X^T W X a
+        \end{align*}
+
+        $$\hat{a} = (X^T W X)^{-1} y^T W X$$
+
+        $$\hat{a} = H y$$
+
+        $H = (X^T W X)^{-1} X^T W$
+
+        $\hat{f}(x) = \begin{bmatrix}1 & 0 & ...\end{bmatrix} \hat{a}$
+
+
+        \item From this, conclude that for the special case of the local linear estimator ($D=1$), we can write $\hat{f}(x)$ as a linear smoother of the form
+        $$
+        \hat{f}(x) = \frac{\sum_{i=1}^n w_i(x) y_i }{\sum_{i=1}^n w_i(x)} \, ,
+        $$
+        where the unnormalized weights are
+        \begin{eqnarray*}
+        w_i(x) &=& K \left( \frac{x-x_i}{h} \right) \left\{  s_2(x) - (x_i-x) s_1(x) \right\}\\
+        s_j(x) &=& \sum_{i=1}^n K \left( \frac{x-x_i}{h} \right) (x_i-x)^j \, .
+        \end{eqnarray*}
+
+        \scriptsize
+        \begin{align*}
+            \hat{f}(x) &= \begin{bmatrix} 1 & 0 \end{bmatrix} \left \{ \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix} \right\}^{-1} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} y_1 \\ \vdots \\ y_n\end{bmatrix} \\
+            &= \begin{bmatrix} 1 & 0 \end{bmatrix}  \begin{bmatrix} \sum_{i=1}^n w_i & \sum_{i=1}^n w_i (x_i -x) \\ \sum_{i=1}^n w_i (x_i -x) & \sum_{i=1}^n w_i (x_i -x)^2\end{bmatrix}^{-1} \begin{bmatrix} \sum_{i=1}^n w_i y_i \\ \sum_{i=1}^n (x_i - x) w_i y_i\end{bmatrix} \\
+        \end{align*}
+        \normalsize
+
+        $$\begin{bmatrix} a & b \\ c & d\end{bmatrix} = \frac{1}{ad - bc} \begin{bmatrix} d & -b \\ -c & a\end{bmatrix}$$
+
+        \scriptsize
+        \begin{align*}
+            \hat{f}(x) &= \left[ \sum_{i=1}^n w_i \sum_{i=1}^n w_i (x_i - x)^2 - \left( \sum_{i=1}^n w_i (x_i -x)\right)^2\right]^{-1} \begin{bmatrix} 1 & 0 \end{bmatrix}  \begin{bmatrix} \sum_{i=1}^n w_i (x_i -x)^2 & -\sum_{i=1}^n w_i (x_i -x) \\ -\sum_{i=1}^n w_i (x_i -x) & \sum_{i=1}^n w_i \end{bmatrix} \begin{bmatrix} \sum_{i=1}^n w_i y_i \\ \sum_{i=1}^n (x_i - x) w_i y_i\end{bmatrix} \\
+            &= \left[ \sum_{i=1}^n w_i \sum_{i=1}^n w_i (x_i - x)^2 - \left( \sum_{i=1}^n w_i (x_i -x)\right)^2\right]^{-1} \left[ \sum_{i=1}^n w_i(x_i - x)^2 \sum_{i=1}^n w_i y_i - \sum_{i=1}^n w_i (x_i - x) \sum_{i=1}^n w_i y_i (x_i - x)\right]
+        \end{align*}
+        \normalsize
+
+        $s_1 = \sum_{i=1}^n w_i (x_i - x)$
+        $s_2 = \sum_{i=1}^n w_i (x_i - x)^2$
+
+        \begin{align*}
+            \hat{f}(x) &= \frac{\sum_{i=1}^n w_i y_i(s_2 - (x_i - x) s_1) }{\sum_{i=1}^n w_i (s_2 - (x_i - x) s_1)}
+        \end{align*}
+
+        \item Suppose that the residuals have constant variance $\sigma^2$ (that is, the spread of the residuals does not depend on $x$).  Derive the mean and variance of the sampling distribution for the local polynomial estimate $\hat{f}(x)$ at some arbitrary point $x$.  Note: the random variable $\hat{f}(x)$ is just a scalar quantity at $x$, not the whole function.
+
+        \begin{align*}
+            \text{E} \left[ \hat{f}(x) \right] &= \text{E} \left[ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H y\right] \\
+            &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \text{E}[y] \\
+            &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H f(x)
+        \end{align*}
+
+        $y_i = f(x_i) + \epsilon_i$
+
+        \item We don't know the residual variance, but we can estimate it.  A basic fact is that if $x$ is a random vector with mean $\mu$ and covariance matrix $\Sigma$, then for any symmetric matrix $Q$ of appropriate dimension, the quadratic form $x^T Q x$ has expectation
+        $$
+        E(x^T Q x) = \mbox{tr}(Q \Sigma) + \mu^T Q \mu \, .
+        $$
+        Write the vector of residuals as $r = y - \hat{y} = y - Hy$, where $H$ is the smoothing matrix.  Compute the expected value of the estimator
+        $$
+        \hat{\sigma}^2 = \frac{\Vert r \Vert_2^2}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)} \, ,
+        $$
+        and simplify things as much as possible.  Roughly under what circumstances will this estimator be nearly unbiased for large $n$?  Note: the quantity $2\mbox{tr}(H) - \mbox{tr}(H^T H)$ is often referred to as the ``effective degrees of freedom'' in such problems.
+
+        \begin{align*}
+            \text{E} \left[ \hat{\sigma}^2\right] &= \text{E} \left[ \frac{(y - Hy)^T (y - Hy)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)} \right] \\
+            &= \frac{\text{E}[(y - Hy)^T (y - Hy)]}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)} \\
+            &= \frac{\text{E}[y^Ty] - 2 \text{E}[y^T H y] + \text{E}[y^T H^T H y]}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}
+        \end{align*}
+
+        \begin{align*}
+            \text{E}[y^Ty] &= \mbox{tr}( \Sigma) + f(x)^T f(x) \\
+            &= n \sigma^2 + f(x)^T f(x) \\
+            \text{E}[y^T H y] &= \mbox{tr}(H \Sigma) + f(x)^T H f(x) \\
+            &= \sigma^2 \mbox{tr}(H) + f(x)^T H f(x) \\
+            \text{E}[y^T H^T H y] &= \mbox{tr}(H^T H \Sigma) + f(x)^T H^T H f(x) \\
+            &= \sigma^2 \mbox{tr}(H^T H) + f(x)^T H^T H f(x)
+        \end{align*}
+
+        \begin{align*}
+            \text{E} \left[ \hat{\sigma}^2\right] &= \frac{n \sigma^2 + f(x)^T f(x) - 2\sigma^2 \mbox{tr}(H) - 2 f(x)^T H f(x) + \sigma^2 \mbox{tr}(H^T H) + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
+            &= \frac{\sigma^2 [n - 2 \mbox{tr}(H)+ ^2 \mbox{tr}(H^T H)] + f(x)^T f(x)  - 2 f(x)^T H f(x)  + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
+            &= \sigma^2 + \frac{\Vert f(x) - H f(x)\Vert_2^2}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}
+        \end{align*}
+
+        Unbiased when the difference, $f(x) - H f(x)$ is small
+
+    \end{enumerate}
+
     \clearpage
     \appendix
     \section{Kernel Smoothing Code}
@@ -277,6 +577,43 @@ class kernel_smoother:
             y_star[i] = (weights*self.y).sum()
 
         return y_star
+
+    def MSE(self, y_test):
+        """
+        Parameters
+        ----------
+            y_test: float
+                Response vector
+
+        Returns
+        ----------
+            MSE: float
+                Average squared error for y_test given y
+                .. math:: MSE \\approx \\frac{1}{n}\\sum(y_test - y_star)**2
+        """
+        self.y_test = y_test
+        return np.mean((y_test - self.y_star)**2)
+
+    def optimize_h(self, y_test):
+        """
+        Parameters
+        ----------
+            y_test: float
+                Response vector
+
+        Returns
+        ----------
+            h_star: float
+                Uses BFGS minimization method to minimize the MSE by varying h_star
+        """
+        self.y_test = y_test
+        def func(x):
+            Y = kernel_smoother(self.x, self.y, self.x_star, h=x)
+            Y.predictor()
+            return Y.MSE(self.y_test)
+        h_star = minimize(func, self.h)
+        self.h = h_star.x
+        return h_star.x
         \end{lstlisting}
 
 \end{document}
