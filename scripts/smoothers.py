@@ -107,10 +107,33 @@ class kernel_smoother:
             self.y_star[i] = (weights*self.y).sum()
 
     def MSE(self, y_test):
+        """
+        Parameters
+        ----------
+            y_test: float
+                Response vector
+
+        Returns
+        ----------
+            MSE: float
+                Average squared error for y_test given y
+                .. math:: MSE \\approx \\frac{1}{n}\\sum(y_test - y_star)**2
+        """
         self.y_test = y_test
         return np.mean((y_test - self.y_star)**2)
 
     def optimize_h(self, y_test):
+        """
+        Parameters
+        ----------
+            y_test: float
+                Response vector
+
+        Returns
+        ----------
+            h_star: float
+                Uses BFGS minimization method to minimize the MSE by varying h_star
+        """
         self.y_test = y_test
         def func(x):
             Y = kernel_smoother(self.x, self.y, self.x_star, h=x)
