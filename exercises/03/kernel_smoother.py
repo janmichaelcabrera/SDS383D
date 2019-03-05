@@ -16,11 +16,13 @@ x_star = np.linspace(0, 2*np.pi)
 h = np.array([0.25, 1.0])
 
 # Instantiate a list to append kernel_smoother objects
-H = []
+G = []
+U = []
 
 # Iterates through array of bandwidths and passes the feature vector, response vector, and bandwidth to kernel_smoother object
 for i in range(len(h)):
-    H.append(kernel_smoother(x, y, x_star, h=h[i]))
+    G.append(kernel_smoother(x, y, x_star, h=h[i]))
+    U.append(kernel_smoother(x, y, x_star, h=h[i]))
 
 # Plots data 
 plt.figure()
@@ -28,9 +30,11 @@ plt.plot(x, y, '.k', label='Noisy response')
 plt.plot(x, np.sin(x), '--k', label='True function')
 # Iterates over the smoother objects and plots functions for the uniform and gaussian kernels
 for i in range(len(h)):
-    plt.plot(x_star, H[i].predictor(kernel='uniform'), label='Uniform Kernel, h='+str(h[i]))
-    plt.plot(x_star, H[i].predictor(kernel='gaussian'), label='Gaussian Kernel, h='+str(h[i]))
+	G[i].local_constant(kernel='gaussian')
+	U[i].local_constant(kernel='uniform')
+	plt.plot(x_star, U[i].y_star, label='Uniform Kernel, h='+str(h[i]))
+	plt.plot(x_star, G[i].y_star, label='Gaussian Kernel, h='+str(h[i]))
 plt.legend(loc=0)
-# plt.show()
-plt.savefig('figures/kernel_smoother.pdf')
+plt.show()
+# plt.savefig('figures/kernel_smoother.pdf')
 plt.close()

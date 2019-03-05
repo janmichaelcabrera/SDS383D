@@ -46,13 +46,13 @@ for n in range(len(noise)):
 		# Instantiate kernel_smoother object
 		y_smooth = kernel_smoother(x, Y_training[i], x)
 		# Perform initial curve fit
-		y_smooth.predictor()
+		y_smooth.local_constant()
 
 		# Optimize bandwidth given the test data
 		y_smooth.optimize_h(Y_test[i])
 
 		# Perform curve fit with optimized bandwidth
-		y_smooth.predictor()
+		y_smooth.local_constant()
 
 		# Predicted values for opimized bandwidth
 		y_pred = y_smooth.y_star
