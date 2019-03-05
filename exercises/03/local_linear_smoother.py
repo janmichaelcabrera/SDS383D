@@ -21,33 +21,32 @@ Y = Y/B
 
 x_star = X.drop_duplicates().sort_values().values
 
-model = kernel_smoother(X, Y, X)
+model = kernel_smoother(X, Y, X, h=5.5)
 model.local_linear()
 # h = model.LOOCV()
-h = np.linspace(0.5, 10, num=20)
-loocv = np.zeros(len(h))
+residuals = model.Residuals()
 
-# print(h)
-for i in range(len(h)):
-    loocv[i] = model.LOOCV(x=h[i])
-
-print(loocv)
 plt.figure()
-plt.plot(h, loocv)
+plt.plot(X, residuals, '.k')
 plt.show()
 plt.close()
+# h = np.linspace(0.5, 10, num=20)
+# loocv = np.zeros(len(h))
+
+# # print(h)
+# for i in range(len(h)):
+#     loocv[i] = model.LOOCV(x=h[i])
+
+# print(loocv)
+# plt.figure()
+# plt.plot(h, loocv)
+# plt.show()
+# plt.close()
 
 # h = 5.38666509
 # print(h)
 # optimal = kernel_smoother(X, Y, x_star, h=h)
 # optimal.local_linear()
-
-# # residuals = np.zeros(sorted_X.shape[0])
-
-# # for i in range(len(residuals)):
-# #     for j in range(len(x_star)):
-# #         if x_star[j] == sorted_X[i]:
-# #             residuals[i] = sorted_Y[i] - optimal.y_star[j]
 
 # # plt.figure()
 # # plt.plot(sorted_X, residuals, '.k')

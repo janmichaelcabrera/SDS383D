@@ -215,3 +215,6 @@ class kernel_smoother:
         for i in range(len(loocv)):
             loocv[i] = ((Y.y[i] - Y.y_star[i])**2)/(1 - Y.Hat_matrix[i][i])
         return loocv.sum()
+
+    def Residuals(self):
+        return self.y - self.y_star
