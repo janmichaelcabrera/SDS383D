@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 from scipy.optimize import minimize
+from numpy.linalg import inv
 
 class kernels:
     """
@@ -123,35 +124,28 @@ class kernel_smoother:
         # Instantiate y_star
         self.y_star = np.zeros(self.x_star.shape)
 
+        e_1 = np.array([1, 0])
+
+
         # Iterate through each value in y_star
         for i in range(self.y_star.shape[0]):
             
             # Instantiate a weights vector
             weights = np.zeros(self.x.shape)
+
+            X = np.transpose(np.array([np.ones(self.x.shape[0]), (self.x - self.x_star[i])]))
             
             # Iterates through feature/response vectors
             for j in range(self.x.shape[0]):
+                weights[j] = 1/self.h * getattr(kernels, kernel)((self.x[j] - self.x_star[i])/self.h)
 
-                # X = \frac{(x_i - x^*)}{h}
-                X = (self.x[j] - self.x_star[i])/self.h
-
-                s_1 = np.zeros(self.x.shape)
-                s_2 = np.zeros(self.x.shape)
-
-                for k in range(self.x.shape[0]):
-                    s_1[k] = getattr(kernels, kernel)(X)*(self.x[k] - self.x_star[i])
-                    s_2[k] = getattr(kernels, kernel)(X)*(self.x[k] - self.x_star[i])**2
-
-                s_1 = s_1.sum()
-                s_2 = s_2.sum()
-                # w(x_i, x^*) = \frac{1}{h}K(X)
-                weights[j] = 1/self.h*getattr(kernels, kernel)(X)*(s_2 - (self.x[j] - self.x_star[i]*s_1))
-
-            # Normalizes weights such that \sum_{i=1}^n w(x_i, x^*) = 1    
             weights = weights/weights.sum()
 
-            # y_i^* = \sum_{i=1}^n w(x_i, x^*) y_i
-            self.y_star[i] = (weights*self.y).sum()
+            W = np.diag(weights)
+
+            H = inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W
+
+            self.y_star[i] = e_1 @ H @ self.y
 
     def MSE(self, y_test):
         """
