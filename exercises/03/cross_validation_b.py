@@ -13,7 +13,7 @@ def func(x, period = 1):
 np.random.seed(3)
 
 # Initialize x-vector
-x = np.linspace(0, 1, num=100)
+x = np.linspace(0, 1, num=10)
 
 # Noise level array, low and high
 noise = np.array([0.05, 0.25])
@@ -66,7 +66,7 @@ for n in range(len(noise)):
 		plt.plot(x, y_pred, '-b', label='Predicted Response')
 		plt.ylim([-1.5, 1.5])
 		plt.legend(loc=0)
-		# plt.show()
-		plt.savefig('figures/cross_validation_'+noise_label[n]+'_'+period_label[p]+'.pdf')
+		plt.show()
+		# plt.savefig('figures/cross_validation_'+noise_label[n]+'_'+period_label[p]+'.pdf')
 		plt.close()
 		i += 1
