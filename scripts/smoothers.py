@@ -195,26 +195,26 @@ class kernel_smoother:
         self.h = h_star.x
         return h_star.x
 
-    # def LOOCV(self, smoother='local_linear'):
-    #     def func(x):
-    #         Y = kernel_smoother(self.x, self.y, self.x, h=x)
-    #         getattr(Y, smoother)()
-    #         loocv = np.zeros(len(Y.y))
-    #         for i in range(len(loocv)):
-    #             loocv[i] = ((Y.y[i] - Y.y_star[i])**2)/(1 - Y.Hat_matrix[i][i])
-    #         return loocv.sum()
+    def LOOCV(self, smoother='local_linear'):
+        def func(x):
+            Y = kernel_smoother(self.x, self.y, self.x, h=x)
+            getattr(Y, smoother)()
+            loocv = np.zeros(len(Y.y))
+            for i in range(len(loocv)):
+                loocv[i] = ((Y.y[i] - Y.y_star[i])**2)/(1 - Y.Hat_matrix[i][i])
+            return loocv.sum()
 
-    #     h_star = minimize(func, self.h)
-    #     self.h = h_star.x
-    #     return self.h
+        h_star = minimize(func, 1)
+        self.h = h_star.x
+        return self.h
 
-    def LOOCV(self, smoother='local_linear', x=0.5):
-        Y = kernel_smoother(self.x, self.y, self.x, h=x)
-        getattr(Y, smoother)()
-        loocv = np.zeros(len(Y.y))
-        for i in range(len(loocv)):
-            loocv[i] = ((Y.y[i] - Y.y_star[i])**2)/(1 - Y.Hat_matrix[i][i])
-        return loocv.sum()
+    # def LOOCV(self, smoother='local_linear', x=0.5):
+    #     Y = kernel_smoother(self.x, self.y, self.x, h=x)
+    #     getattr(Y, smoother)()
+    #     loocv = np.zeros(len(Y.y))
+    #     for i in range(len(loocv)):
+    #         loocv[i] = ((Y.y[i] - Y.y_star[i])/(1 - Y.Hat_matrix[i][i]))**2
+    #     return loocv.sum()
 
     def Residuals(self):
         return self.y - self.y_star
