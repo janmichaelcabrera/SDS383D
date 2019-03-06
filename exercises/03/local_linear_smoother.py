@@ -6,69 +6,57 @@ sys.path.append('../../scripts/')
 from smoothers import kernel_smoother
 import pandas as pd
 
+# Import data
 data = pd.read_csv('../../data/utilities.csv', delimiter=',')
 
+# Parse data
 X = data['temp']
-# Y = data['gasbill']/data['billingdays']
-Y = data['gasbill']
-# Y = data['average']
+Y = np.log(data['gasbill']/data['billingdays'])
 
-# sorted_data = data.sort_values('temp')
-# sorted_X = sorted_data['temp']
-# sorted_Y = sorted_data['gasbill']
-
+# Sort X data for plotting purposes
 x_star = X.drop_duplicates().sort_values().values
 
-model = kernel_smoother(X, Y, X, h=5.5)
-model.local_linear()
+# Instantiate smoother object (Default is a Gaussian kernel, order one)
+model = kernel_smoother(X, Y, X, h=2)
+# Run smoother on the data 
+model.local_general()
+# Optimize the bandwidth using LOOCV
 h = model.LOOCV_optimization()
-# residuals = model.Residuals()
-
 print(h)
 
-
-
-# h = np.logspace(0, 1, num=30)
-# loocv = np.zeros(len(h))
-
-# # print(h)
-# for i in range(len(h)):
-#     loocv[i] = model.LOOCV(x=h[i])
-
-# n=0
-
-# for i in range(len(h)):
-#     if loocv[i] == loocv.min():
-#         n=i
-# # print(loocv.min())
-
-# print(loocv)
-# plt.figure()
-# plt.plot(h, loocv)
-# plt.show()
-# plt.close()
-
-# h = h[n]
-# print(h)
+# Instantiate second model with sorted x-data
 optimal = kernel_smoother(X, Y, x_star, h=h)
-optimal.local_linear()
-# model = kernel_smoother(X, Y, X, h=h)
-# model.local_linear()
+# Run model
+optimal.local_general()
 
-# residuals = model.Residuals()
+# Establish intervel from model
+interval = 1.96*model.sigma
 
-# plt.figure()
-# plt.plot(X, residuals, '.k')
+# Sort the interval data for plotting purposes
+I = pd.DataFrame(np.transpose([X.values, interval]))
+I = I.sort_values(0).drop_duplicates()
+
+# Establish upper and lower bounds for plotting
+upper = optimal.y_star + I[1]
+lower = optimal.y_star - I[1]
+
+# Plot residuals
+plt.figure()
+plt.plot(X, model.residuals, '.k')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('log(residuals)')
 # plt.show()
-# plt.close()
+plt.savefig('figures/utilities_residuals_log.pdf')
+plt.close()
 
-# # # plt.figure()
-# # # plt.plot(sorted_X, residuals, '.k')
-# # # plt.show()
-# # # plt.close()
-
+# Plot fit and confidence interval
 plt.figure()
 plt.plot(X, Y, '.k')
-plt.plot(x_star, optimal.y_star)
-plt.show()
+plt.plot(x_star, optimal.y_star, '-b')
+plt.plot(x_star, upper, '-g')
+plt.plot(x_star, lower, '-g')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('log(normalized gassbill)')
+# plt.show()
+plt.savefig('figures/utilities_fit_log.pdf')
 plt.close()

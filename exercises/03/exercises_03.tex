@@ -355,13 +355,17 @@ for n in range(len(noise)):
         $$
         \hat{a} = \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left\{ y_i - g_{x}(x_i; a)  \right\}^2 \, ,
         $$
-        where $w_i \equiv w(x_i, x)$ are the kernel weights defined just above, normalized to sum to one. Derive a concise (matrix) form of the weight vector $\hat{a}$, and by extension, the local function estimate $\hat{f}(x)$ at the target value $x$. Life will be easier if you define the matrix $R_x$ whose $(i,j)$ entry is $(x_i-x)^{j-1}$, and remember that (weighted) polynomial regression is the same thing as (weighted) linear regression with a polynomial basis.
+        where $w_i \equiv w(x_i, x)$ are the kernel weights defined just above, normalized to sum to one. Derive a concise (matrix) form of the weight vector $\hat{a}$, and by extension, the local function estimate $\hat{f}(x)$ at the target value $x$. Life will be easier if you define the matrix $X_x$ whose $(i,j)$ entry is $(x_i-x)^{j-1}$, and remember that (weighted) polynomial regression is the same thing as (weighted) linear regression with a polynomial basis.\\
+
+        We first begin by plugging in $g_x(x_i; a)$ into the formula for $\hat{a}$, expanding terms and collecting them in matrix form.
 
         \begin{align*}
-            \hat{a} &= \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left \{ y_i - \left [a_0 + \sum_{k=1}^D a_j (x_i - x)^k \right] \right \} \\
-            &= \arg \min_{R^{D+1}}\sum_{i=1}^n w_i \left \{y_i - a_0 - a_1(x_i - x) - a_2 (x_i - x)^2 - ... - a_D (x_i - x)^D \right\} \\
+            \hat{a} &= \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left \{ y_i - \left [a_0 + \sum_{k=1}^D a_j (x_i - x)^k \right] \right \}^2 \\
+            &= \arg \min_{R^{D+1}}\sum_{i=1}^n w_i \left \{y_i - a_0 - a_1(x_i - x) - a_2 (x_i - x)^2 - ... - a_D (x_i - x)^D \right\}^2 \\
             &= \arg \min_{R^{D+1}} (y - X a)^T W (y - X a)
         \end{align*}
+
+        We are then interested in minimizing the expression. This is done by setting the derivative with respect to $a$ of the expression to zero. The term in the brackets are expanded.
 
         \begin{align*}
             0 &= \frac{d}{da} \left [ (y - X a)^T W (y - X a) \right] \\
@@ -370,20 +374,22 @@ for n in range(len(noise)):
             &= \frac{d}{da} \left[ y^T W y - 2 y^T W X a + a^T X^T W X a\right] \\
         \end{align*}
 
-        $\frac{\partial (z^T A z)}{dz} = (A + A^T) z$, $ \frac{\partial b^T z}{dz} = b$
+        Using the hint from exercise one that $\frac{\partial (z^T A z)}{dz} = (A + A^T) z$, and $ \frac{\partial b^T z}{dz} = b$.
 
         \begin{align*}
             0 &= -2y^T W X + 2 X^T W X a \\
             y^T W X&= X^T W X a
         \end{align*}
 
+        We then evaluate the expression and solve for $a$.
+
         $$\hat{a} = (X^T W X)^{-1} y^T W X$$
+
+        Notice that this has the same form as the linear case:
 
         $$\hat{a} = H y$$
 
-        $H = (X^T W X)^{-1} X^T W$
-
-        $\hat{f}(x) = \begin{bmatrix}1 & 0 & ...\end{bmatrix} \hat{a}$
+        With the hat matrix being, $H = (X^T W X)^{-1} X^T W$. The approximate estimate at our target value is then $\hat{f}(x) = \begin{bmatrix}1 & 0 & \dots & 0\end{bmatrix} \hat{a}$
 
 
         \item From this, conclude that for the special case of the local linear estimator ($D=1$), we can write $\hat{f}(x)$ as a linear smoother of the form
@@ -396,14 +402,20 @@ for n in range(len(noise)):
         s_j(x) &=& \sum_{i=1}^n K \left( \frac{x-x_i}{h} \right) (x_i-x)^j \, .
         \end{eqnarray*}
 
+        From $\hat{f}(x) = \begin{bmatrix}1 & 0 & \dots & 0\end{bmatrix} \hat{a}$, we expand the matrices for the $D=1$ case and multiply the matrices together.
+
         \scriptsize
         \begin{align*}
-            \hat{f}(x) &= \begin{bmatrix} 1 & 0 \end{bmatrix} \left \{ \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix} \right\}^{-1} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_1 - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} y_1 \\ \vdots \\ y_n\end{bmatrix} \\
+            \hat{f}(x) &= \begin{bmatrix} 1 & 0 \end{bmatrix} \left \{ \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_n - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_n - x)\end{bmatrix} \right\}^{-1} \begin{bmatrix} (x_1 - x)^0 & (x_1 - x) \\ \vdots & \vdots \\ (x_n - x)^0 & (x_n - x)\end{bmatrix}^T \begin{bmatrix} w_1 & \dots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \dots & w_n  \end{bmatrix} \begin{bmatrix} y_1 \\ \vdots \\ y_n\end{bmatrix} \\
             &= \begin{bmatrix} 1 & 0 \end{bmatrix}  \begin{bmatrix} \sum_{i=1}^n w_i & \sum_{i=1}^n w_i (x_i -x) \\ \sum_{i=1}^n w_i (x_i -x) & \sum_{i=1}^n w_i (x_i -x)^2\end{bmatrix}^{-1} \begin{bmatrix} \sum_{i=1}^n w_i y_i \\ \sum_{i=1}^n (x_i - x) w_i y_i\end{bmatrix} \\
         \end{align*}
         \normalsize
 
-        $$\begin{bmatrix} a & b \\ c & d\end{bmatrix} = \frac{1}{ad - bc} \begin{bmatrix} d & -b \\ -c & a\end{bmatrix}$$
+        We note that for a two-by-two matrix the inverse can be found as 
+
+        $$\begin{bmatrix} a & b \\ c & d\end{bmatrix}^{-1} = \frac{1}{ad - bc} \begin{bmatrix} d & -b \\ -c & a\end{bmatrix}$$
+
+        Evaluating the inverse and multiplying the resultant matrices together we obtain the following.
 
         \scriptsize
         \begin{align*}
@@ -412,19 +424,25 @@ for n in range(len(noise)):
         \end{align*}
         \normalsize
 
-        $s_1 = \sum_{i=1}^n w_i (x_i - x)$
-        $s_2 = \sum_{i=1}^n w_i (x_i - x)^2$
+        With $s_1 = \sum_{i=1}^n w_i (x_i - x)$ and $s_2 = \sum_{i=1}^n w_i (x_i - x)^2$ we obtain the form we were seeking:
 
         \begin{align*}
-            \hat{f}(x) &= \frac{\sum_{i=1}^n w_i y_i(s_2 - (x_i - x) s_1) }{\sum_{i=1}^n w_i (s_2 - (x_i - x) s_1)}
+            \hat{f}(x) &= \frac{\sum_{i=1}^n w_i y_i(s_2 - (x_i - x) s_1) }{\sum_{i=1}^n w_i (s_2 - (x_i - x) s_1)}.
         \end{align*}
 
-        \item Suppose that the residuals have constant variance $\sigma^2$ (that is, the spread of the residuals does not depend on $x$).  Derive the mean and variance of the sampling distribution for the local polynomial estimate $\hat{f}(x)$ at some arbitrary point $x$.  Note: the random variable $\hat{f}(x)$ is just a scalar quantity at $x$, not the whole function.
+        \item Suppose that the residuals have constant variance $\sigma^2$ (that is, the spread of the residuals does not depend on $x$).  Derive the mean and variance of the sampling distribution for the local polynomial estimate $\hat{f}(x)$ at some arbitrary point $x$.  Note: the random variable $\hat{f}(x)$ is just a scalar quantity at $x$, not the whole function. \\
 
+        
         \begin{align*}
             \text{E} \left[ \hat{f}(x) \right] &= \text{E} \left[ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H y\right] \\
             &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \text{E}[y] \\
             &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H f(x)
+        \end{align*}
+
+        \begin{align*}
+            \text{var}[\hat{f}(x)] &= \text{var}(\begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H y) \\
+            & = \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}^T \text{var}(y) \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \} \\
+            & = \sigma^2 \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}^T \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}
         \end{align*}
 
         $y_i = f(x_i) + \epsilon_i$
@@ -464,6 +482,35 @@ for n in range(len(noise)):
 
         \item Write a new R function that fits the local linear estimator using a Gaussian kernel for a specified choice of bandwidth $h$. Then load the data in ``utilities.csv'' into R. This data set shows the monthly gas bill (in dollars) for a single-family home in Minnesota, along with the average temperature in that month (in degrees F), and the number of billing days in that month.  Let $y$ be the average daily gas bill in a given month (i.e.~dollars divided by billing days), and let $x$ be the average temperature.  Fit $y$ versus $x$ using local linear regression and some choice of kernel.  Choose a bandwidth by leave-one-out cross-validation.
 
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/utilities_fit.pdf}
+          \caption{\label{fig:utilities_fit} Fit using LOOCV, $h=6.87$}
+        \end{figure}
+
+        \item Inspect the residuals from the model you just fit.  Does the assumption of constant variance (homoscedasticity) look reasonable?  If not, do you have any suggestion for fixing it?
+
+        \begin{figure}
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/utilities_residuals}
+            \end{subfigure}%
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/utilities_residuals_log}
+            \end{subfigure}
+        \caption{Residuals and log-residuals}
+        \label{fig:standard_error}
+        \end{figure}
+
+        \item Put everything together to construct an approximate point-wise 95\% confidence interval for the local linear model (using your chosen bandwidth) for the value of the function at each of the observed points $x_i$ for the utilities data. Plot these confidence bands, along with the estimated function, on top of a scatter plot of the data.
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/utilities_fit_bounds.pdf}
+          \caption{\label{fig:utilities_fit_bounds} Fit using LOOCV, $h=6.87$}
+        \end{figure}
+
     \end{enumerate}
 
     \clearpage
@@ -473,6 +520,8 @@ for n in range(len(noise)):
         \begin{lstlisting}
 from __future__ import division
 import numpy as np
+from scipy.optimize import minimize
+from numpy.linalg import inv
 
 class kernels:
     """
@@ -519,7 +568,7 @@ class kernel_smoother:
     """
     This class returns a vector of smoothed values given feature and response vectors
     """
-    def __init__(self, x, y, x_star, h=0.5):
+    def __init__(self, x, y, x_star, kernel='gaussian', h=1, D=1):
         """
         Parameters
         ----------
@@ -532,53 +581,102 @@ class kernel_smoother:
             x_star: float
                 Scalar or vector to be evaluated
 
+            kernel: str (optional)
+                Kernel type to be used: Available kernels are gaussian,
+                
             h: float (optional)
                 Bandwidth
+
+            D: int (optional)
+                Order of polynomial smoother
         """
         self.x = x
         self.y = y
         self.x_star = x_star
         self.h = h
+        self.D = D
+        self.kernel=kernel
 
-    def predictor(self, kernel='gaussian'):
+        if x_star.shape != x:
+            raise Warning('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
+
+    def local_general(self):
         """
-        Parameters
-        ----------
-            kernel: str (optional)
-                Kernel type to be used: Available kernels are uniform, gaussian, 
-
         Returns
         ----------
             y_star: float, len(x_star)
-                Predictor for x_star
-                .. math:: y_i^* = \\sum_{i=1}^n w(x_i, x^*) y_i
+                Predictor for x_star, 
+                .. math:: y_i^* = [1 0 ...] H_i y
                 .. math:: w(x_i, x^*) = \\frac{1}{2}K( \\frac{x_i - x^*}{h}), \\sum_{i=1}^n w(x_i, x^*) = 1
+
+        Attributes
+        ----------
+            sigma: float, len(x_star)
+                Standard error at x_star
+
+            residuals: float, len(x_star)
+                residuals of prediction from data (only calculated if len(y_star) == (len(y)))
+                .. math:: r_i = y_i - \\hat{y}_i
+
+            Hat_matrix: list
+                first elements in hat matrix for a given x_star
         """
-        # Instantiate y_star
-        y_star = np.zeros(self.x_star.shape)
+        # Instantiate vectors and matrices for storing calculations
+        self.y_star = np.zeros(self.x_star.shape)
+        self.sigma = np.zeros(self.x_star.shape)
+        self.residuals = np.zeros(self.x_star.shape)
+        self.Hat_matrix = []
+
+        # Vector for determining y_star
+        e_1 = np.append(1, np.zeros(self.D))
 
         # Iterate through each value in y_star
-        for i in range(y_star.shape[0]):
+        for i in range(self.y_star.shape[0]):
             
             # Instantiate a weights vector
             weights = np.zeros(self.x.shape)
-            
+
+            # Instantiates X matrix 
+            X = np.transpose(np.ones((self.x.shape[0], self.D+1)))
+
+            # Populates X matrix given the order of the smoother, D
+            for d in range(self.D):
+                X[d+1] = (self.x - self.x_star[i])**(d+1)
+            X = np.transpose(X)
+
             # Iterates through feature/response vectors
             for j in range(self.x.shape[0]):
+                weights[j] = 1/self.h * getattr(kernels, self.kernel)((self.x[j] - self.x_star[i])/self.h)
 
-                # X = \frac{(x_i - x^*)}{h}
-                X = (self.x[j] - self.x_star[i])/self.h
-
-                # w(x_i, x^*) = \frac{1}{h}K(X)
-                weights[j] = 1/self.h*getattr(kernels, kernel)(X)
-
-            # Normalizes weights such that \sum_{i=1}^n w(x_i, x^*) = 1    
+            # Normalizes weights such that \sum_{i=1}^n w(x_i, x^*) = 1 
             weights = weights/weights.sum()
 
-            # y_i^* = \sum_{i=1}^n w(x_i, x^*) y_i
-            y_star[i] = (weights*self.y).sum()
+            # Construct weights matrix
+            W = np.diag(weights)
 
-        return y_star
+            # Calculate hat matrix; H = (X^T W X)^{-1} X^T W
+            H = (inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W)
+            
+            # Append hat matrix with current H matrix (needed for LOOCV)
+            self.Hat_matrix.append(e_1 @ H)
+
+            # \hat{f}(x^*) = e_1 H y
+            self.y_star[i] = e_1 @ H @ self.y
+
+            # Calculates residuals and confidence interval if y_star and y shapes are equivalent
+            if self.y_star.shape == self.y.shape:
+                self.residuals[i] = self.y[i] - self.y_star[i]
+
+        # Residual sum of squared errors
+        rss = (self.residuals**2).sum()
+        # Approximate standard error of fit
+        sigma_hat = rss/(len(self.y_star)-1)
+
+        # Calculates approximate standard error 
+        for i in range(self.sigma.shape[0]):
+            self.sigma[i] = np.sqrt(np.transpose(self.Hat_matrix[i]) @ (self.Hat_matrix[i])*sigma_hat)
+
+        return self.y_star
 
     def MSE(self, y_test):
         """
@@ -596,7 +694,7 @@ class kernel_smoother:
         self.y_test = y_test
         return np.mean((y_test - self.y_star)**2)
 
-    def optimize_h(self, y_test):
+    def MSE_optimization(self, y_test):
         """
         Parameters
         ----------
@@ -609,13 +707,41 @@ class kernel_smoother:
                 Uses BFGS minimization method to minimize the MSE by varying h_star
         """
         self.y_test = y_test
-        def func(x):
-            Y = kernel_smoother(self.x, self.y, self.x_star, h=x)
-            Y.predictor()
+        def func(X):
+            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
+            Y.local_general()
             return Y.MSE(self.y_test)
-        h_star = minimize(func, self.h)
+        h_star = minimize(func, 1)
         self.h = h_star.x
         return h_star.x
+
+    def LOOCV(self):
+        """
+        Returns
+        ----------
+            loocv: float
+                Leave one out cross validation statistic (LOOCV)
+                .. math: loocv = \\sum_{i=1}^n (\\frac{y_i - \\hat{y}_i}{1-H_{ii}})^2
+        """
+        loocv = np.zeros(len(self.y))
+        for i in range(len(loocv)):
+            loocv[i] = ((self.y[i] - self.y_star[i])/(1 - self.Hat_matrix[i][i]))**2
+        return loocv.sum()
+
+    def LOOCV_optimization(self):
+        """
+        Returns
+        ----------
+            h_star: float
+                Uses BFGS minimization method to minimize the LOOCV by varying h_star
+        """
+        def func(X):
+            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
+            Y.local_general()
+            return Y.LOOCV()
+        h_star = minimize(func, 0.7)
+        self.h = h_star.x
+        return self.h
         \end{lstlisting}
 
 \end{document}

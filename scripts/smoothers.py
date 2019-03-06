@@ -60,9 +60,15 @@ class kernel_smoother:
 
             x_star: float
                 Scalar or vector to be evaluated
+
+            kernel: str (optional)
+                Kernel type to be used: Available kernels are gaussian,
                 
             h: float (optional)
                 Bandwidth
+
+            D: int (optional)
+                Order of polynomial smoother
         """
         self.x = x
         self.y = y
@@ -71,22 +77,34 @@ class kernel_smoother:
         self.D = D
         self.kernel=kernel
 
+        if x_star.shape != x:
+            raise Warning('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
+
     def local_general(self):
         """
-        Parameters
-        ----------
-            kernel: str (optional)
-                Kernel type to be used: Available kernels are gaussian, 
-
         Returns
         ----------
             y_star: float, len(x_star)
-                Predictor for x_star
-                .. math:: y_i^* = [1 0] H_i y
+                Predictor for x_star, 
+                .. math:: y_i^* = [1 0 ...] H_i y
                 .. math:: w(x_i, x^*) = \\frac{1}{2}K( \\frac{x_i - x^*}{h}), \\sum_{i=1}^n w(x_i, x^*) = 1
+
+        Attributes
+        ----------
+            sigma: float, len(x_star)
+                Standard error at x_star
+
+            residuals: float, len(x_star)
+                residuals of prediction from data (only calculated if len(y_star) == (len(y)))
+                .. math:: r_i = y_i - \\hat{y}_i
+
+            Hat_matrix: list
+                first elements in hat matrix for a given x_star
         """
-        # Instantiate y_star
+        # Instantiate vectors and matrices for storing calculations
         self.y_star = np.zeros(self.x_star.shape)
+        self.sigma = np.zeros(self.x_star.shape)
+        self.residuals = np.zeros(self.x_star.shape)
         self.Hat_matrix = []
 
         # Vector for determining y_star
@@ -99,12 +117,13 @@ class kernel_smoother:
             weights = np.zeros(self.x.shape)
 
             # Instantiates X matrix 
-            # X = np.transpose(np.array([np.ones(self.x.shape[0]), (self.x - self.x_star[i])]))
             X = np.transpose(np.ones((self.x.shape[0], self.D+1)))
 
+            # Populates X matrix given the order of the smoother, D
             for d in range(self.D):
                 X[d+1] = (self.x - self.x_star[i])**(d+1)
             X = np.transpose(X)
+
             # Iterates through feature/response vectors
             for j in range(self.x.shape[0]):
                 weights[j] = 1/self.h * getattr(kernels, self.kernel)((self.x[j] - self.x_star[i])/self.h)
@@ -118,11 +137,24 @@ class kernel_smoother:
             # Calculate hat matrix; H = (X^T W X)^{-1} X^T W
             H = (inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W)
             
-            # Append hat matrix with current H matrix
+            # Append hat matrix with current H matrix (needed for LOOCV)
             self.Hat_matrix.append(e_1 @ H)
 
             # \hat{f}(x^*) = e_1 H y
             self.y_star[i] = e_1 @ H @ self.y
+
+            # Calculates residuals and confidence interval if y_star and y shapes are equivalent
+            if self.y_star.shape == self.y.shape:
+                self.residuals[i] = self.y[i] - self.y_star[i]
+
+        # Residual sum of squared errors
+        rss = (self.residuals**2).sum()
+        # Approximate standard error of fit
+        sigma_hat = rss/(len(self.y_star)-1)
+
+        # Calculates approximate standard error 
+        for i in range(self.sigma.shape[0]):
+            self.sigma[i] = np.sqrt(np.transpose(self.Hat_matrix[i]) @ (self.Hat_matrix[i])*sigma_hat)
 
         return self.y_star
 
@@ -155,8 +187,8 @@ class kernel_smoother:
                 Uses BFGS minimization method to minimize the MSE by varying h_star
         """
         self.y_test = y_test
-        def func(x):
-            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=x, D=self.D)
+        def func(X):
+            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
             Y.local_general()
             return Y.MSE(self.y_test)
         h_star = minimize(func, 1)
@@ -164,12 +196,25 @@ class kernel_smoother:
         return h_star.x
 
     def LOOCV(self):
+        """
+        Returns
+        ----------
+            loocv: float
+                Leave one out cross validation statistic (LOOCV)
+                .. math: loocv = \\sum_{i=1}^n (\\frac{y_i - \\hat{y}_i}{1-H_{ii}})^2
+        """
         loocv = np.zeros(len(self.y))
         for i in range(len(loocv)):
             loocv[i] = ((self.y[i] - self.y_star[i])/(1 - self.Hat_matrix[i][i]))**2
         return loocv.sum()
 
     def LOOCV_optimization(self):
+        """
+        Returns
+        ----------
+            h_star: float
+                Uses BFGS minimization method to minimize the LOOCV by varying h_star
+        """
         def func(X):
             Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
             Y.local_general()
@@ -177,6 +222,3 @@ class kernel_smoother:
         h_star = minimize(func, 0.7)
         self.h = h_star.x
         return self.h
-
-    def residuals(self):
-        return self.y - self.y_star
