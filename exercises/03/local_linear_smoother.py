@@ -21,10 +21,12 @@ x_star = X.drop_duplicates().sort_values().values
 
 model = kernel_smoother(X, Y, X, h=5.5)
 model.local_linear()
-h = model.LOOCV()
-residuals = model.Residuals()
+h = model.LOOCV_optimization()
+# residuals = model.Residuals()
 
 print(h)
+
+
 
 # h = np.logspace(0, 1, num=30)
 # loocv = np.zeros(len(h))
@@ -48,8 +50,8 @@ print(h)
 
 # h = h[n]
 # print(h)
-# optimal = kernel_smoother(X, Y, x_star, h=h)
-# optimal.local_linear()
+optimal = kernel_smoother(X, Y, x_star, h=h)
+optimal.local_linear()
 # model = kernel_smoother(X, Y, X, h=h)
 # model.local_linear()
 
@@ -65,8 +67,8 @@ print(h)
 # # # plt.show()
 # # # plt.close()
 
-# plt.figure()
-# plt.plot(X, Y, '.k')
-# plt.plot(x_star, optimal.y_star)
-# plt.show()
-# plt.close()
+plt.figure()
+plt.plot(X, Y, '.k')
+plt.plot(x_star, optimal.y_star)
+plt.show()
+plt.close()
