@@ -31,8 +31,8 @@ mse = np.zeros(len(h))
 
 # Iterates over bandwidth array and finds approximate MSE for each
 for i in range(len(h)):
-	H.append(kernel_smoother(x, y_training, x, h=h[i]))
-	H[i].local_constant()
+	H.append(kernel_smoother(x, y_training, x, kernel='gaussian', h=h[i], D=0))
+	H[i].local_general()
 	mse[i] = H[i].MSE(y_test)
 
 print(mse)

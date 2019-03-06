@@ -13,7 +13,7 @@ def func(x, period = 1):
 np.random.seed(3)
 
 # Initialize x-vector
-x = np.linspace(0, 1, num=10)
+x = np.linspace(0, 1, num=100)
 
 # Noise level array, low and high
 noise = np.array([0.05, 0.25])
@@ -44,15 +44,15 @@ for n in range(len(noise)):
 	for p in range(len(period)):
 
 		# Instantiate kernel_smoother object
-		y_smooth = kernel_smoother(x, Y_training[i], x)
+		y_smooth = kernel_smoother(x, Y_training[i], x, D=0)
 		# Perform initial curve fit
-		y_smooth.local_constant()
+		y_smooth.local_general()
 
 		# Optimize bandwidth given the test data
-		y_smooth.optimize_h(Y_test[i])
+		y_smooth.MSE_optimization(Y_test[i])
 
 		# Perform curve fit with optimized bandwidth
-		y_smooth.local_constant()
+		y_smooth.local_general()
 
 		# Predicted values for opimized bandwidth
 		y_pred = y_smooth.y_star
@@ -66,7 +66,7 @@ for n in range(len(noise)):
 		plt.plot(x, y_pred, '-b', label='Predicted Response')
 		plt.ylim([-1.5, 1.5])
 		plt.legend(loc=0)
-		plt.show()
-		# plt.savefig('figures/cross_validation_'+noise_label[n]+'_'+period_label[p]+'.pdf')
+		# plt.show()
+		plt.savefig('figures/cross_validation_'+noise_label[n]+'_'+period_label[p]+'.pdf')
 		plt.close()
 		i += 1

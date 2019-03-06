@@ -117,7 +117,7 @@ class kernel_smoother:
 
             # Calculate hat matrix; H = (X^T W X)^{-1} X^T W
             H = (inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W)
-            print(H)
+            
             # Append hat matrix with current H matrix
             self.Hat_matrix.append(e_1 @ H)
 
