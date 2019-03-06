@@ -474,7 +474,7 @@ for n in range(len(noise)):
 
         \begin{align*}
             \text{E} \left[ \hat{\sigma}^2\right] &= \frac{n \sigma^2 + f(x)^T f(x) - 2\sigma^2 \mbox{tr}(H) - 2 f(x)^T H f(x) + \sigma^2 \mbox{tr}(H^T H) + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
-            &= \frac{\sigma^2 [n - 2 \mbox{tr}(H)+ ^2 \mbox{tr}(H^T H)] + f(x)^T f(x)  - 2 f(x)^T H f(x)  + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
+            &= \frac{\sigma^2 [n - 2 \mbox{tr}(H)+ \mbox{tr}(H^T H)] + f(x)^T f(x)  - 2 f(x)^T H f(x)  + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
             &= \sigma^2 + \frac{\Vert f(x) - H f(x)\Vert_2^2}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}
         \end{align*}
 

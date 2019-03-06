@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import minimize
 from numpy.linalg import inv
+import warnings
 
 class kernels:
     """
@@ -77,8 +78,8 @@ class kernel_smoother:
         self.D = D
         self.kernel=kernel
 
-        if x_star.shape != x:
-            raise Warning('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
+        if x_star.shape != x.shape:
+            warnings.warn('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
 
     def local_general(self):
         """
