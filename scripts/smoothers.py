@@ -79,7 +79,7 @@ class kernel_smoother:
         self.kernel=kernel
 
         if x_star.shape != x.shape:
-            warnings.warn('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
+            warnings.warn('Feature vector and evaluation vector do not align. Residuals will not be calculated.')
 
     def local_general(self):
         """
@@ -117,13 +117,13 @@ class kernel_smoother:
             # Instantiate a weights vector
             weights = np.zeros(self.x.shape)
 
-            # Instantiates X matrix 
-            X = np.transpose(np.ones((self.x.shape[0], self.D+1)))
+            # Instantiates R matrix 
+            R = np.transpose(np.ones((self.x.shape[0], self.D+1)))
 
-            # Populates X matrix given the order of the smoother, D
+            # Populates R matrix given the order of the smoother, D
             for d in range(self.D):
-                X[d+1] = (self.x - self.x_star[i])**(d+1)
-            X = np.transpose(X)
+                R[d+1] = (self.x - self.x_star[i])**(d+1)
+            R = np.transpose(R)
 
             # Iterates through feature/response vectors
             for j in range(self.x.shape[0]):
@@ -135,8 +135,8 @@ class kernel_smoother:
             # Construct weights matrix
             W = np.diag(weights)
 
-            # Calculate hat matrix; H = (X^T W X)^{-1} X^T W
-            H = (inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W)
+            # Calculate hat matrix; H = (R^T W R)^{-1} R^T W
+            H = (inv(np.transpose(R) @ W @ R) @ np.transpose(R) @ W)
             
             # Append hat matrix with current H matrix (needed for LOOCV)
             self.Hat_matrix.append(e_1 @ H)
@@ -188,8 +188,8 @@ class kernel_smoother:
                 Uses BFGS minimization method to minimize the MSE by varying h_star
         """
         self.y_test = y_test
-        def func(X):
-            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
+        def func(R):
+            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=R, D=self.D)
             Y.local_general()
             return Y.MSE(self.y_test)
         h_star = minimize(func, 1)
@@ -216,8 +216,8 @@ class kernel_smoother:
             h_star: float
                 Uses BFGS minimization method to minimize the LOOCV by varying h_star
         """
-        def func(X):
-            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
+        def func(R):
+            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=R, D=self.D)
             Y.local_general()
             return Y.LOOCV()
         h_star = minimize(func, 0.7)

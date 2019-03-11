@@ -16,6 +16,8 @@
 \usepackage{textcomp}
 \usepackage{courier}
 \usepackage{subcaption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
 \definecolor{listinggray}{gray}{0.9}
 \definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
 \lstset{
@@ -362,34 +364,34 @@ for n in range(len(noise)):
         \begin{align*}
             \hat{a} &= \arg \min_{R^{D+1}} \sum_{i=1}^n w_i \left \{ y_i - \left [a_0 + \sum_{k=1}^D a_j (x_i - x)^k \right] \right \}^2 \\
             &= \arg \min_{R^{D+1}}\sum_{i=1}^n w_i \left \{y_i - a_0 - a_1(x_i - x) - a_2 (x_i - x)^2 - ... - a_D (x_i - x)^D \right\}^2 \\
-            &= \arg \min_{R^{D+1}} (y - X a)^T W (y - X a)
+            &= \arg \min_{R^{D+1}} (y - R a)^T W (y - R a)
         \end{align*}
 
         We are then interested in minimizing the expression. This is done by setting the derivative with respect to $a$ of the expression to zero. The term in the brackets are expanded.
 
         \begin{align*}
-            0 &= \frac{d}{da} \left [ (y - X a)^T W (y - X a) \right] \\
-            &= \frac{d}{da} \left[ (y^T - a^T X^T) W (y - X a) \right] \\
-            &= \frac{d}{da} \left[ y^T W y - y^T W X a - a^T X^T W y + a^T X^T W X a \right] \\
-            &= \frac{d}{da} \left[ y^T W y - 2 y^T W X a + a^T X^T W X a\right] \\
+            0 &= \frac{d}{da} \left [ (y - R a)^T W (y - R a) \right] \\
+            &= \frac{d}{da} \left[ (y^T - a^T R^T) W (y - R a) \right] \\
+            &= \frac{d}{da} \left[ y^T W y - y^T W R a - a^T R^T W y + a^T R^T W R a \right] \\
+            &= \frac{d}{da} \left[ y^T W y - 2 y^T W R a + a^T R^T W R a\right] \\
         \end{align*}
 
         Using the hint from exercise one that $\frac{\partial (z^T A z)}{dz} = (A + A^T) z$, and $ \frac{\partial b^T z}{dz} = b$.
 
         \begin{align*}
-            0 &= -2y^T W X + 2 X^T W X a \\
-            y^T W X&= X^T W X a
+            0 &= -2y^T W R + 2 R^T W R a \\
+            y^T W R&= R^T W R a
         \end{align*}
 
         We then evaluate the expression and solve for $a$.
 
-        $$\hat{a} = (X^T W X)^{-1} y^T W X$$
+        $$\hat{a} = (R^T W R)^{-1} y^T W R$$
 
         Notice that this has the same form as the linear case:
 
         $$\hat{a} = H y$$
 
-        With the hat matrix being, $H = (X^T W X)^{-1} X^T W$. The approximate estimate at our target value is then $\hat{f}(x) = \begin{bmatrix}1 & 0 & \dots & 0\end{bmatrix} \hat{a}$
+        With the hat matrix being, $H = (R^T W R)^{-1} R^T W$. The approximate estimate at our target value is then $\hat{f}(x) = \begin{bmatrix}1 & 0 & \dots & 0\end{bmatrix} \hat{a}$
 
 
         \item From this, conclude that for the special case of the local linear estimator ($D=1$), we can write $\hat{f}(x)$ as a linear smoother of the form
@@ -512,6 +514,108 @@ for n in range(len(noise)):
         \end{figure}
 
     \end{enumerate}
+
+    \clearpage
+
+    \section*{Guassian processes}
+
+    A \textit{Gaussian process} is a collection of random variables $\{f(x): x \in \mathcal{X}\}$ such that, for any finite collection of indices $x_1, \ldots, x_N \in \mathcal{X}$, the random vector $[f(x_1), \ldots, f(x_N)]^T$ has a multivariate normal distribution.  It is a generalization of the multivariate normal distribution to infinite-dimensional spaces. The set $\mathcal{X}$ is called the index set or the state space of the process, and need not be countable.
+
+    A Gaussian process can be thought of as a random function defined over $\mathcal{X}$, often the real line or $\mathbb{R}^p$.  We write $f \sim \mbox{GP}(m, C)$ for some mean function $m: \mathcal{X} \rightarrow \mathbb{R}$ and a covariance function $C: \mathcal{X} \times \mathcal{X} \rightarrow \mathbb{R}^+$.  These functions define the moments of all finite-dimensional marginals of the process, in the sense that
+    $$
+    E\{ f(x_1) \} = m(x_1) \quad \mbox{and} \quad \mbox{cov}\{f(x_1), f(x_2) \} = C(x_1, x_2)
+    $$
+    for all $x_1, x_2 \in \mathcal{X}$.  More generally, the random vector $[f(x_1), \ldots, f(x_N)]^T$ has covariance matrix whose $(i,j)$ element is $C(x_i, x_j)$.  Typical covariance functions are those that decay as a function of increasing distance between points $x_1$ and $x_2$.  The notion is that $f(x_1)$ and $f(x_2)$ will have high covariance when $x_1$ and $x_2$ are close to each other.
+
+    \begin{enumerate}[label=(\Alph*)]
+        \item   Read up on the Matern class of covariance functions.  The Matern class has the \textit{squared exponential} covariance function as a special case:
+        $$
+        C_{SE}(x_1, x_2) = \tau_1^2 \exp \left\{ - \frac{1}{2} \left( \frac{d(x_1, x_2)}{b} \right)^2 \right\} + \tau^2_2 \delta(x_1, x_2) \, ,
+        $$
+        where $d(x_1, x_2) = \Vert x_1 - x_2 \Vert_2$ is Euclidean distance (or just $|x-y|$ for scalars).  The constants $(b, \tau^2_1, \tau^2_2)$ are often called \textit{hyperparameters}, and $\delta(a,b)$ is the Kronecker delta function that takes the value 1 if $a=b$, and 0 otherwise.  But usually this covariance function generates functions that are ``too smooth,'' and so we use other covariance functions in the Matern class as a default.
+
+        Let's start with the simple case where $\mathcal{X} = [0,1]$, the unit interval.  Write a function that simulates a mean-zero Gaussian process on $[0,1]$ under the Matern(5/2) covariance function.  The function will accept as arguments: (1) finite set of points $x_1, \ldots, x_N$ on the unit interval; and (2) a triplet $(b, \tau^2_1, \tau^2_2)$. It will return the value of the random process at each point: $f(x_1), \ldots, f(x_N)$.
+
+        Use your function to simulate (and plot) Gaussian processes across a range of values for $b$, $\tau^2_1$, and $\tau^2_2$.  Try starting with a very small value of $\tau^2_2$ (say, $10^{-6}$) and playing around with the other two first.  On the basis of your experiments, describe the role of these three hyperparameters in controlling the overall behavior of the random functions that result.  What happens when you try $\tau^2_2 = 0$? Why?  If you can fix this, do---remember our earlier discussion on different ways to simulate the MVN.
+
+        Now simulating a few functions with a different covariance function, the Mat\'ern with parameter $5/2$:
+        $$
+        C_{M52}(x_1, x_2) = \tau_1^2 \left\{ 1 + \frac{\sqrt{5}d}{b} + \frac{5d^2}{3b^2} \right\} \exp\left( \frac{-\sqrt{5}d}{b} \right) + \tau^2_2 \delta(x_1, x_2) \, ,
+        $$
+        where $d = \Vert x_1 - x_2 \Vert_2$ is the distance between the two points $x_1$ and $x_2$.  Comment on the differences between the functions generated from the two covariance kernels.\\
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_b}
+          \caption{\label{fig:matern_52_varied_b} Varied $b$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        \begin{itemize}
+            \item $b$: Controls the smoothness of the resulting function. As $b$ increases, the smoothness increases until it approaches a constant.
+
+            \item $\tau_1^2$: appears to control how much the resulting function varies from the mean at a given point.
+
+            \item $\tau_2^2$: seems to increase the noise as its value increases.
+        \end{itemize}
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_tau_1}
+          \caption{\label{fig:matern_52_varied_tau_1} Varied $\tau_1^2$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        % \begin{figure}[ht] 
+        %   \centering 
+        %   \includegraphics[width=0.5\columnwidth]{figures/matern_52_b_vs_tau_1}
+        %   \caption{\label{fig:matern_52_b_vs_tau_1} Varied $b$ and $\tau_1^2$ for Matern(5,2) covariance function}
+        % \end{figure}
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_tau_2}
+          \caption{\label{fig:matern_52_varied_tau_2} Varied $\tau_2^2$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        \clearpage
+        \item Suppose you observe the value of a Gaussian process $f \sim \mbox{GP}(m,C)$ at points $x_1, \ldots, x_N$.  What is the conditional distribution of the value of the process at some new point $x^{\star}$?  For the sake of notational ease simply write the value of the $(i,j)$ element of the covariance matrix as $C_{i,j}$, rather than expanding it in terms of a specific covariance function.\\
+
+        $$[f(x_1), ... , f(x_N)]^T \sim \text{N}(m, C)$$
+        $$\text{N}(m, C) = \text{N} \left( \begin{bmatrix}m_1 \\ \vdots \\ m_n\end{bmatrix}, \begin{bmatrix}C_{11} & \dots & C_{1n} \\ \vdots & \ddots & \vdots \\ C_{n1} & \dots & C_{nn}\end{bmatrix}\right)$$
+
+        \begin{align*}
+            [f(x_1), ... , f(x_N), f(x^*)]^T &\sim \text{N} \left( \begin{bmatrix}m_1 \\ \vdots \\ m_n \\ m^*\end{bmatrix}, \begin{bmatrix}C_{11} & \dots & C_{1n} & C_{1 *}\\ \vdots & \ddots & \vdots & \vdots \\ C_{n1} & \dots & C_{nn} & C_{n*} \\ C_{*1} & \dots & C_{*n} & C_{**} \end{bmatrix}\right) \\
+            & \sim \text{N} \left ( \begin{bmatrix} \mathbf{m} \\ m^*\end{bmatrix}, \begin{bmatrix} C(\mathbf{x, x}) & C(\mathbf{x^*x}) \\ C(\mathbf{x^*x})^T & C(\mathbf{x^*, x^*})\end{bmatrix}\right)
+        \end{align*}
+
+        $$x_1 | x_2 \sim \text{N}(\mu_1 + \Sigma_{22}^{-1} \Sigma_{12}^T(x_2 - \mu_2), \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{12}^T)$$
+
+        $$f(x^*) | f(x_1), ..., f(x_N) \sim \text{N} \left ( m^* + C(\mathbf{x, x})^{-1}C(\mathbf{x^*x})^T(f(x_1), ...,f(x_N) - \mathbf{m})\right), C(\mathbf{x^*, x^*}) - C(\mathbf{x^*x}) C(\mathbf{x, x})^{-1} C(\mathbf{x^*x})^T $$
+
+        \item Prove the following lemma.
+
+        \begin{lemma}
+        Suppose that the joint distribution of two vectors $y$ and $\theta$ has the following properties: (1) the conditional distribution for $y$ given $\theta$ is multivariate normal, $(y \mid \theta) \sim N(R\theta, \Sigma)$; and (2) the marginal distribution of $\theta$ is multivariate normal, $\theta \sim N(m,V)$.  Assume that $R$, $\Sigma$, $m$, and $V$ are all constants.  Then the joint distribution of $y$ and $\theta$ is multivariate normal.
+        \end{lemma}
+
+        The model for $y$ can be written as
+
+        $$y = R \theta + \epsilon$$
+
+        where
+
+        $$y \sim \text{N}(R\theta, \Sigma)$$
+        $$\epsilon \sim \text{N}(m, V)$$
+
+        We can then show that the system $y = R \theta + \epsilon$ and $\theta = \theta + 0$ can be written
+
+        $$\begin{bmatrix} y \\ \theta \end{bmatrix} = \begin{bmatrix} R \\ I \end{bmatrix} \theta + \begin{bmatrix} I \\ 0 \end{bmatrix} \epsilon$$
+
+        This is an affine transformation of multivariate normals, hence it is also multivariate normal.
+
+    \end{enumerate}
+
+
+
 
     \clearpage
     \appendix
