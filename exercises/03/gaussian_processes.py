@@ -14,11 +14,11 @@ def kronecker_delta(x_1, x_2):
         delta: 0 or 1
             .. math:: \\delta(x_1, x_2)
     """
-	if x_1 == x_2:
-		delta = 1
-	else:
-		delta = 0
-	return delta
+    if x_1 == x_2:
+        delta = 1
+    else:
+        delta = 0
+    return delta
 
 def matern_52(x, hyperparams):
     """
@@ -37,19 +37,19 @@ def matern_52(x, hyperparams):
             .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
     """
 
-	# Unpack hypereparameters
-	b, tau_1_squared, tau_2_squared = hyperparams
+    # Unpack hypereparameters
+    b, tau_1_squared, tau_2_squared = hyperparams
 
     # Initialize covariance matrix
-	C = np.zeros((x.shape[0], x.shape[0]))
+    C = np.zeros((x.shape[0], x.shape[0]))
 
     # Evaluate (i,j) components of covariance matrix
-	for i in range(x.shape[0]):
-		for j in range(x.shape[0]):
-			d = np.abs(x[i] - x[j])
-			C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
+    for i in range(x.shape[0]):
+        for j in range(x.shape[0]):
+            d = np.abs(x[i] - x[j])
+            C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
 
-	return C
+    return C
 
 # Initialize random seed
 np.random.seed(3)
