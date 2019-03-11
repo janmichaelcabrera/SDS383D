@@ -67,12 +67,13 @@ plt.figure()
 plt.title('$\\tau_1^2$={:.2f}'.format(tau_1_squared[0])+'; $\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
 # Iterates over vector of b values and plots them on the same plot
 for i in range(len(b)):
-	hyperparams = b[i], tau_1_squared[0], tau_2_squared[0]
+    np.random.seed(3)
+    hyperparams = b[i], tau_1_squared[0], tau_2_squared[0]
     # Calculates covariance given x and current hyperparameters
-	cov = matern_52(x, hyperparams)
+    cov = matern_52(x, hyperparams)
     # Generates random sample from a multivariate normal
-	fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
-	plt.plot(x, fx, label='b={:.2f}'.format(b[i]))
+    fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+    plt.plot(x, fx, label='b={:.2f}'.format(b[i]))
 plt.legend(loc=0)
 plt.ylim([-3, 3])
 # plt.show()
@@ -85,6 +86,7 @@ plt.figure()
 plt.title('b={:.2f}'.format(b[i])+'; $\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
 # Iterates over vector of tau_1^2 values and plots them on the same plot
 for i in range(len(tau_1_squared)):
+    np.random.seed(3)
     hyperparams = b[0], tau_1_squared[i], tau_2_squared[0]
     # Calculates covariance given x and current hyperparameters
     cov = matern_52(x, hyperparams)
@@ -102,6 +104,7 @@ plt.figure()
 plt.title('b={:.2f}'.format(b[i])+'; $\\tau_1^2$={:.2f}'.format(tau_1_squared[0]))
 # Iterates over vector of tau_2^2 values and plots them on the same plot
 for i in range(len(tau_1_squared)):
+    np.random.seed(3)
     hyperparams = b[0], tau_1_squared[0], tau_2_squared[i]
     # Calculates covariance given x and current hyperparameters
     cov = matern_52(x, hyperparams)
@@ -121,6 +124,7 @@ fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
 fig.set_size_inches(8,4.5)
 for i in range(b.shape[0]):
     for j in range(tau_1_squared.shape[0]):
+        np.random.seed(3)
         ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
         hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
         # Calculates covariance given x and current hyperparameters
