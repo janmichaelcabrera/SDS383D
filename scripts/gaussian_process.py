@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import warnings
 from scipy.stats import multivariate_normal
+from numpy.linalg import inv
 
 def kronecker_delta(x_1, x_2):
     """
@@ -27,7 +28,7 @@ class covariance_functions:
     def __init__(self):
         pass
 
-    def matern_52(x, hyperparams):
+    def matern_52(x_1, x_2, hyperparams):
         """
         Parameters
         ----------
@@ -45,13 +46,13 @@ class covariance_functions:
         b, tau_1_squared, tau_2_squared = hyperparams
 
         # Initialize covariance matrix
-        C = np.zeros((x.shape[0], x.shape[0]))
+        C = np.zeros((x_1.shape[0], x_2.shape[0]))
 
         # Evaluate (i,j) components of covariance matrix
-        for i in range(x.shape[0]):
-            for j in range(x.shape[0]):
-                d = np.abs(x[i] - x[j])
-                C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
+        for i in range(x_1.shape[0]):
+            for j in range(x_2.shape[0]):
+                d = np.abs(x_1[i] - x_2[j])
+                C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
 
         return C
 
@@ -59,7 +60,7 @@ class gaussian_process:
     """
     This class returns a vector of smoothed values given feature and response vectors
     """
-    def __init__(self, x, hyperparams, cov='matern_52'):
+    def __init__(self, x, hyperparams, y = [], x_star = [], cov='matern_52'):
         """
         Parameters
         ----------
@@ -84,8 +85,37 @@ class gaussian_process:
         self.x = x
         self.hyperparams = hyperparams
         self.cov = cov
+        self.y = y
+        self.x_star = x_star
 
-    def generate_random_samples(self, mean=np.zeros(self.x.shape[0])):
-        covariance = getattr(covariance_functions, self.cov)(self.x, self.hyperparams)
+    def residuals(self):
+        return 0
+
+    def approx_sigma(self):
+        C_xx_star = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
+        sigma_hat = 1
+        weights = C_xx_star @ inv(C_xx + sigma_hat*np.eye(self.x.shape[0]))
+
+        y_star = np.transpose(weights) @ self.y
+        self.residuals = self.y - y_star
+        # Residual sum of squared errors
+        rss = (self.residuals**2).sum()
+        # Approximate standard error of fit
+        return rss/(len(y_star)-1)
+
+    def smoother(self, sigma_hat=[]):
+        if not sigma_hat:
+            sigma_hat = 1
+        C_xx_star = getattr(covariance_functions, self.cov)(self.x_star, self.x, self.hyperparams)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
+        weights = C_xx_star @ inv(C_xx + sigma_hat*np.eye(self.x.shape[0]))
+
+        y_star = np.transpose(weights) @ self.y
+
+        return y_star
+
+    def generate_random_samples(self, mean=[]):
+        covariance = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
         self.fx = multivariate_normal.rvs(mean=mean, cov=covariance)
         return self.fx
