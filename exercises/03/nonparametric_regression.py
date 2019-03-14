@@ -21,18 +21,17 @@ Y = data['gasbill']/data['billingdays']
 x_star = X.drop_duplicates().sort_values().values
 
 # Set hyperparameters
-b = 10
-tau_1_squared = 5
+b = 20
+tau_1_squared = 10
 tau_2_squared = 10**-6
 
 # Pack hyperparameters for passing to model
 hyperparams = b, tau_1_squared, tau_2_squared
 
 # Create a guassian process object from data and prediction vector
-GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star)
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
 
-# Run an iteration of the gaussian process to make an approximation for the sample variance
-var = GP.approx_var()
+var = 1
 
 # Run the GP smoother with the approximated variance
 y_star, variance = GP.smoother(variance = var)
@@ -49,6 +48,6 @@ plt.plot(x_star, upper, '-g')
 plt.plot(x_star, lower, '-g')
 plt.xlabel('temperature ($^{\circ}$F)')
 plt.ylabel('normalized gassbill')
-# plt.show()
-plt.savefig('figures/utilities_fit_gp.pdf')
+plt.show()
+# plt.savefig('figures/utilities_fit_gp.pdf')
 plt.close()

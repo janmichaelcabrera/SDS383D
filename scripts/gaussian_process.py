@@ -55,6 +55,34 @@ class covariance_functions:
                 C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
         return C
 
+    def matern_32(x_1, x_2, hyperparams):
+        """
+        Parameters
+        ----------
+            x: float (vector)
+                Vector of points
+
+        Returns
+        ----------
+            C: float (matrix)
+                Returns a Matern (5,2) square covariance matrix of size(x)
+                .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
+        """
+
+        # Unpack hypereparameters
+        b, tau_1_squared, tau_2_squared = hyperparams
+
+        # Initialize covariance matrix
+        C = np.zeros((x_1.shape[0], x_2.shape[0]))
+
+        # Evaluate (i,j) components of covariance matrix
+        for i in range(x_1.shape[0]):
+            for j in range(x_2.shape[0]):
+                d = np.abs(x_1[i] - x_2[j])
+                C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
+
+        return C
+
     def matern_52(x_1, x_2, hyperparams):
         """
         Parameters
@@ -107,6 +135,7 @@ class gaussian_process:
                 Covariance function to be used. Available functions are:
                     Squared exponential = 'squared_exponential'
                     Matern 5/2 = 'matern_52'
+                    Matern 3/2 = 'matern_32'
 
         """
         self.x = x

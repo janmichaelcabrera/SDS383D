@@ -628,7 +628,12 @@ for n in range(len(noise)):
 
             $$\theta | x_1,...,x_n \sim \text{N} \left( \frac{\frac{n}{\sigma^2} \bar{x} + \frac{1}{v}m}{\frac{n}{\sigma^2} + \frac{1}{v}}, \left [ \frac{n}{\sigma^2} + \frac{1}{v}\right]^{-1} \right)$$
 
-            $$f|y \sim \text{N} \left( \frac{\frac{1}{\sigma^2}y}{C^{-1} + \frac{1}{\sigma^2}I}\right)$$
+            $$f|y \sim \text{N} \left( \frac{\frac{1}{\sigma^2}y}{C^{-1} + \frac{1}{\sigma^2}I}, \left[ \frac{1}{\sigma^2}I + C^{-1}\right]^{-1}\right)$$
+
+            \item As before, suppose we observe data $y_i = f(x_i) + \epsilon_i$, $\epsilon_i \sim N(0, \sigma^2)$, for $i=1, \ldots, N$.  Now we wish to predict the value of the function $f(x^{\star})$ at some new point $x^{\star}$ where we haven't seen previous data.  Suppose that $f$ has a mean-zero Gaussian process prior, $f \sim GP(0, C)$.  Show that the posterior mean $E\{ f(x^{\star}) \mid y_1, \ldots, y_N \}$ is a linear smoother, and derive expressions both for the smoothing weights and the posterior variance of $f(x^{\star})$.
+
+            \item Go back to the utilities data, and plot the pointwise posterior mean and 95\% posterior confidence interval for the value of the function at each of the observed points $x_i$ (again, superimposed on top of the scatter plot of the data itself).  Choose $\tau^2_2$ to be very small, say $10^{-6}$, and choose $(b, \tau^2_1)$ that give a sensible-looking answer.
+
         \end{enumerate}
 
     \end{enumerate}
