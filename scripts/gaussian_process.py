@@ -23,7 +23,7 @@ def kronecker_delta(x_1, x_2):
 
 class covariance_functions:
     """
-    This class contains kernel functions for kernel smoothing
+    This class contains covariance function for Gaussian process smoothing
     """
     def __init__(self):
         pass
@@ -240,7 +240,7 @@ class gaussian_process:
         if not mean:
             mean = np.zeros(self.x.shape[0])
 
-        if mean.shape != self.x.shape[0]:
+        if mean.shape[0] != self.x.shape[0]:
             raise ValueError('Mean shape, %i  and x shape, %i do not match'%(mean.shape[0], self.x.shape[0]))
 
         covariance = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
