@@ -28,6 +28,8 @@ tau_2_squared = 10**-6
 # Pack hyperparameters for passing to model
 hyperparams = b, tau_1_squared, tau_2_squared
 
+help(np.arange)
+
 # Create a guassian process object from data and prediction vector
 GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
 
