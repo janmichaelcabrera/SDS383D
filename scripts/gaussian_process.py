@@ -219,6 +219,19 @@ class gaussian_process:
 
         return y_star, post_var
 
+    def log_marginal_likelihood(self, hyperparams, variance=[]):
+
+        if not variance:
+            variance = 1
+
+        # Unpack hypereparameters
+        b, tau_1_squared, tau_2_squared = hyperparams
+
+        # Evaluate C(x, x)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, hyperparams)
+
+        return np.transpose(self.y) @ inv(variance*np.eye(self.x.shape[0]) + C_xx) @ self.y
+
     def generate_random_samples(self, mean=[]):
         """
         Parameters

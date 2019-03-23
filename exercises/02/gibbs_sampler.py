@@ -11,8 +11,8 @@ from samplers import Gibbs, Trace
 
 data = pd.read_csv('../../data/gdpgrowth.csv', delimiter=',')
 
-Y = data['GR6096'] # X without intercept feature
-X = data['DEF60'] # Y 
+Y = data['GR6096'] # Y 
+X = data['DEF60'] # X without intercept feature
 
 intercept = np.ones(len(Y)) # create intercept feature column
 X = np.transpose(np.array((intercept, X))) # build matrix from intercept and X features

@@ -564,11 +564,11 @@ for n in range(len(noise)):
           \caption{\label{fig:matern_52_varied_tau_1} Varied $\tau_1^2$ for Matern(5,2) covariance function}
         \end{figure}
 
-        % \begin{figure}[ht] 
-        %   \centering 
-        %   \includegraphics[width=0.5\columnwidth]{figures/matern_52_b_vs_tau_1}
-        %   \caption{\label{fig:matern_52_b_vs_tau_1} Varied $b$ and $\tau_1^2$ for Matern(5,2) covariance function}
-        % \end{figure}
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.8\columnwidth]{figures/matern_52_b_vs_tau_1}
+          \caption{\label{fig:matern_52_b_vs_tau_1} Varied $b$ and $\tau_1^2$ for Matern(5,2) covariance function}
+        \end{figure}
 
         \begin{figure}[ht] 
           \centering 
@@ -612,6 +612,8 @@ for n in range(len(noise)):
 
         This is an affine transformation of multivariate normals, hence it is also multivariate normal.
 
+        \end{enumerate}
+
     \section*{Nonparameteric regression and spatial smoothing}
 
         \begin{enumerate}[label=(\Alph*)]
@@ -632,11 +634,94 @@ for n in range(len(noise)):
 
             \item As before, suppose we observe data $y_i = f(x_i) + \epsilon_i$, $\epsilon_i \sim N(0, \sigma^2)$, for $i=1, \ldots, N$.  Now we wish to predict the value of the function $f(x^{\star})$ at some new point $x^{\star}$ where we haven't seen previous data.  Suppose that $f$ has a mean-zero Gaussian process prior, $f \sim GP(0, C)$.  Show that the posterior mean $E\{ f(x^{\star}) \mid y_1, \ldots, y_N \}$ is a linear smoother, and derive expressions both for the smoothing weights and the posterior variance of $f(x^{\star})$.
 
+            $$\begin{bmatrix} y \\ f^* \end{bmatrix} \sim \text{N} \left(0, \begin{bmatrix} C(x, x) + \sigma^2 I & C(x^*, x)^T \\ C(x^*, x) & C(x^*, x^*)\end{bmatrix} \right)$$
+
+            $$x_1 | x_2 \sim \text{N}(\mu_1 + \Sigma_{22}^{-1} \Sigma_{12}^T(x_2 - \mu_2), \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{12}^T)$$
+
+            $$f^* | y \sim \text{N} \left(0 + (C(x,x) + \sigma^2 I)^{-1} C(x^*, x), \hspace{10pt} C(x^*, x^*) - C(x^*, x) [C(x,x) + \sigma^2 I]^{-1} C(x^*, x)^T \right)$$
+
+            $$\text{E}[f^*|y] = \sum_{i=1}^n w_i y_i= w^T y$$
+
+            $$w = C(x^*, x) [C(x, x) + \sigma^2 I]^{-1}$$
+
+            $$\text{var}[f^*| y] = C(x^*, x^*) - C(x^*, x) ( C(x, x) + \sigma^2 I)^{-1} C(x^*, x)^T$$
+
             \item Go back to the utilities data, and plot the pointwise posterior mean and 95\% posterior confidence interval for the value of the function at each of the observed points $x_i$ (again, superimposed on top of the scatter plot of the data itself).  Choose $\tau^2_2$ to be very small, say $10^{-6}$, and choose $(b, \tau^2_1)$ that give a sensible-looking answer.
 
-        \end{enumerate}
+            \begin{figure}
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_squared_exponential}
+                  \subcaption{Squared exponential}
+                \end{subfigure}%
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_matern52}
+                  \subcaption{Matern (5,2)}
+                \end{subfigure}
+            \caption{Gaussian process fit to utilities data using squared exponential and Matern(5,2) covariance functions}
+            \label{fig:gp_fit_utilities}
+            \end{figure}
 
-    \end{enumerate}
+            \item Let $y_i = f(x_i) + \epsilon_i$, and suppose that $f$ has a Gaussian-process prior under the Matern(5/2) covariance function $C$ with scale $\tau^1_2$, range $b$, and nugget $\tau^2_2$.  Derive an expression for the marginal distribution of $y = (y_1 \ldots, y_N)$ in terms of $(\tau^2_1, b, \tau^2_2)$, integrating out the random function $f$.  This is called a marginal likelihood.
+
+            \begin{align*}
+                p(y) &= \int p(f) p(y|f) df \\
+                & \propto \int \text{exp}\left[- \frac{1}{2} f^T C^{-1} f \right] \text{exp} \left[- \frac{1}{2} (y-f)^T \left(\frac{1}{\sigma^2} I \right) (y-f)\right] df\\
+                & \propto \int \text{exp}\left[-\frac{1}{2} \left\{ f^T C^{-1}f + (y-f)^T \left(\frac{1}{\sigma^2} I \right) (y-f)\right\} \right]
+            \end{align*}
+
+            \begin{align*}
+                & f^T C^{-1}f + (y-f)^T \left(\frac{1}{\sigma^2} I \right) (y-f) = \\
+                & f^T C^{-1}f + y^T \left(\frac{1}{\sigma^2} I \right) y - 2 f^T \left(\frac{1}{\sigma^2} I \right) y + f^T \left(\frac{1}{\sigma^2} I \right) f = \\
+                & f^T \left(C^{-1} + \frac{1}{\sigma^2} I \right) f - 2 f^T \left(\frac{1}{\sigma^2} I \right) y + y^T \left(\frac{1}{\sigma^2} I \right) y
+            \end{align*}
+
+            $x^T A x + x^T b + c = (x-h)^T A (x-h) + k$ $h = -\frac{1}{2} A^{-1} b$ $k=c - \frac{1}{4} b^T A^{-1} b$
+
+            $$f^T A f + f^T b + c = (f - h)^T A (f-h) + k$$
+
+            \begin{align*}
+                A &= \left(C^{-1} + \frac{1}{\sigma^2} I \right) \\
+                b &= -2 \left(\frac{1}{\sigma^2} I \right) y\\
+                h &= -\frac{1}{2}A^{-1}b = \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) y \\
+                k &= c - \frac{1}{4} b^T A^{-1} b = y^T \left(\frac{1}{\sigma^2} I \right) y - y^T \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) y
+            \end{align*}
+
+            \begin{align*}
+                p(y) & \propto \text{exp} \left[-\frac{1}{2} k \right] \int \text{exp}\left[ -\frac{1}{2} (f-h)^T A (f-h) \right] df \\
+                & \propto \text{exp} \left[-\frac{1}{2} \left\{ y^T \left(\frac{1}{\sigma^2} I \right) y - y^T \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) y \right\} \right] \\
+                & \propto \text{exp} \left[-\frac{1}{2} y^T \left \{ \left(\frac{1}{\sigma^2} I \right) - \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) \right\} y \right]
+            \end{align*}
+
+            $B = \left(\frac{1}{\sigma^2}I \right)$ $D = C^{-1}$
+
+            $$B - B(B+D)^{-1} B = \left(B^{-1} + D^{-1} \right)^{-1}$$
+
+            $$\left(\frac{1}{\sigma^2} I \right) - \left(\frac{1}{\sigma^2} I \right) \left(\frac{1}{\sigma^2} I + C^{-1} \right)^{-1} \left(\frac{1}{\sigma^2} I \right) = \left( \left(\frac{1}{\sigma^2} I\right)^{-1} + C \right)^{-1}$$
+
+            $ \left(\frac{1}{\sigma^2} I\right)^{-1} = \sigma^2 I $
+
+            $$p(y) \propto \text{exp} \left[-\frac{1}{2} y^T \left(\sigma^2 I + C \right)^{-1} y \right]$$
+
+            $$y \sim \text{N} \left(0, \sigma^2 I + C \right)$$
+
+            \item Return to the utilities or ethanol data sets. Fix $\tau^2_2 = 0$, and evaluate the log of the marginal likelihood function $p(y \mid \tau^2_1, b)$ over a discrete 2-d grid of points. If you're getting errors in your code with $\tau^2_2 = 0$, use something very small instead.  Use this plot to choose a set of values $(\hat{\tau^2_1}, \hat{b})$ for the hyperparameters.  Then use these hyperparameters to compute the posterior mean for $f$, given $y$.  Comment on any lingering concerns you have with your fitted model.
+
+            \item In \verb|weather.csv| you will find data on two variables from 147 weather stations in the American Pacific northwest.
+            \begin{itemize}
+                \item \textit{Pressure:} the difference between the forecasted pressure and the actual pressure reading at that station (in Pascals)
+                \item \textit{Temperature:} the difference between the forecasted temperature and the actual temperature reading at that station (in Celsius)
+            \end{itemize}
+            There are also latitude and longitude coordinates of each  station.  Fit a Gaussian process model for each of the temperature and pressure variables.  Choose hyperparameters appropriately.  Visualize your fitted functions (both the posterior mean and posterior standard deviation) on a regular grid using something like a contour plot or color image.  Read up on the \verb|image|, \verb|filled.contour|, or \verb|contourplot| functions in R.  An important consideration: is Euclidean distance the appropriate measure to go into the covariance function?  Or do we need separate length scales for the two dimensions, i.e.
+            $$
+            d^2(x, z) = \frac{(x_1 - z_1)^2}{b_1^2} +  \frac{(x_2 - z_2)^2}{b_2^2} \, .
+            $$
+            Justify your reasoning for using Euclidean distance or this ``nonisotropic'' distance.
+
+        
+
+        \end{enumerate}
 
 
 
