@@ -230,7 +230,9 @@ class gaussian_process:
         # Evaluate C(x, x)
         C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, hyperparams)
 
-        return np.transpose(self.y) @ inv(variance*np.eye(self.x.shape[0]) + C_xx) @ self.y
+        covariance = variance*np.eye(self.x.shape[0]) + C_xx
+        
+        return multivariate_normal.logpdf(self.y, cov=covariance)
 
     def generate_random_samples(self, mean=[]):
         """
