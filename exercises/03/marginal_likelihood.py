@@ -22,8 +22,8 @@ Y = data['gasbill']/data['billingdays']
 x_star = X.drop_duplicates().sort_values().values
 
 # Set hyperparameters
-b = 61
-tau_1_squared = 39
+b = 20
+tau_1_squared = 10
 tau_2_squared = 10**-6
 
 # Pack hyperparameters for passing to model
@@ -34,8 +34,13 @@ GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
 
 print(GP.log_marginal_likelihood(hyperparams))
 
-# b = np.linspace(25, 75, num=10)
-# tau_1_squared = np.linspace(10, 50, num=10)
+covariance = np.eye(X.shape[0]) + covariance_functions.matern_52(X, X, hyperparams)
+
+print(multivariate_normal.logpdf(Y, cov=covariance))
+
+
+# b = np.linspace(25, 75, num=20)
+# tau_1_squared = np.linspace(10, 50, num=20)
 # # b = np.arange(40, 90, 1)
 # # tau_1_squared = np.arange(15, 90, 1)
 # Z = np.zeros((len(b), len(tau_1_squared)))
@@ -63,8 +68,11 @@ print(GP.log_marginal_likelihood(hyperparams))
 
 # fig, ax = plt.subplots()
 # CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
+# plt.figure()
 # contours = plt.contour(b, tau_1_squared, Z, 3, colors='black')
 # plt.clabel(contours, inline=True, fontsize=8)
+# plt.xlabel('b')
+# plt.ylabel('$\\tau_1^2$')
 # plt.show()
 
 # plt.figure()

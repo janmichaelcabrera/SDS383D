@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import warnings
 from scipy.stats import multivariate_normal
+from scipy.spatial.distance import euclidean
 from numpy.linalg import inv
 
 def kronecker_delta(x_1, x_2):
@@ -15,7 +16,7 @@ def kronecker_delta(x_1, x_2):
         delta: 0 or 1
             .. math:: \\delta(x_1, x_2)
     """
-    if x_1 == x_2:
+    if np.array_equal(x_1, x_2) == True:
         delta = 1
     else:
         delta = 0
@@ -51,7 +52,7 @@ class covariance_functions:
         # Evaluate (i,j) components of covariance matrix
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
-                d = np.abs(x_1[i] - x_2[j])
+                d = euclidean(x_1[i], x_2[j])
                 C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
         return C
 
@@ -78,7 +79,7 @@ class covariance_functions:
         # Evaluate (i,j) components of covariance matrix
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
-                d = np.abs(x_1[i] - x_2[j])
+                d = euclidean(x_1[i], x_2[j])
                 C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
 
         return C
@@ -106,7 +107,7 @@ class covariance_functions:
         # Evaluate (i,j) components of covariance matrix
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
-                d = np.abs(x_1[i] - x_2[j])
+                d = euclidean(x_1[i], x_2[j])
                 C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
 
         return C
@@ -210,12 +211,12 @@ class gaussian_process:
 
         # Calculate weights matrix,  W = C(x^*, x) (C(x, x) + \\sigma^2 I)^{-1}
         weights = C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0]))
-
+        
         # Calculate y_star, y^* = W^T y
         y_star = np.transpose(weights) @ self.y
 
         # Calculates posterior variance, var[f(x^*)| y] = C(x^*, x^*) - C(x^*, x) ( C(x, x) + \\sigma^2 I)^{-1} C(x^*, x)^T
-        post_var = np.diag(C_star_star - C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0])) @ np.transpose(C_x_star_x) )
+        post_var = np.diag(C_star_star - C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0])) @ np.transpose(C_x_star_x))
 
         return y_star, post_var
 

@@ -21,8 +21,8 @@ Y = data['gasbill']/data['billingdays']
 x_star = X.drop_duplicates().sort_values().values
 
 # Set hyperparameters
-b = 61
-tau_1_squared = 39
+b = 20
+tau_1_squared = 10
 tau_2_squared = 10**-6
 
 # Pack hyperparameters for passing to model
