@@ -21,8 +21,8 @@ Y = data['gasbill']/data['billingdays']
 x_star = X.drop_duplicates().sort_values().values
 
 # Set hyperparameters
-b = 20
-tau_1_squared = 10
+b = 61
+tau_1_squared = 39
 tau_2_squared = 10**-6
 
 # Pack hyperparameters for passing to model
@@ -48,6 +48,6 @@ plt.plot(x_star, upper, '-g')
 plt.plot(x_star, lower, '-g')
 plt.xlabel('temperature ($^{\circ}$F)')
 plt.ylabel('normalized gassbill')
-# plt.show()
-plt.savefig('figures/utilities_fit_gp_squared_exponential.pdf')
+plt.show()
+# plt.savefig('figures/utilities_fit_gp_squared_exponential.pdf')
 plt.close()

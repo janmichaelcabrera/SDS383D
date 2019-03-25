@@ -10,9 +10,6 @@ sys.path.append('../../scripts/')
 from gaussian_process import gaussian_process
 import pandas as pd
 
-# Initialize random seed
-np.random.seed(3)
-
 # Import data
 data = pd.read_csv('../../data/utilities.csv', delimiter=',')
 
@@ -24,8 +21,8 @@ Y = data['gasbill']/data['billingdays']
 x_star = X.drop_duplicates().sort_values().values
 
 # Set hyperparameters
-b = 20
-tau_1_squared = 10
+b = 61
+tau_1_squared = 39
 tau_2_squared = 10**-6
 
 # Pack hyperparameters for passing to model
@@ -34,10 +31,10 @@ hyperparams = b, tau_1_squared, tau_2_squared
 # Create a guassian process object from data and prediction vector
 GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
 
-# print(GP.log_marginal_likelihood(hyperparams))
-
-b = np.linspace(20, 100, num=10)
-tau_1_squared = np.linspace(10, 100, num=10)
+# b = np.linspace(55, 65, num=4)
+# tau_1_squared = np.linspace(35, 45, num=4)
+b = np.arange(40, 90, 1)
+tau_1_squared = np.arange(15, 90, 1)
 Z = np.zeros((len(b), len(tau_1_squared)))
 
 # variance = GP.approx_var()
@@ -48,14 +45,23 @@ for i in range(len(b)):
         hyperparams = b[i], tau_1_squared[j], tau_2_squared
         Z[i][j] = GP.log_marginal_likelihood(hyperparams, variance=variance)
 
+b, tau_1_squared = np.meshgrid(b, tau_1_squared)
+
+print(Z.max())
+print(Z)
+
 # fig = plt.figure()
 # ax = fig.gca(projection='3d')
 # surf = ax.plot_surface(b, tau_1_squared, Z, cmap=cm.coolwarm, linewidth=0)
 # fig.colorbar(surf, shrink=0.5, aspect=5)
 # plt.show()
 
-fig, ax = plt.subplots()
-CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
+
+
+# fig, ax = plt.subplots()
+# CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
+contours = plt.contour(b, tau_1_squared, Z, 3, colors='black')
+plt.clabel(contours, inline=True, fontsize=8)
 plt.show()
 
 # plt.figure()
