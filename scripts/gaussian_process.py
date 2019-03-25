@@ -52,13 +52,7 @@ class covariance_functions:
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
                 d = np.abs(x_1[i] - x_2[j])
-                if x_1.shape[0] != x_2.shape[0]:
-                    C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                else:
-                    if j >= i:
-                        C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                    else:
-                        C[i][j] = C[j][i]
+                C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
         return C
 
     def matern_32(x_1, x_2, hyperparams):
@@ -85,13 +79,8 @@ class covariance_functions:
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
                 d = np.abs(x_1[i] - x_2[j])
-                if x_1.shape[0] != x_2.shape[0]:
-                    C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                else:
-                    if j >= i:
-                        C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                    else:
-                        C[i][j] = C[j][i]
+                C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
+
         return C
 
     def matern_52(x_1, x_2, hyperparams):
@@ -118,15 +107,9 @@ class covariance_functions:
         for i in range(x_1.shape[0]):
             for j in range(x_2.shape[0]):
                 d = np.abs(x_1[i] - x_2[j])
-                if x_1.shape[0] != x_2.shape[0]:
-                    C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                else:
-                    if j >= i:
-                        C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-                    else:
-                        C[i][j] = C[j][i]
-        return C
+                C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
 
+        return C
 
 class gaussian_process:
     """

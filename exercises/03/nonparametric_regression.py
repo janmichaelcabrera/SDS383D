@@ -29,7 +29,7 @@ tau_2_squared = 10**-6
 hyperparams = b, tau_1_squared, tau_2_squared
 
 # Create a guassian process object from data and prediction vector
-GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
 
 var = 1
 
