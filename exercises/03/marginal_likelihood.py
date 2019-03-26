@@ -30,33 +30,29 @@ tau_2_squared = 10**-6
 hyperparams = b, tau_1_squared, tau_2_squared
 
 # Create a guassian process object from data and prediction vector
-GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='matern_52')
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
 
-print(GP.log_marginal_likelihood(hyperparams))
-
-covariance = np.eye(X.shape[0]) + covariance_functions.matern_52(X, X, hyperparams)
-
-print(multivariate_normal.logpdf(Y, cov=covariance))
+# log_pdf = -X.shape[0]/2 * np.log(np.linalg.det(covariance)) - 0.5*np.transpose(Y) @ np.linalg.inv(covariance) @ Y # maybe optimize on this?
 
 
-# b = np.linspace(25, 75, num=20)
-# tau_1_squared = np.linspace(10, 50, num=20)
-# # b = np.arange(40, 90, 1)
-# # tau_1_squared = np.arange(15, 90, 1)
-# Z = np.zeros((len(b), len(tau_1_squared)))
+b = np.linspace(25, 100, num=10)
+tau_1_squared = np.linspace(10, 100, num=10)
+# b = np.arange(40, 90, 1)
+# tau_1_squared = np.arange(15, 90, 1)
+Z = np.zeros((len(b), len(tau_1_squared)))
 
-# # variance = GP.approx_var()
-# variance = 1
+variance = GP.approx_var()
+# variance = 0.5
 
-# for i in range(len(b)):
-#     for j in range(len(tau_1_squared)):
-#         hyperparams = b[i], tau_1_squared[j], tau_2_squared
-#         Z[i][j] = GP.log_marginal_likelihood(hyperparams, variance=variance)
+for i in range(len(b)):
+    for j in range(len(tau_1_squared)):
+        hyperparams = b[i], tau_1_squared[j], tau_2_squared
+        Z[i][j] = GP.log_marginal_likelihood(hyperparams, variance=variance)
 
-# b, tau_1_squared = np.meshgrid(b, tau_1_squared)
+b, tau_1_squared = np.meshgrid(b, tau_1_squared)
 
-# print(Z.max())
-# print(Z)
+print(Z.max())
+print(Z)
 
 # fig = plt.figure()
 # ax = fig.gca(projection='3d')
@@ -64,16 +60,14 @@ print(multivariate_normal.logpdf(Y, cov=covariance))
 # fig.colorbar(surf, shrink=0.5, aspect=5)
 # plt.show()
 
-
-
-# fig, ax = plt.subplots()
-# CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
-# plt.figure()
+# levels = np.linspace(0.0001,0.1446,50)
+fig, ax = plt.subplots()
+CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
 # contours = plt.contour(b, tau_1_squared, Z, 3, colors='black')
-# plt.clabel(contours, inline=True, fontsize=8)
-# plt.xlabel('b')
-# plt.ylabel('$\\tau_1^2$')
-# plt.show()
+plt.clabel(contours, inline=True, fontsize=8)
+plt.xlabel('b')
+plt.ylabel('$\\tau_1^2$')
+plt.show()
 
 # plt.figure()
 # levels = np.linspace(0.0001,0.1446,50)

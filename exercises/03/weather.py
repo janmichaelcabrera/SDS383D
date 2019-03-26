@@ -32,8 +32,12 @@ x_star = np.transpose(np.array((lon, lat)))
 
 hyperparams = 10, 10, 10**-6
 
-P = gaussian_process(X, hyperparams, y=pressure, x_star=x_star)
-P_star, P_var = P.smoother()
+# P = gaussian_process(X, hyperparams, y=pressure, x_star=x_star)
+# P_star, P_var = P.smoother()
+
+plt.figure()
+plt.plot(lon, lat)
+plt.show()
 
 # T = gaussian_process(X, hyperparams, y=temperature, x_star=x_star)
 # T_star, T_var = T.smoother()
@@ -48,15 +52,15 @@ P_star, P_var = P.smoother()
 # plt.plot(lat, T_star)
 # plt.show()
 
-# Pressure
-fig = plt.figure()
-# CS = plt.contour(lon, lat, p_star, 10, linewidths=0.5, colors='k')
-# CS = plt.contourf(lon, lat, P_star, 100, cmap='jet', vmax=pressure.max(), vmin=pressure.min())
-ax = plt.axes(projection='3d')
-ax.contour3D(lon, lat, P_star, 50)
-# plt.plot(longitude, latitude, '.k')
-plt.colorbar()
-plt.show()
+# # Pressure
+# fig = plt.figure()
+# # CS = plt.contour(lon, lat, p_star, 10, linewidths=0.5, colors='k')
+# # CS = plt.contourf(lon, lat, P_star, 100, cmap='jet', vmax=pressure.max(), vmin=pressure.min())
+# ax = plt.axes(projection='3d')
+# ax.contour3D(lon, lat, P_star, 50)
+# # plt.plot(longitude, latitude, '.k')
+# plt.colorbar()
+# plt.show()
 
 # ## Temperature
 # plt.figure()
