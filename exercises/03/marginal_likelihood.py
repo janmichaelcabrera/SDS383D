@@ -32,71 +32,40 @@ hyperparams = b, tau_1_squared, tau_2_squared
 # Create a guassian process object from data and prediction vector
 GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
 
-# log_pdf = -X.shape[0]/2 * np.log(np.linalg.det(covariance)) - 0.5*np.transpose(Y) @ np.linalg.inv(covariance) @ Y # maybe optimize on this?
-
-
-b = np.linspace(25, 100, num=10)
-tau_1_squared = np.linspace(10, 100, num=10)
-# b = np.arange(40, 90, 1)
-# tau_1_squared = np.arange(15, 90, 1)
+# Create arrays for evaluating and saving the hyperparameters
+b = np.linspace(50, 80, num=10)
+tau_1_squared = np.linspace(30, 60, num=10)
 Z = np.zeros((len(b), len(tau_1_squared)))
 
+# Approximate the variance by fitting a GP once and evaluating the residual sum of squared errors
 variance = GP.approx_var()
-# variance = 0.5
 
+# Loops over each b and tau_1_squared and evaluates the log of the marginal likelihood
 for i in range(len(b)):
     for j in range(len(tau_1_squared)):
         hyperparams = b[i], tau_1_squared[j], tau_2_squared
         Z[i][j] = GP.log_marginal_likelihood(hyperparams, variance=variance)
 
+# Chooses the maximum value from the array of caclulated log marginal likelihoods
+ind = np.unravel_index(np.argmax(Z, axis=None), Z.shape)
+
+# Optimal values from the above
+b_hat = b[ind[0]]
+tau_1_hat = tau_1_squared[ind[1]]
+
+# Prints the optimal values (these are evaluated on the dataset using a different script)
+print(b_hat, tau_1_hat)
+
+# For plotting purposes
 b, tau_1_squared = np.meshgrid(b, tau_1_squared)
 
-print(Z.max())
-print(Z)
-
-# fig = plt.figure()
-# ax = fig.gca(projection='3d')
-# surf = ax.plot_surface(b, tau_1_squared, Z, cmap=cm.coolwarm, linewidth=0)
-# fig.colorbar(surf, shrink=0.5, aspect=5)
-# plt.show()
-
-# levels = np.linspace(0.0001,0.1446,50)
-fig, ax = plt.subplots()
-CS = ax.contourf(b, tau_1_squared, Z, cmap='jet')
-# contours = plt.contour(b, tau_1_squared, Z, 3, colors='black')
-plt.clabel(contours, inline=True, fontsize=8)
+# Plots contour of log marginal likelihood vs b and tau_1_squared
+plt.figure()
+plt.contourf(b, tau_1_squared, Z, 100, cmap='jet')
+plt.plot(b_hat, tau_1_hat, '.k', label='Optimal $b$ and $\\tau_1^2$')
 plt.xlabel('b')
 plt.ylabel('$\\tau_1^2$')
-plt.show()
-
-# plt.figure()
-# levels = np.linspace(0.0001,0.1446,50)
-# # levels = np.linspace(min(temp),max(temp),50)
-# plt.contourf(b, tau_1_squared, Z, levels=levels, cmap = 'jet')
-# plt.colorbar(format = "%.2f", label = '$(u_{rms}/U_{\infty})^2$')
-# # quiver(x_temp[::m], y_temp[::n], T_ux[::n,::m], T_uy[::n,::m])#, scale=150, units = 'xy')
-# # plt.axvline(l, c='k', lw=1)
+plt.colorbar()
+plt.legend(loc=0)
 # plt.show()
-
-# print(GP.log_marginal_likelihood(hyperparams))
-
-# var = 1
-
-# # Run the GP smoother with the approximated variance
-# y_star, variance = GP.smoother(variance = var)
-
-# # Calculate credible interval
-# upper = y_star + np.sqrt(variance)*1.96
-# lower = y_star - np.sqrt(variance)*1.96
-
-# # Plot fit and credible interval
-# plt.figure()
-# plt.plot(X, Y, '.k')
-# plt.plot(x_star, y_star, '-b')
-# plt.plot(x_star, upper, '-g')
-# plt.plot(x_star, lower, '-g')
-# plt.xlabel('temperature ($^{\circ}$F)')
-# plt.ylabel('normalized gassbill')
-# # plt.show()
-# plt.savefig('figures/utilities_fit_gp_squared_exponential.pdf')
-# plt.close()
+plt.savefig('figures/optimal_b_tau_squared_exponential.pdf')
