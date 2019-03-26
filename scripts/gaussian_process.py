@@ -4,6 +4,7 @@ import warnings
 from scipy.stats import multivariate_normal
 from scipy.spatial.distance import euclidean
 from numpy.linalg import inv
+from scipy.optimize import minimize
 
 def kronecker_delta(x_1, x_2):
     """
@@ -331,7 +332,21 @@ class gaussian_process:
         covariance = variance*np.eye(self.x.shape[0]) + C_xx
         
         return multivariate_normal.logpdf(self.y, cov=covariance)
-        # return -self.x.shape[0]/2 * np.log(np.linalg.det(covariance)) - 0.5 * np.transpose(self.y) @ np.linalg.inv(covariance) @ self.y
+
+    def optimize_lml(self):
+        b, tau_1_squared, tau_2_squared = self.hyperparams
+        def func(params):
+            b, tau_1_squared = params
+            variance = 1
+            hyperparams = b, tau_1_squared, 10**-6
+            C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
+            covariance = variance*np.eye(self.x.shape[0]) + C_xx
+            return -multivariate_normal.logpdf(self.y, cov=covariance)
+        res = minimize(func, [b, tau_1_squared])
+        b, tau_1_squared = res.x
+        self.hyperparams = b, tau_1_squared, tau_2_squared
+        return self.hyperparams
+        # return b, tau_1_squared
 
     def generate_random_samples(self, mean=[]):
         """

@@ -36,23 +36,32 @@ P = gaussian_process(X, p_hyperparams, y=pressure, x_star=x_star)
 P_star, P_var = P.smoother()
 
 P_star = P_star.reshape(lon_1.shape)
+P_var = P_var.reshape(lon_1.shape)
 
 t_hyperparams = 0.8, 6.37, 10**-6
 T = gaussian_process(X, t_hyperparams, y=temperature, x_star=x_star)
 T_star, T_var = T.smoother()
 
 T_star = T_star.reshape(lon_1.shape)
+T_var = T_var.reshape(lon_1.shape)
 
-# # Pressure
+# # # Pressure
+# plt.figure()
+# CS = plt.contourf(lon, lat, P_star, 50, cmap='jet', vmax=pressure.max(), vmin=pressure.min())
+# # plt.plot(longitude, latitude, '.k')
+# plt.colorbar()
+# plt.show()
+
+# # Pressure var
 plt.figure()
-CS = plt.contourf(lon, lat, P_star, 50, cmap='jet', vmax=pressure.max(), vmin=pressure.min())
-# plt.plot(longitude, latitude, '.k')
+CS = plt.contourf(lon, lat, P_var, 50, cmap='jet', vmax=pressure.max(), vmin=pressure.min())
+plt.plot(longitude, latitude, '.k')
 plt.colorbar()
 plt.show()
 
-## Temperature
-plt.figure()
-CS = plt.contourf(lon, lat, T_star, 100, cmap='jet', vmax=temperature.max(), vmin=temperature.min())
-# plt.plot(longitude, latitude, '.k')
-plt.colorbar()
-plt.show()
+# ## Temperature
+# plt.figure()
+# CS = plt.contourf(lon, lat, T_star, 100, cmap='jet', vmax=temperature.max(), vmin=temperature.min())
+# # plt.plot(longitude, latitude, '.k')
+# plt.colorbar()
+# plt.show()
