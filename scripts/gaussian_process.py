@@ -115,7 +115,7 @@ class covariance_functions:
 
 class svi_covariance_functions:
     """
-    Single value input covariance functions. Same as above except takes one parameter, x. These functions are slightly more computationally efficient than the above. For a single value input function, the resultant covariance matrix is symmetric. These functions calculate the upper diagonal portion only and then mirrors ther results.
+    Single value input covariance functions. Same as above except takes one parameter, x. These functions are slightly more computationally efficient than the above. For a single value input function, the resultant covariance matrix is symmetric. These functions calculate the upper diagonal portion only and then mirrors the results. n^2/2 + n/2 function calls instead of n^2 function calls.
     """
     def __init__(self):
         pass
@@ -280,13 +280,13 @@ class gaussian_process:
 
     def smoother(self, variance=[]):
         """
-            Parameters
-            ----------
+        Parameters
+        ----------
             variance: float (scalar; optional)
                 If not specified, the sample variance is assumed to be one
 
-            Returns
-            ----------
+        Returns
+        ----------
             y_star: float, len(x_star)
                 Predictor for x_star, 
                 .. math:: y^* = W^T y
@@ -315,11 +315,24 @@ class gaussian_process:
 
         # Calculates posterior variance, var[f(x^*)| y] = C(x^*, x^*) - C(x^*, x) ( C(x, x) + \\sigma^2 I)^{-1} C(x^*, x)^T
         post_var = np.diag(C_star_star - C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0])) @ np.transpose(C_x_star_x))
-
         return y_star, post_var
 
     def log_marginal_likelihood(self, hyperparams, variance=[]):
+        """
+        Parameters
+        ----------
+            hyperparams: float (tuple)
+                Hyperparameters for a Guassian process
 
+            variance: float (scalar; optional)
+                If not specified, the sample variance is assumed to be one
+
+        Returns
+        ----------
+            p_y: float
+                Returns the log marginal-likelihood of a multivariate gaussian evaluated at the hyperparams
+                .. math: y \\sim N(0, \\sigma^2 I + C)
+        """
         if not variance:
             variance = 1
 
@@ -329,24 +342,47 @@ class gaussian_process:
         # Evaluate C(x, x)
         C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
 
+        # Evaluates covariance of marginal-likelihood: \sigma^2 I + C
         covariance = variance*np.eye(self.x.shape[0]) + C_xx
-        
         return multivariate_normal.logpdf(self.y, cov=covariance)
 
     def optimize_lml(self):
+        """
+        Returns
+        ----------
+            hyperparams: float (tuple)
+                Returns optimized b and tau_1_squared of hyperparameters. Optimized using BFGS from scipy.optimize.minimize method.
+        """
+        # Unpacks hyperparameters
         b, tau_1_squared, tau_2_squared = self.hyperparams
+
+        # Wrapper function used to optimize the log marginal-likelihood
         def func(params):
+            # Unpacks parameters to be optimized
             b, tau_1_squared = params
             variance = 1
+
+            # Repacks paramers
             hyperparams = b, tau_1_squared, 10**-6
+
+            # Evaluates covariance function
             C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
+
+            # Evaluates covariance of marginal-likelihood: \sigma^2 I + C
             covariance = variance*np.eye(self.x.shape[0]) + C_xx
+
+            # Returns the negative of the marginal log-likelihood multivariate normal (in order to maximize the evaluation)
             return -multivariate_normal.logpdf(self.y, cov=covariance)
-        res = minimize(func, [b, tau_1_squared])
+
+        # Uses BFGS optimization function to find optimal b and tau_1_squared.     
+        res = minimize(func, [b, tau_1_squared], bounds=[(0.1, 10**3),(0.1, 10**5)])
+
+        # Unpacks results of the optimization step
         b, tau_1_squared = res.x
+
+        # Updates the model hyperparameters
         self.hyperparams = b, tau_1_squared, tau_2_squared
         return self.hyperparams
-        # return b, tau_1_squared
 
     def generate_random_samples(self, mean=[]):
         """
