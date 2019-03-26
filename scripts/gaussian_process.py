@@ -112,6 +112,103 @@ class covariance_functions:
 
         return C
 
+class svi_covariance_functions:
+    """
+    Single value input covariance functions. Same as above except takes one parameter, x. These functions are slightly more computationally efficient than the above. For a single value input function, the resultant covariance matrix is symmetric. These functions calculate the upper diagonal portion only and then mirrors ther results.
+    """
+    def __init__(self):
+        pass
+
+    def squared_exponential(x, hyperparams):
+        """
+        Parameters
+        ----------
+            x: float (vector)
+                Vector of points
+
+        Returns
+        ----------
+            C: float (matrix)
+                Returns a Matern (5,2) square covariance matrix of size(x)
+                .. math:: C_{SE}(x_1, x_2) = \\tau_1^2 e^{-\\frac{1}{2} (d/b)^2} + \\tau_2^2 \\delta(x_1, x_2)
+        """
+
+        # Unpack hypereparameters
+        b, tau_1_squared, tau_2_squared = hyperparams
+
+        # Initialize covariance matrix
+        C = np.zeros((x.shape[0], x.shape[0]))
+
+        # Evaluate (i,j) components of covariance matrix
+        for i in range(x.shape[0]):
+            for j in range(x.shape[0]):
+                if j >= i:
+                    d = euclidean(x[i], x[j])
+                    C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x[i], x[j])
+                else:
+                    C[i][j] = C[j][i]
+        return C
+
+    def matern_32(x, hyperparams):
+        """
+        Parameters
+        ----------
+            x: float (vector)
+                Vector of points
+
+        Returns
+        ----------
+            C: float (matrix)
+                Returns a Matern (5,2) square covariance matrix of size(x)
+                .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
+        """
+
+        # Unpack hypereparameters
+        b, tau_1_squared, tau_2_squared = hyperparams
+
+        # Initialize covariance matrix
+        C = np.zeros((x.shape[0], x.shape[0]))
+
+        # Evaluate (i,j) components of covariance matrix
+        for i in range(x.shape[0]):
+            for j in range(x.shape[0]):
+                if j >= i:
+                    d = euclidean(x[i], x[j])
+                    C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
+                else:
+                    C[i][j] = C[j][i]
+        return C
+
+    def matern_52(x, hyperparams):
+        """
+        Parameters
+        ----------
+            x: float (vector)
+                Vector of points
+
+        Returns
+        ----------
+            C: float (matrix)
+                Returns a Matern (5,2) square covariance matrix of size(x)
+                .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
+        """
+
+        # Unpack hypereparameters
+        b, tau_1_squared, tau_2_squared = hyperparams
+
+        # Initialize covariance matrix
+        C = np.zeros((x.shape[0], x.shape[0]))
+
+        # Evaluate (i,j) components of covariance matrix
+        for i in range(x.shape[0]):
+            for j in range(x.shape[0]):
+                if j>= i:
+                    d = euclidean(x[i], x[j])
+                    C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
+                else:
+                    C[i][j] = C[j][i]
+        return C
+
 class gaussian_process:
     """
     This class returns a vector of smoothed values given feature and response vectors
@@ -205,9 +302,9 @@ class gaussian_process:
         # Evaluate C(x^*, x)
         C_x_star_x = getattr(covariance_functions, self.cov)(self.x_star, self.x, self.hyperparams)
         # Evaluate C(x, x)
-        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
+        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, self.hyperparams)
         # Evaluate C(x^*, x^*)
-        C_star_star = getattr(covariance_functions, self.cov)(self.x_star, self.x_star, self.hyperparams)
+        C_star_star = getattr(svi_covariance_functions, self.cov)(self.x_star, self.hyperparams)
 
         # Calculate weights matrix,  W = C(x^*, x) (C(x, x) + \\sigma^2 I)^{-1}
         weights = C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0]))
@@ -229,7 +326,7 @@ class gaussian_process:
         b, tau_1_squared, tau_2_squared = hyperparams
 
         # Evaluate C(x, x)
-        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, hyperparams)
+        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
 
         covariance = variance*np.eye(self.x.shape[0]) + C_xx
         
