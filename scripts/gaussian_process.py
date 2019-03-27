@@ -258,7 +258,7 @@ class gaussian_process:
         """
 
         # Evaluate covariance
-        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
+        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, self.hyperparams)
 
         # Assume initial estimate for variance
         variance = 1

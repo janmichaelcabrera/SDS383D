@@ -841,17 +841,27 @@ plt.savefig('figures/matern_52_b_vs_tau_1.pdf')
         \clearpage
         \item Suppose you observe the value of a Gaussian process $f \sim \mbox{GP}(m,C)$ at points $x_1, \ldots, x_N$.  What is the conditional distribution of the value of the process at some new point $x^{\star}$?  For the sake of notational ease simply write the value of the $(i,j)$ element of the covariance matrix as $C_{i,j}$, rather than expanding it in terms of a specific covariance function.\\
 
+        The gaussian process can be written as,
+
         $$[f(x_1), ... , f(x_N)]^T \sim \text{N}(m, C)$$
         $$\text{N}(m, C) = \text{N} \left( \begin{bmatrix}m_1 \\ \vdots \\ m_n\end{bmatrix}, \begin{bmatrix}C_{11} & \dots & C_{1n} \\ \vdots & \ddots & \vdots \\ C_{n1} & \dots & C_{nn}\end{bmatrix}\right)$$
+
+        We then construct the joint distribution considering the new point $x^*$,
 
         \begin{align*}
             [f(x_1), ... , f(x_N), f(x^*)]^T &\sim \text{N} \left( \begin{bmatrix}m_1 \\ \vdots \\ m_n \\ m^*\end{bmatrix}, \begin{bmatrix}C_{11} & \dots & C_{1n} & C_{1 *}\\ \vdots & \ddots & \vdots & \vdots \\ C_{n1} & \dots & C_{nn} & C_{n*} \\ C_{*1} & \dots & C_{*n} & C_{**} \end{bmatrix}\right) \\
             & \sim \text{N} \left ( \begin{bmatrix} \mathbf{m} \\ m^*\end{bmatrix}, \begin{bmatrix} C(\mathbf{x, x}) & C(\mathbf{x^*x}) \\ C(\mathbf{x^*x})^T & C(\mathbf{x^*, x^*})\end{bmatrix}\right)
         \end{align*}
 
+        From this joint distribution we can find the conditional distribution for the function at $x^*$ using the following derived in exercises 1:
+
         $$x_1 | x_2 \sim \text{N}(\mu_1 + \Sigma_{22}^{-1} \Sigma_{12}^T(x_2 - \mu_2), \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1}\Sigma_{12}^T)$$
 
+        The resulting function is then,
+
         $$f(x^*) | f(x_1), ..., f(x_N) \sim \text{N} \left ( m^* + C(\mathbf{x, x})^{-1}C(\mathbf{x^*x})^T(f(x_1), ...,f(x_N) - \mathbf{m})\right), C(\mathbf{x^*, x^*}) - C(\mathbf{x^*x}) C(\mathbf{x, x})^{-1} C(\mathbf{x^*x})^T $$
+
+        Note, it is common to let the mean functions equal zero so that $f \sim \mbox{GP}(0, C).$
 
         \item Prove the following lemma.
 
@@ -881,16 +891,26 @@ plt.savefig('figures/matern_52_b_vs_tau_1.pdf')
         \begin{enumerate}[label=(\Alph*)]
             \item Suppose we observe data $y_i = f(x_i) + \epsilon_i$, $\epsilon_i \sim N(0, \sigma^2)$, for some unknown function $f$. Suppose that the prior distribution for the unknown function is a mean-zero Gaussian process: $f \sim \mbox{GP}(0, C)$ for some covariance function $C$.  Let $x_1, \ldots, x_N$ denote the previously observed $x$ points.  Derive the posterior distribution for the random vector $[f(x_1), \ldots, f(x_N)]^T$, given the corresponding outcomes $y_1, \ldots, y_N$, assuming that you know $\sigma^2$.
 
+            Our prior is,
+
             $$p(f) \propto \text{exp}\left[ -\frac{1}{2}(f)^T C^{-1} (f)\right]$$
 
+            And the likelihood function is,
+
             $$p(y|f) \propto \text{exp}\left[ -\frac{1}{2}(y - f)^T \sigma^2 I (y-f)\right]$$
+
+            We then find the posterior distribution,
 
             \begin{align*}
             p(f|y) &\propto p(f) p(y|f) \\
                 &\propto \text{exp}\left[ -\frac{1}{2}(f)^T C^{-1} (f)\right] \text{exp}\left[ -\frac{1}{2}(y - f)^T \sigma^2 I (y-f)\right] 
             \end{align*}
 
+            Note that from exercises 1 we had the following,
+
             $$\theta | x_1,...,x_n \sim \text{N} \left( \frac{\frac{n}{\sigma^2} \bar{x} + \frac{1}{v}m}{\frac{n}{\sigma^2} + \frac{1}{v}}, \left [ \frac{n}{\sigma^2} + \frac{1}{v}\right]^{-1} \right)$$
+
+            Following a similar logic we get,
 
             $$f|y \sim \text{N} \left( \frac{\frac{1}{\sigma^2}y}{C^{-1} + \frac{1}{\sigma^2}I}, \left[ \frac{1}{\sigma^2}I + C^{-1}\right]^{-1}\right)$$
 
@@ -993,7 +1013,9 @@ plt.close()
 
             \clearpage
 
-            \item Let $y_i = f(x_i) + \epsilon_i$, and suppose that $f$ has a Gaussian-process prior under the Matern(5/2) covariance function $C$ with scale $\tau^1_2$, range $b$, and nugget $\tau^2_2$.  Derive an expression for the marginal distribution of $y = (y_1 \ldots, y_N)$ in terms of $(\tau^2_1, b, \tau^2_2)$, integrating out the random function $f$.  This is called a marginal likelihood.
+            \item Let $y_i = f(x_i) + \epsilon_i$, and suppose that $f$ has a Gaussian-process prior under the Matern(5/2) covariance function $C$ with scale $\tau^1_2$, range $b$, and nugget $\tau^2_2$.  Derive an expression for the marginal distribution of $y = (y_1 \ldots, y_N)$ in terms of $(\tau^2_1, b, \tau^2_2)$, integrating out the random function $f$.  This is called a marginal likelihood.\\
+
+            The marginal likelihood can be found by integrating out $f$ from the joint distribution $p(y,f)$:
 
             \begin{align*}
                 p(y) &= \int p(f) p(y|f) df \\
@@ -1001,15 +1023,19 @@ plt.close()
                 & \propto \int \text{exp}\left[-\frac{1}{2} \left\{ f^T C^{-1}f + (y-f)^T \left(\frac{1}{\sigma^2} I \right) (y-f)\right\} \right]
             \end{align*}
 
+            Like terms are gathered in the exponential,
+
             \begin{align*}
                 & f^T C^{-1}f + (y-f)^T \left(\frac{1}{\sigma^2} I \right) (y-f) = \\
                 & f^T C^{-1}f + y^T \left(\frac{1}{\sigma^2} I \right) y - 2 f^T \left(\frac{1}{\sigma^2} I \right) y + f^T \left(\frac{1}{\sigma^2} I \right) f = \\
                 & f^T \left(C^{-1} + \frac{1}{\sigma^2} I \right) f - 2 f^T \left(\frac{1}{\sigma^2} I \right) y + y^T \left(\frac{1}{\sigma^2} I \right) y
             \end{align*}
 
-            $x^T A x + x^T b + c = (x-h)^T A (x-h) + k$ $h = -\frac{1}{2} A^{-1} b$ $k=c - \frac{1}{4} b^T A^{-1} b$
+            From this we aim to complete the square for $f$ noting that $x^T A x + x^T b + c = (x-h)^T A (x-h) + k$ with $h = -\frac{1}{2} A^{-1} b$ and $k=c - \frac{1}{4} b^T A^{-1} b$.
 
             $$f^T A f + f^T b + c = (f - h)^T A (f-h) + k$$
+
+            The corresponding terms for the above are,
 
             \begin{align*}
                 A &= \left(C^{-1} + \frac{1}{\sigma^2} I \right) \\
@@ -1018,19 +1044,23 @@ plt.close()
                 k &= c - \frac{1}{4} b^T A^{-1} b = y^T \left(\frac{1}{\sigma^2} I \right) y - y^T \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) y
             \end{align*}
 
+            We reintroduce this back into the exponential term. The term $\int \text{exp}\left[-\frac{1}{2} (f-h)^T A (f-h) \right] df$ integrates to a constant not dependent on $y$. 
+
             \begin{align*}
                 p(y) & \propto \text{exp} \left[-\frac{1}{2} k \right] \int \text{exp}\left[ -\frac{1}{2} (f-h)^T A (f-h) \right] df \\
                 & \propto \text{exp} \left[-\frac{1}{2} \left\{ y^T \left(\frac{1}{\sigma^2} I \right) y - y^T \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) y \right\} \right] \\
                 & \propto \text{exp} \left[-\frac{1}{2} y^T \left \{ \left(\frac{1}{\sigma^2} I \right) - \left(\frac{1}{\sigma^2} I \right) \left(C^{-1} + \frac{1}{\sigma^2} I \right)^{-1} \left(\frac{1}{\sigma^2} I \right) \right\} y \right]
             \end{align*}
 
-            $B = \left(\frac{1}{\sigma^2}I \right)$ $D = C^{-1}$
+            If we let $B = \left(\frac{1}{\sigma^2}I \right)$ and $D = C^{-1}$, we can reduce the term in the parenthesis using the following identity,
 
             $$B - B(B+D)^{-1} B = \left(B^{-1} + D^{-1} \right)^{-1}$$
 
+            Which reduces to,
+
             $$\left(\frac{1}{\sigma^2} I \right) - \left(\frac{1}{\sigma^2} I \right) \left(\frac{1}{\sigma^2} I + C^{-1} \right)^{-1} \left(\frac{1}{\sigma^2} I \right) = \left( \left(\frac{1}{\sigma^2} I\right)^{-1} + C \right)^{-1}$$
 
-            $ \left(\frac{1}{\sigma^2} I\right)^{-1} = \sigma^2 I $
+            Note that with $ \left(\frac{1}{\sigma^2} I\right)^{-1} = \sigma^2 I $ the marginal for $p(y)$ becomes,
 
             $$p(y) \propto \text{exp} \left[-\frac{1}{2} y^T \left(\sigma^2 I + C \right)^{-1} y \right]$$
 
