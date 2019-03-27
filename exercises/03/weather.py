@@ -40,7 +40,7 @@ x_star = np.array((X1, X2)).T
 # Initialize hyperparameters and fit a GP to observed data 
 p_hyperparams = 0.23, 50127.18, 10**-6
 P = gaussian_process(X, p_hyperparams, y=pressure, x_star=x_star)
-# P.optimize_lml()
+P.optimize_lml()
 P_star, P_var = P.smoother()
 
 # Reshapes outputs of smoother for plotting purposes
@@ -51,7 +51,7 @@ P_var = P_var.reshape(lon_1.shape)
 # Initialize hyperparameters and fit a GP to observed data 
 t_hyperparams = 0.99, 6.07, 10**-6
 T = gaussian_process(X, t_hyperparams, y=temperature, x_star=x_star)
-# T.optimize_lml()
+T.optimize_lml()
 T_star, T_var = T.smoother()
 
 # Reshapes outputs of smoother for plotting purposes

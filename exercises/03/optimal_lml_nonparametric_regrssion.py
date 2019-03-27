@@ -45,12 +45,13 @@ lower = y_star - np.sqrt(variance)*1.96
 
 # Plot fit and credible interval
 plt.figure()
+plt.title('b={:.2f}'.format(GP.hyperparams[0])+'; $\\tau_1^2$={:.2f}'.format(GP.hyperparams[1]))
 plt.plot(X, Y, '.k')
 plt.plot(x_star, y_star, '-b')
 plt.plot(x_star, upper, '-g')
 plt.plot(x_star, lower, '-g')
 plt.xlabel('temperature ($^{\circ}$F)')
 plt.ylabel('normalized gassbill')
-plt.show()
-# plt.savefig('figures/utilities_fit_gp_squared_exponential_optimal.pdf')
+# plt.show()
+plt.savefig('figures/utilities_fit_gp_optimal_squared_exponential.pdf')
 plt.close()

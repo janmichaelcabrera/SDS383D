@@ -434,20 +434,23 @@ for n in range(len(noise)):
 
         \item Suppose that the residuals have constant variance $\sigma^2$ (that is, the spread of the residuals does not depend on $x$).  Derive the mean and variance of the sampling distribution for the local polynomial estimate $\hat{f}(x)$ at some arbitrary point $x$.  Note: the random variable $\hat{f}(x)$ is just a scalar quantity at $x$, not the whole function. \\
 
+        We start by taking the expectation, noting that $\mathbf{e}_1 = \begin{bmatrix} 1 & 0 & \dots \end{bmatrix}$
         
         \begin{align*}
-            \text{E} \left[ \hat{f}(x) \right] &= \text{E} \left[ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H y\right] \\
-            &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \text{E}[y] \\
-            &= \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H f(x)
+            \text{E} \left[ \hat{f}(x) \right] &= \text{E} \left[ \mathbf{e}_1 H y\right] \\
+            &= \mathbf{e}_1 H \text{E}[y] \\
+            &= \mathbf{e}_1 H f(x)
         \end{align*}
+
+        Derivation of the variance of $\hat{f}(x)$ follows a similar logic, using proofs from Exercise 1,
 
         \begin{align*}
-            \text{var}[\hat{f}(x)] &= \text{var}(\begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H y) \\
-            & = \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}^T \text{var}(y) \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \} \\
-            & = \sigma^2 \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}^T \left \{ \begin{bmatrix} 1 & 0 & \dots & 0\end{bmatrix} H \right \}
+            \text{var}[\hat{f}(x)] &= \text{var}(\mathbf{e}_1 H y) \\
+            & = \left \{ \mathbf{e}_1 H \right \}^T \text{var}(y) \left \{ \mathbf{e}_1 H \right \} \\
+            & = \sigma^2 \left \{ \mathbf{e}_1 H \right \}^T \left \{ \mathbf{e}_1 H \right \}
         \end{align*}
 
-        $y_i = f(x_i) + \epsilon_i$
+        % $y_i = f(x_i) + \epsilon_i$
 
         \item We don't know the residual variance, but we can estimate it.  A basic fact is that if $x$ is a random vector with mean $\mu$ and covariance matrix $\Sigma$, then for any symmetric matrix $Q$ of appropriate dimension, the quadratic form $x^T Q x$ has expectation
         $$
@@ -459,11 +462,15 @@ for n in range(len(noise)):
         $$
         and simplify things as much as possible.  Roughly under what circumstances will this estimator be nearly unbiased for large $n$?  Note: the quantity $2\mbox{tr}(H) - \mbox{tr}(H^T H)$ is often referred to as the ``effective degrees of freedom'' in such problems.
 
+        Taking the expectation and reducing it to where only the random variable is present results in the following,
+
         \begin{align*}
             \text{E} \left[ \hat{\sigma}^2\right] &= \text{E} \left[ \frac{(y - Hy)^T (y - Hy)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)} \right] \\
             &= \frac{\text{E}[(y - Hy)^T (y - Hy)]}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)} \\
             &= \frac{\text{E}[y^Ty] - 2 \text{E}[y^T H y] + \text{E}[y^T H^T H y]}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}
         \end{align*}
+
+        We then use the quadratic form of the expectation to reduce values in the numerator:
 
         \begin{align*}
             \text{E}[y^Ty] &= \mbox{tr}( \Sigma) + f(x)^T f(x) \\
@@ -474,15 +481,63 @@ for n in range(len(noise)):
             &= \sigma^2 \mbox{tr}(H^T H) + f(x)^T H^T H f(x)
         \end{align*}
 
+        Re-introducing these terms into the expression, collecting like terms, and reducing results in the expectation of the variance reducing to,
+
         \begin{align*}
             \text{E} \left[ \hat{\sigma}^2\right] &= \frac{n \sigma^2 + f(x)^T f(x) - 2\sigma^2 \mbox{tr}(H) - 2 f(x)^T H f(x) + \sigma^2 \mbox{tr}(H^T H) + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
             &= \frac{\sigma^2 [n - 2 \mbox{tr}(H)+ \mbox{tr}(H^T H)] + f(x)^T f(x)  - 2 f(x)^T H f(x)  + f(x)^T H^T H f(x)}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}\\
             &= \sigma^2 + \frac{\Vert f(x) - H f(x)\Vert_2^2}{n - 2\mbox{tr}(H) + \mbox{tr}(H^T H)}
         \end{align*}
 
-        Unbiased when the difference, $f(x) - H f(x)$ is small
+        We see that that the it is unbiased when the difference, $f(x) - H f(x)$ is small.
 
         \item Write a new R function that fits the local linear estimator using a Gaussian kernel for a specified choice of bandwidth $h$. Then load the data in ``utilities.csv'' into R. This data set shows the monthly gas bill (in dollars) for a single-family home in Minnesota, along with the average temperature in that month (in degrees F), and the number of billing days in that month.  Let $y$ be the average daily gas bill in a given month (i.e.~dollars divided by billing days), and let $x$ be the average temperature.  Fit $y$ versus $x$ using local linear regression and some choice of kernel.  Choose a bandwidth by leave-one-out cross-validation.
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+import sys
+sys.path.append('../../scripts/')
+from smoothers import kernel_smoother
+import pandas as pd
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Import data
+data = pd.read_csv('../../data/utilities.csv', delimiter=',')
+
+# Parse data
+X = data['temp']
+Y = np.log(data['gasbill']/data['billingdays'])
+
+# Sort X data for plotting purposes
+x_star = X.drop_duplicates().sort_values().values
+
+# Instantiate smoother object (Default is a Gaussian kernel, order one)
+model = kernel_smoother(X, Y, X, h=2)
+# Run smoother on the data 
+model.local_general()
+# Optimize the bandwidth using LOOCV
+h = model.LOOCV_optimization()
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Instantiate second model with sorted x-data
+optimal = kernel_smoother(X, Y, x_star, h=h)
+# Run model
+optimal.local_general()
+
+# Plot fit
+plt.figure()
+plt.plot(X, Y, '.k')
+plt.plot(x_star, optimal.y_star, '-b')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('normalized gassbill')
+# plt.show()
+plt.savefig('figures/utilities_fit.pdf')
+plt.close()
+        \end{lstlisting}
 
         \begin{figure}[ht] 
           \centering 
@@ -491,6 +546,28 @@ for n in range(len(noise)):
         \end{figure}
 
         \item Inspect the residuals from the model you just fit.  Does the assumption of constant variance (homoscedasticity) look reasonable?  If not, do you have any suggestion for fixing it?
+
+        \begin{lstlisting}
+# Plot residuals
+plt.figure()
+plt.plot(X, model.residuals, '.k')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('residuals')
+# plt.show()
+plt.savefig('figures/utilities_residuals.pdf')
+plt.close()
+
+# Plot residuals
+plt.figure()
+plt.plot(X, model.residuals, '.k')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('log(residuals)')
+# plt.show()
+plt.savefig('figures/utilities_residuals_log.pdf')
+plt.close()
+        \end{lstlisting}
+
+        It appears that in the log space, the residuals appear to be relatively homoscedastic. 
 
         \begin{figure}
             \begin{subfigure}{.5\textwidth}
@@ -506,6 +583,38 @@ for n in range(len(noise)):
         \end{figure}
 
         \item Put everything together to construct an approximate point-wise 95\% confidence interval for the local linear model (using your chosen bandwidth) for the value of the function at each of the observed points $x_i$ for the utilities data. Plot these confidence bands, along with the estimated function, on top of a scatter plot of the data.
+
+        \begin{lstlisting}
+# Instantiate second model with sorted x-data
+optimal = kernel_smoother(X, Y, x_star, h=h)
+# Run model
+optimal.local_general()
+
+# Establish intervel from model
+interval = 1.96*model.sigma
+
+# Sort the interval data for plotting purposes
+I = pd.DataFrame(np.transpose([X.values, interval]))
+I = I.sort_values(0).drop_duplicates()
+
+# Establish upper and lower bounds for plotting
+upper = optimal.y_star + I[1]
+lower = optimal.y_star - I[1]
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Plot fit and confidence interval
+plt.figure()
+plt.plot(X, Y, '.k')
+plt.plot(x_star, optimal.y_star, '-b')
+plt.plot(x_star, upper, '-g')
+plt.plot(x_star, lower, '-g')
+plt.xlabel('temperature ($^{\circ}$ F)')
+plt.ylabel('normalized gassbill')
+# plt.show()
+plt.savefig('figures/utilities_fit_bounds.pdf')
+plt.close()
+        \end{lstlisting}
 
         \begin{figure}[ht] 
           \centering 
@@ -544,10 +653,181 @@ for n in range(len(noise)):
         $$
         where $d = \Vert x_1 - x_2 \Vert_2$ is the distance between the two points $x_1$ and $x_2$.  Comment on the differences between the functions generated from the two covariance kernels.\\
 
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+        \end{lstlisting}
+
+        \begin{lstlisting}
+def kronecker_delta(x_1, x_2):
+    """
+    Parameters
+    ----------
+        x_1, x_2: floats (scalars)
+    
+    Returns
+    ----------
+        delta: 0 or 1
+            .. math:: \\delta(x_1, x_2)
+    """
+    if x_1 == x_2:
+        delta = 1
+    else:
+        delta = 0
+    return delta
+
+def matern_52(x, hyperparams):
+    """
+    Parameters
+    ----------
+        x: float (vector)
+            Vector of points
+
+        hyperparams: float (tuple)
+            Hyperparameters for a Gaussian process
+
+    Returns
+    ----------
+        C: float (matrix)
+            Returns a Matern (5,2) square covariance matrix of size(x)
+            .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
+    """
+
+    # Unpack hypereparameters
+    b, tau_1_squared, tau_2_squared = hyperparams
+
+    # Initialize covariance matrix
+    C = np.zeros((x.shape[0], x.shape[0]))
+
+    # Evaluate (i,j) components of covariance matrix
+    for i in range(x.shape[0]):
+        for j in range(x.shape[0]):
+            d = np.abs(x[i] - x[j])
+            C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
+
+    return C
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Initialize random seed
+np.random.seed(3)
+
+# Randomly draw values from a uniform distribution and sort from lowest to highest
+x = np.sort(np.random.uniform(size=100))
+
+# Create hyperparameters
+b = np.logspace(-1, 1, num=4)
+tau_1_squared = np.logspace(-1, 0, num=4)
+tau_2_squared = np.logspace(-6, 0, num=4)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+#### Plot varied b
+plt.figure()
+plt.title('$\\tau_1^2$={:.2f}'.format(tau_1_squared[0])+'; $\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
+# Iterates over vector of b values and plots them on the same plot
+for i in range(len(b)):
+    np.random.seed(3)
+    hyperparams = b[i], tau_1_squared[0], tau_2_squared[0]
+    # Calculates covariance given x and current hyperparameters
+    cov = matern_52(x, hyperparams)
+    # Generates random sample from a multivariate normal
+    fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+    plt.plot(x, fx, label='b={:.2f}'.format(b[i]))
+plt.legend(loc=0)
+plt.ylim([-3, 3])
+# plt.show()
+plt.savefig('figures/matern_52_varied_b.pdf')
+plt.close()
+        \end{lstlisting}
+
         \begin{figure}[ht] 
           \centering 
-          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_b}
+          \includegraphics[width=0.7\columnwidth]{figures/matern_52_varied_b}
           \caption{\label{fig:matern_52_varied_b} Varied $b$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        \clearpage
+
+        \begin{lstlisting}
+#### Plot varied tau_1^2
+plt.figure()
+plt.title('b={:.2f}'.format(b[i])+'; $\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
+# Iterates over vector of tau_1^2 values and plots them on the same plot
+for i in range(len(tau_1_squared)):
+    np.random.seed(3)
+    hyperparams = b[0], tau_1_squared[i], tau_2_squared[0]
+    # Calculates covariance given x and current hyperparameters
+    cov = matern_52(x, hyperparams)
+    # Generates random sample from a multivariate normal
+    fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+    plt.plot(x, fx, label='$\\tau_1^2$={:.2f}'.format(tau_1_squared[i]))
+plt.legend(loc=0)
+plt.ylim([-3, 3])
+# plt.show()
+plt.savefig('figures/matern_52_varied_tau_1.pdf')
+plt.close()
+        \end{lstlisting}
+
+        \begin{figure}[h] 
+          \centering 
+          \includegraphics[width=0.7\columnwidth]{figures/matern_52_varied_tau_1}
+          \caption{\label{fig:matern_52_varied_tau_1} Varied $\tau_1^2$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        \begin{lstlisting}
+#### Plot varied tau_2^2
+plt.figure()
+plt.title('b={:.2f}'.format(b[i])+'; $\\tau_1^2$={:.2f}'.format(tau_1_squared[0]))
+# Iterates over vector of tau_2^2 values and plots them on the same plot
+for i in range(len(tau_1_squared)):
+    np.random.seed(3)
+    hyperparams = b[0], tau_1_squared[0], tau_2_squared[i]
+    # Calculates covariance given x and current hyperparameters
+    cov = matern_52(x, hyperparams)
+    # Generates random sample from a multivariate normal
+    fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+    plt.plot(x, fx, label='$\\tau_2^2$={:.6f}'.format(tau_2_squared[i]))
+plt.legend(loc=0)
+plt.ylim([-3, 3])
+# plt.show()
+plt.savefig('figures/matern_52_varied_tau_2.pdf')
+plt.close()
+        \end{lstlisting}
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=0.7\columnwidth]{figures/matern_52_varied_tau_2.pdf}
+          \caption{\label{fig:matern_52_varied_tau_2} Varied $\tau_2^2$ for Matern(5,2) covariance function}
+        \end{figure}
+
+        \begin{lstlisting}
+##### Plot b vs tau_1^2
+fig, ax = plt.subplots(b.shape[0], tau_1_squared.shape[0], sharex='col', sharey='row')
+fig.subplots_adjust(hspace=0.3, wspace=0.2)
+fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
+fig.set_size_inches(8,4.5)
+for i in range(b.shape[0]):
+    for j in range(tau_1_squared.shape[0]):
+        np.random.seed(3)
+        ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
+        hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
+        # Calculates covariance given x and current hyperparameters
+        cov = matern_52(x, hyperparams)
+        # Generates random sample from a multivariate normal
+        fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+        ax[i, j].plot(x, fx, '-k')
+# plt.show()
+plt.savefig('figures/matern_52_b_vs_tau_1.pdf')
+        \end{lstlisting}
+
+
+        \begin{figure}[ht] 
+          \centering 
+          \includegraphics[width=1.0\columnwidth]{figures/matern_52_b_vs_tau_1}
+          \caption{\label{fig:matern_52_b_vs_tau_1} Varied $b$ and $\tau_1^2$ for Matern(5,2) covariance function}
         \end{figure}
 
         \begin{itemize}
@@ -557,24 +837,6 @@ for n in range(len(noise)):
 
             \item $\tau_2^2$: seems to increase the noise as its value increases.
         \end{itemize}
-
-        \begin{figure}[ht] 
-          \centering 
-          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_tau_1}
-          \caption{\label{fig:matern_52_varied_tau_1} Varied $\tau_1^2$ for Matern(5,2) covariance function}
-        \end{figure}
-
-        \begin{figure}[ht] 
-          \centering 
-          \includegraphics[width=0.8\columnwidth]{figures/matern_52_b_vs_tau_1}
-          \caption{\label{fig:matern_52_b_vs_tau_1} Varied $b$ and $\tau_1^2$ for Matern(5,2) covariance function}
-        \end{figure}
-
-        \begin{figure}[ht] 
-          \centering 
-          \includegraphics[width=0.5\columnwidth]{figures/matern_52_varied_tau_2.pdf}
-          \caption{\label{fig:matern_52_varied_tau_2} Varied $\tau_2^2$ for Matern(5,2) covariance function}
-        \end{figure}
 
         \clearpage
         \item Suppose you observe the value of a Gaussian process $f \sim \mbox{GP}(m,C)$ at points $x_1, \ldots, x_N$.  What is the conditional distribution of the value of the process at some new point $x^{\star}$?  For the sake of notational ease simply write the value of the $(i,j)$ element of the covariance matrix as $C_{i,j}$, rather than expanding it in terms of a specific covariance function.\\
@@ -648,6 +910,72 @@ for n in range(len(noise)):
 
             \item Go back to the utilities data, and plot the pointwise posterior mean and 95\% posterior confidence interval for the value of the function at each of the observed points $x_i$ (again, superimposed on top of the scatter plot of the data itself).  Choose $\tau^2_2$ to be very small, say $10^{-6}$, and choose $(b, \tau^2_1)$ that give a sensible-looking answer.
 
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+import sys
+sys.path.append('../../scripts/')
+from gaussian_process import gaussian_process
+import pandas as pd
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Import data
+data = pd.read_csv('../../data/utilities.csv', delimiter=',')
+
+# Parse data
+X = data['temp']
+Y = data['gasbill']/data['billingdays']
+
+# Sort X data for plotting purposes
+x_star = X.drop_duplicates().sort_values().values
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Set hyperparameters
+b = 30
+tau_1_squared = 10
+tau_2_squared = 10**-6
+
+# Pack hyperparameters for passing to model
+hyperparams = b, tau_1_squared, tau_2_squared
+
+# Create a guassian process object from data and prediction vector
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Create a guassian process object from data and prediction vector
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
+
+var = 1
+
+# Run the GP smoother with the approximated variance
+y_star, variance = GP.smoother(variance = var)
+
+# Calculate credible interval
+upper = y_star + np.sqrt(variance)*1.96
+lower = y_star - np.sqrt(variance)*1.96
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Plot fit and credible interval
+plt.figure()
+plt.plot(X, Y, '.k')
+plt.plot(x_star, y_star, '-b')
+plt.plot(x_star, upper, '-g')
+plt.plot(x_star, lower, '-g')
+plt.xlabel('temperature ($^{\circ}$F)')
+plt.ylabel('normalized gassbill')
+# plt.show()
+plt.savefig('figures/utilities_fit_gp_squared_exponential.pdf')
+plt.close()
+        \end{lstlisting}
+
+        Note here that the code was re-run using the Matern (5,2) covariance function.
+
             \begin{figure}
                 \begin{subfigure}{.5\textwidth}
                   \centering
@@ -662,6 +990,8 @@ for n in range(len(noise)):
             \caption{Gaussian process fit to utilities data using squared exponential and Matern(5,2) covariance functions}
             \label{fig:gp_fit_utilities}
             \end{figure}
+
+            \clearpage
 
             \item Let $y_i = f(x_i) + \epsilon_i$, and suppose that $f$ has a Gaussian-process prior under the Matern(5/2) covariance function $C$ with scale $\tau^1_2$, range $b$, and nugget $\tau^2_2$.  Derive an expression for the marginal distribution of $y = (y_1 \ldots, y_N)$ in terms of $(\tau^2_1, b, \tau^2_2)$, integrating out the random function $f$.  This is called a marginal likelihood.
 
@@ -708,6 +1038,126 @@ for n in range(len(noise)):
 
             \item Return to the utilities or ethanol data sets. Fix $\tau^2_2 = 0$, and evaluate the log of the marginal likelihood function $p(y \mid \tau^2_1, b)$ over a discrete 2-d grid of points. If you're getting errors in your code with $\tau^2_2 = 0$, use something very small instead.  Use this plot to choose a set of values $(\hat{\tau^2_1}, \hat{b})$ for the hyperparameters.  Then use these hyperparameters to compute the posterior mean for $f$, given $y$.  Comment on any lingering concerns you have with your fitted model.
 
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from scipy.stats import multivariate_normal
+import sys
+sys.path.append('../../scripts/')
+from gaussian_process import gaussian_process
+from gaussian_process import covariance_functions
+import pandas as pd
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Import data
+data = pd.read_csv('../../data/utilities.csv', delimiter=',')
+
+# Parse data
+X = data['temp']
+Y = data['gasbill']/data['billingdays']
+
+# Sort X data for plotting purposes
+x_star = X.drop_duplicates().sort_values().values
+
+# Set hyperparameters
+b = 20
+tau_1_squared = 10
+tau_2_squared = 10**-6
+
+# Pack hyperparameters for passing to model
+hyperparams = b, tau_1_squared, tau_2_squared
+
+# Create a guassian process object from data and prediction vector
+GP = gaussian_process(X, hyperparams, y=Y, x_star=x_star, cov='squared_exponential')
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Create arrays for evaluating and saving the hyperparameters
+b = np.linspace(50, 80, num=10)
+tau_1_squared = np.linspace(30, 60, num=10)
+Z = np.zeros((len(b), len(tau_1_squared)))
+
+# Approximate the variance by fitting a GP once and evaluating the residual sum of squared errors
+variance = GP.approx_var()
+
+# Loops over each b and tau_1_squared and evaluates the log of the marginal likelihood
+for i in range(len(b)):
+    for j in range(len(tau_1_squared)):
+        hyperparams = b[i], tau_1_squared[j], tau_2_squared
+        Z[i][j] = GP.log_marginal_likelihood(hyperparams, variance=variance)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Chooses the maximum value from the array of caclulated log marginal likelihoods
+ind = np.unravel_index(np.argmax(Z, axis=None), Z.shape)
+
+# Optimal values from the above
+b_hat = b[ind[0]]
+tau_1_hat = tau_1_squared[ind[1]]
+
+# Prints the optimal values (these are evaluated on the dataset using a different script)
+print(b_hat, tau_1_hat)
+
+# For plotting purposes
+b, tau_1_squared = np.meshgrid(b, tau_1_squared)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Plots contour of log marginal likelihood vs b and tau_1_squared
+plt.figure()
+plt.contourf(b, tau_1_squared, Z, 100, cmap='jet')
+plt.plot(b_hat, tau_1_hat, '.k', label='Optimal $b$ and $\\tau_1^2$')
+plt.xlabel('b')
+plt.ylabel('$\\tau_1^2$')
+plt.colorbar()
+plt.legend(loc=0)
+# plt.show()
+plt.savefig('figures/optimal_b_tau_squared_exponential.pdf')
+        \end{lstlisting}
+
+            \begin{figure}
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/optimal_b_tau_squared_exponential}
+                  \subcaption{Optimal $b$ and $\tau_1^2$}
+                \end{subfigure}%
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_squared_exponential_optimal}
+                  \subcaption{Optimal fit}
+                \end{subfigure}
+            \caption{Gaussian process fit to utilities data using squared exponential with optimal $b$ = 67, $\tau_1^2$ = 47}
+            \label{fig:gp_fit_utilities_optimal}
+            \end{figure}
+
+            \begin{figure}
+                \centering
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_optimal_matern_32}
+                  \subcaption{Matern (3,2)}
+                \end{subfigure}%
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_optimal_matern_52}
+                  \subcaption{Matern (5,2)}
+                \end{subfigure}
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/utilities_fit_gp_optimal_squared_exponential}
+                  \subcaption{Squared exponential}
+                \end{subfigure}
+            \caption{Gaussian process fit to utilities data using BFGS optimization for hyperparameters}
+            \label{fig:gp_fit_utilities_optimal_lm}
+            \end{figure}
+
+            \clearpage
+
             \item In \verb|weather.csv| you will find data on two variables from 147 weather stations in the American Pacific northwest.
             \begin{itemize}
                 \item \textit{Pressure:} the difference between the forecasted pressure and the actual pressure reading at that station (in Pascals)
@@ -719,242 +1169,147 @@ for n in range(len(noise)):
             $$
             Justify your reasoning for using Euclidean distance or this ``nonisotropic'' distance.
 
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+import sys
+from mpl_toolkits import mplot3d
+sys.path.append('../../scripts/')
+from gaussian_process import gaussian_process
+from gaussian_process import covariance_functions
+import pandas as pd
+from matplotlib.mlab import griddata
+        \end{lstlisting}
+
+        \begin{lstlisting}
+# Import data
+data = pd.read_csv('../../data/weather.csv', delimiter=',')
+
+# Parse data into Y and X components
+pressure = data['pressure'] # Y_1
+temperature = data['temperature'] # Y_2
+longitude = data['lon']
+latitude = data['lat']
+X = np.transpose(np.array((longitude, latitude))) # X
+        \end{lstlisting}
+
+        \begin{lstlisting}
+### Build up array to evaluate accross a grid of values
+# Specifies bounds and number of points to divide the bounds into
+num = 30
+lon = np.linspace(longitude.min(), longitude.max(), num=num)
+lat = np.linspace(latitude.min(), latitude.max(), num=num)
+
+# Builds the grid from the previous lines (num x num Array)
+lon_1, lat_1 = np.meshgrid(lon, lat)
+
+# Converts the arrays into vectors (num^2 x 1)
+X1 = np.ravel(lon_1)
+X2 = np.ravel(lat_1)
+
+# Builds an array from unraveled vectors (num^2 x 2)
+x_star = np.array((X1, X2)).T
+        \end{lstlisting}
+
+        \begin{lstlisting}
+#### Pressure GP
+# Initialize hyperparameters and fit a GP to observed data 
+p_hyperparams = 0.23, 50127.18, 10**-6
+P = gaussian_process(X, p_hyperparams, y=pressure, x_star=x_star)
+P.optimize_lml() # optimizes b, and tau_1_squared
+P_star, P_var = P.smoother()
+
+# Reshapes outputs of smoother for plotting purposes
+P_star = P_star.reshape(lon_1.shape)
+P_var = P_var.reshape(lon_1.shape)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+#### Temperature GP
+# Initialize hyperparameters and fit a GP to observed data 
+t_hyperparams = 0.99, 6.07, 10**-6
+T = gaussian_process(X, t_hyperparams, y=temperature, x_star=x_star)
+T.optimize_lml() # optimizes b, and tau_1_squared
+T_star, T_var = T.smoother()
+
+# Reshapes outputs of smoother for plotting purposes
+T_star = T_star.reshape(lon_1.shape)
+T_var = T_var.reshape(lon_1.shape)
+        \end{lstlisting}
+
+        \begin{lstlisting}
+levels = 50
+
+#### Pressure
+plt.figure()
+plt.title('Pressure Difference: b={:.2f}'.format(P.hyperparams[0])+'; $\\tau_1^2$={:.2f}'.format(P.hyperparams[1]))
+CS = plt.contourf(lon, lat, P_star, levels, cmap='jet') #, vmax=pressure.max(), vmin=pressure.min())
+plt.colorbar(label='Pressure Difference ($Pa$)')
+# plt.show()
+plt.savefig('figures/weather_pressure.pdf')
+
+#### Pressure variance
+plt.figure()
+plt.title('b={:.2f}'.format(P.hyperparams[0])+'; $\\tau_1^2$={:.2f}'.format(P.hyperparams[1]))
+CS = plt.contourf(lon, lat, P_var, levels, cmap='jet', vmax=P_var.max(), vmin=P_var.min())
+plt.plot(longitude, latitude, '.k')
+plt.colorbar()
+# plt.show()
+plt.savefig('figures/weather_pressure_var.pdf')
+        \end{lstlisting}
+
+        \begin{lstlisting}
+#### Temperature
+plt.figure()
+plt.title('Temperature Difference: b={:.2f}'.format(T.hyperparams[0])+'; $\\tau_1^2$={:.2f}'.format(T.hyperparams[1]))
+CS = plt.contourf(lon, lat, T_star, levels, cmap='jet') #, vmax=temperature.max(), vmin=temperature.min())
+plt.colorbar(label='Temperature Difference ($^{\circ}$C)')
+# plt.show()
+plt.savefig('figures/weather_temperature.pdf')
+
+#### Temperature variance
+plt.figure()
+plt.title('b={:.2f}'.format(T.hyperparams[0])+'; $\\tau_1^2$={:.2f}'.format(T.hyperparams[1]))
+CS = plt.contourf(lon, lat, T_var, levels, cmap='jet', vmax=T_var.max(), vmin=T_var.min())
+plt.plot(longitude, latitude, '.k')
+plt.colorbar()
+# plt.show()
+plt.savefig('figures/weather_temperature_var.pdf')
+        \end{lstlisting}
+
+            \begin{figure}
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/weather_pressure}
+                  \subcaption{Smoothed pressure}
+                \end{subfigure}%
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/weather_pressure_var}
+                  \subcaption{Posterior variance and weather station loacation}
+                \end{subfigure}
+            \caption{Gaussian process fit to weather data using Matern (5,2)}
+            \label{fig:weather_pressure}
+            \end{figure}
+
+            \begin{figure}
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/weather_temperature}
+                  \subcaption{Smoothed temperature}
+                \end{subfigure}%
+                \begin{subfigure}{.5\textwidth}
+                  \centering
+                  \includegraphics[width=.9\linewidth]{figures/weather_temperature_var}
+                  \subcaption{Posterior variance and weather station loacation}
+                \end{subfigure}
+            \caption{Gaussian process fit to weather data using Matern (5,2)}
+            \label{fig:weather_temperature}
+            \end{figure}
         
 
         \end{enumerate}
-
-
-
-
-    \clearpage
-    \appendix
-    \section{Kernel Smoothing Code}
-
-        \begin{lstlisting}
-from __future__ import division
-import numpy as np
-from scipy.optimize import minimize
-from numpy.linalg import inv
-
-class kernels:
-    """
-    This class contains kernel functions for kernel smoothing
-    """
-    def __init__(self):
-        pass
-
-    def uniform(x):
-        """
-        Parameters
-        ----------
-            x: float
-                argument to be evaluated
-
-        Returns
-        ----------
-            k: float
-                uniform kernel evaluation at x
-                .. math:: k(x) = 1/2 I(x), with I(x) = 1, if |x| \\leq 1, 0 otherwise
-        """
-        if np.abs(x) <= 1:
-            k = 0.5
-        else:
-            k = 0
-        return k
-
-    def gaussian(x):
-        """
-        Parameters
-        ----------
-            x: float
-                argument to be evaluated
-
-        Returns
-        ----------
-            k: float
-                gaussian kernel evaluation at x
-                .. math:: k(x) = \\frac{1}{\\sqrt{2 \\pi}} e^{-x^2/2}
-        """
-        return 1/np.sqrt(2*np.pi)*np.exp(-x**2/2)
-
-class kernel_smoother:
-    """
-    This class returns a vector of smoothed values given feature and response vectors
-    """
-    def __init__(self, x, y, x_star, kernel='gaussian', h=1, D=1):
-        """
-        Parameters
-        ----------
-            x: float
-                Feature vector
-
-            y: float
-                Response vector
-
-            x_star: float
-                Scalar or vector to be evaluated
-
-            kernel: str (optional)
-                Kernel type to be used: Available kernels are gaussian,
-                
-            h: float (optional)
-                Bandwidth
-
-            D: int (optional)
-                Order of polynomial smoother
-        """
-        self.x = x
-        self.y = y
-        self.x_star = x_star
-        self.h = h
-        self.D = D
-        self.kernel=kernel
-
-        if x_star.shape != x:
-            raise Warning('Feature vector and evaluation vector are not the same length. Residuals will not be calculated.')
-
-    def local_general(self):
-        """
-        Returns
-        ----------
-            y_star: float, len(x_star)
-                Predictor for x_star, 
-                .. math:: y_i^* = [1 0 ...] H_i y
-                .. math:: w(x_i, x^*) = \\frac{1}{2}K( \\frac{x_i - x^*}{h}), \\sum_{i=1}^n w(x_i, x^*) = 1
-
-        Attributes
-        ----------
-            sigma: float, len(x_star)
-                Standard error at x_star
-
-            residuals: float, len(x_star)
-                residuals of prediction from data (only calculated if len(y_star) == (len(y)))
-                .. math:: r_i = y_i - \\hat{y}_i
-
-            Hat_matrix: list
-                first elements in hat matrix for a given x_star
-        """
-        # Instantiate vectors and matrices for storing calculations
-        self.y_star = np.zeros(self.x_star.shape)
-        self.sigma = np.zeros(self.x_star.shape)
-        self.residuals = np.zeros(self.x_star.shape)
-        self.Hat_matrix = []
-
-        # Vector for determining y_star
-        e_1 = np.append(1, np.zeros(self.D))
-
-        # Iterate through each value in y_star
-        for i in range(self.y_star.shape[0]):
-            
-            # Instantiate a weights vector
-            weights = np.zeros(self.x.shape)
-
-            # Instantiates X matrix 
-            X = np.transpose(np.ones((self.x.shape[0], self.D+1)))
-
-            # Populates X matrix given the order of the smoother, D
-            for d in range(self.D):
-                X[d+1] = (self.x - self.x_star[i])**(d+1)
-            X = np.transpose(X)
-
-            # Iterates through feature/response vectors
-            for j in range(self.x.shape[0]):
-                weights[j] = 1/self.h * getattr(kernels, self.kernel)((self.x[j] - self.x_star[i])/self.h)
-
-            # Normalizes weights such that \sum_{i=1}^n w(x_i, x^*) = 1 
-            weights = weights/weights.sum()
-
-            # Construct weights matrix
-            W = np.diag(weights)
-
-            # Calculate hat matrix; H = (X^T W X)^{-1} X^T W
-            H = (inv(np.transpose(X) @ W @ X) @ np.transpose(X) @ W)
-            
-            # Append hat matrix with current H matrix (needed for LOOCV)
-            self.Hat_matrix.append(e_1 @ H)
-
-            # \hat{f}(x^*) = e_1 H y
-            self.y_star[i] = e_1 @ H @ self.y
-
-            # Calculates residuals and confidence interval if y_star and y shapes are equivalent
-            if self.y_star.shape == self.y.shape:
-                self.residuals[i] = self.y[i] - self.y_star[i]
-
-        # Residual sum of squared errors
-        rss = (self.residuals**2).sum()
-        # Approximate standard error of fit
-        sigma_hat = rss/(len(self.y_star)-1)
-
-        # Calculates approximate standard error 
-        for i in range(self.sigma.shape[0]):
-            self.sigma[i] = np.sqrt(np.transpose(self.Hat_matrix[i]) @ (self.Hat_matrix[i])*sigma_hat)
-
-        return self.y_star
-
-    def MSE(self, y_test):
-        """
-        Parameters
-        ----------
-            y_test: float
-                Response vector
-
-        Returns
-        ----------
-            MSE: float
-                Average squared error for y_test given y
-                .. math:: MSE \\approx \\frac{1}{n}\\sum(y_test - y_star)**2
-        """
-        self.y_test = y_test
-        return np.mean((y_test - self.y_star)**2)
-
-    def MSE_optimization(self, y_test):
-        """
-        Parameters
-        ----------
-            y_test: float
-                Response vector
-
-        Returns
-        ----------
-            h_star: float
-                Uses BFGS minimization method to minimize the MSE by varying h_star
-        """
-        self.y_test = y_test
-        def func(X):
-            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
-            Y.local_general()
-            return Y.MSE(self.y_test)
-        h_star = minimize(func, 1)
-        self.h = h_star.x
-        return h_star.x
-
-    def LOOCV(self):
-        """
-        Returns
-        ----------
-            loocv: float
-                Leave one out cross validation statistic (LOOCV)
-                .. math: loocv = \\sum_{i=1}^n (\\frac{y_i - \\hat{y}_i}{1-H_{ii}})^2
-        """
-        loocv = np.zeros(len(self.y))
-        for i in range(len(loocv)):
-            loocv[i] = ((self.y[i] - self.y_star[i])/(1 - self.Hat_matrix[i][i]))**2
-        return loocv.sum()
-
-    def LOOCV_optimization(self):
-        """
-        Returns
-        ----------
-            h_star: float
-                Uses BFGS minimization method to minimize the LOOCV by varying h_star
-        """
-        def func(X):
-            Y = kernel_smoother(self.x, self.y, self.x_star, kernel=self.kernel, h=X, D=self.D)
-            Y.local_general()
-            return Y.LOOCV()
-        h_star = minimize(func, 0.7)
-        self.h = h_star.x
-        return self.h
-        \end{lstlisting}
 
 \end{document}
