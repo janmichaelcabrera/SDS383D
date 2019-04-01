@@ -1,0 +1,79 @@
+\documentclass[10pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\usepackage{courier}
+\usepackage{subcaption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=Python,
+        basicstyle=\footnotesize\ttfamily,
+        upquote=true,
+        aboveskip={1.0\baselineskip},
+        columns=fixed,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+
+\begin{document}
+
+    \title{SDS 383D, Exercises 4: Hierarchical Models: Data-analysis Problems}
+    \author{Jan-Michael Cabrera}
+    \date{\today}
+    \maketitle
+
+    \section*{Math tests}
+
+    The data set in ``mathtest.csv'' shows the scores on a standardized math test from a sample of 10th-grade students at 100 different U.S.~urban high schools, all having enrollment of at least 400 10th-grade students.  (A lot of educational research involves ``survey tests'' of this sort, with tests administered to all students being the rare exception.)
+
+    Let $\theta_i$ be the underlying mean test score for school $i$, and let $y_{ij}$ be the score for the $j$th student in school $i$.  Starting with the ``mathtest.R'' script, you'll notice that the extreme school-level averages $\bar{y}_i$ (both high and low) tend to be at schools where fewer students were sampled.
+
+    \begin{enumerate}
+        \item Explain briefly why this would be.
+
+        
+
+        \item Fit this normal hierarchical model to these data via Gibbs sampling:
+        \begin{eqnarray*}
+        y_{ij} &\sim& \mbox{N}(\theta_i, \sigma^2) \\
+        \theta_i &\sim& \mbox{N}(\mu, \tau^2 \sigma^2)
+        \end{eqnarray*}
+        Decide upon sensible priors for the unknown model parameters $(\mu, \sigma^2, \tau^2)$.
+
+        \item Suppose you use the posterior mean $\hat{\theta}_i$ from the above model to estimate each school-level mean $\theta_i$.  Define the shrinkage coefficient $\kappa_i$ as
+        $$
+        \kappa_i = \frac{ \bar{y}_i - \hat{\theta}_i}{\bar{y}_i} \, ,
+        $$
+        which tells you how much the posterior mean shrinks the observed sample mean.  Plot this shrinkage coefficient (in absolute value) for each school as a function of that school's sample size, and comment.
+
+    \end{enumerate}
+
+\end{document}
