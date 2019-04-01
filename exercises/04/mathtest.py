@@ -8,6 +8,8 @@ sys.path.append('../../scripts/')
 from samplers import Trace
 import scipy.stats as stats
 
+np.random.seed(3)
+
 # Import data
 data = pd.read_csv('../../data/mathtest.csv', delimiter=',')
 
@@ -23,20 +25,18 @@ N = len(data)
 for i in range(m):
     means[i] = scores[i].mean()
 
-iterations = 10
+iterations = 1000
+burn = 200
 
-tau_sq_trace = Trace('tau_sq', iterations)
-sigma_sq_trace = Trace('sigma_sq', iterations)
-mu_trace = Trace('mu', iterations)
-theta_trace = Trace('theta', iterations, shape=m)
+tau_sq_trace = Trace('tau_sq', iterations, burn=burn)
+sigma_sq_trace = Trace('sigma_sq', iterations, burn=burn)
+mu_trace = Trace('mu', iterations, burn=burn)
+theta_trace = Trace('theta', iterations, shape=m, burn=burn)
 
 tau_sq = 0.5
 sigma_sq = 1
-mu = 0.5
+mu = 50
 theta = np.ones(m)
-
-t = np.array([2, 3, 4])
-
 
 for p in range(iterations):
     a_1 = m/2
@@ -71,4 +71,23 @@ for p in range(iterations):
     sigma_sq_trace.update_trace(p, sigma_sq)
     mu_trace.update_trace(p, mu)
     theta_trace.update_trace(p, theta)
+
+# mu_trace.plot(figures_directory='figures/')
+# mu_trace.histogram(figures_directory='figures/')
+
+# tau_sq_trace.plot(figures_directory='figures/')
+# tau_sq_trace.histogram(figures_directory='figures/')
+
+# sigma_sq_trace.plot(figures_directory='figures/')
+# sigma_sq_trace.histogram(figures_directory='figures/')
+
+# theta_trace.plot(figures_directory='figures/theta_trace/')
+# theta_trace.histogram(figures_directory='figures/theta_trace/')
+
+mean = theta_trace.mean()
+
+k = np.zeros(m)
+
+for i in range(m):
+    k[i] = np.abs((scores[i].mean() - mean[i])/scores[i].mean())
 

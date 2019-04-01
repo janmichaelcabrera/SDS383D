@@ -9,7 +9,7 @@ class Trace:
     """
     This class instantiates traces
     """
-    def __init__(self, name, iterations, shape=1):
+    def __init__(self, name, iterations, shape=1, burn=100):
         """
         Parameters
         ----------
@@ -25,8 +25,12 @@ class Trace:
         """
         self.name = name
         self.trace = np.zeros((iterations, shape))
+        self.burn = burn
 
-    def plot(self, figures_directory=''):
+        if burn > iterations:
+            raise ValueError('Burn length %i is greater than total iterations %i'%(burn, iterations))
+
+    def plot(self, figures_directory='', plot_index=0):
         """
         Parameters
         ----------
@@ -36,13 +40,33 @@ class Trace:
 
         """
         if len(figures_directory) == 0:
+            plt.plot(self.trace[self.burn:], '-k')
+            plt.ticklabel_format(useOffset=False)
             plt.show()
         else:
             for i in range(self.trace.shape[1]):
                 plt.figure()
-                plt.plot(self.trace[:,i], '-b', label=self.name+'_'+str(i))
+                plt.plot(self.trace[self.burn:,i], '-k', label=self.name+'_'+str(i))
+                plt.ticklabel_format(useOffset=False)
                 plt.savefig(figures_directory+self.name+'_'+str(i)+'_trace.png')
                 plt.close()
+
+    def histogram(self, figures_directory='', plot_index=0):
+        plt.figure()
+        if len(figures_directory) == 0:
+            plt.hist(self.trace[self.burn:], color='k')
+            plt.ticklabel_format(useOffset=False)
+            plt.locator_params(axis='x', nbins=5)
+            plt.show()
+        else:
+            for i in range(self.trace.shape[1]):
+                plt.figure()
+                plt.hist(self.trace[self.burn:, i], color='k')
+                plt.ticklabel_format(useOffset=False)
+                plt.locator_params(axis='x', nbins=5)
+                plt.savefig(figures_directory+self.name+'_'+str(i)+'_hist.png')
+                plt.close()
+        return 0
 
     def update_trace(self, index, value):
         """
@@ -66,7 +90,7 @@ class Trace:
         """
         mean = np.zeros(self.trace.shape[1])
         for i in range(len(mean)):
-            mean[i] = self.trace[:,i].mean()
+            mean[i] = self.trace[self.burn:,i].mean()
         return mean
 
 class Gibbs:

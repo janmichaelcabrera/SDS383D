@@ -59,7 +59,7 @@
     \begin{enumerate}
         \item Explain briefly why this would be.
 
-        
+        Using the arithmetic mean as an approximation for the true mean is not very good for small sample sizes. The influence of relatively extreme values in the sample can greatly throw off the estimation of the mean for small sample sizes.
 
         \item Fit this normal hierarchical model to these data via Gibbs sampling:
         \begin{eqnarray*}
@@ -67,6 +67,46 @@
         \theta_i &\sim& \mbox{N}(\mu, \tau^2 \sigma^2)
         \end{eqnarray*}
         Decide upon sensible priors for the unknown model parameters $(\mu, \sigma^2, \tau^2)$.
+
+        \begin{align*}
+            \pi_j(\mu) &= 1 \\
+            \pi_j(\sigma^2) &= 1/\sigma^2 \\
+            \pi_j(\tau^2) &= 1/\tau^2
+        \end{align*}
+
+        $$p(y_{ij} | \theta_i, \sigma^2) \propto \left(\frac{1}{\sigma^2}\right)^{1/2} \text{exp}\left[-\frac{1}{2 \sigma^2} (\theta_i - y_{ij})^2 \right]$$
+
+        \begin{align*}
+            p(\mathbf{y} | \theta_1, \dots, \theta_m, \sigma^2) & \propto \prod_{i=1}^m \prod_{j=1}^{n_i} \left(\frac{1}{\sigma^2}\right)^{1/2} \text{exp}\left[-\frac{1}{2 \sigma^2} (\theta_i - y_{ij})^2 \right] \\
+            & \propto \left(\frac{1}{\sigma^2}\right)^{N/2} \text{exp}\left[-\frac{1}{2\sigma^2} \sum_{i=1}^m \sum_{j=1}^{n_i} (\theta_i = y_{ij})^2 \right]
+        \end{align*}
+
+        $$p(\theta_i | \mu, \tau^2, \sigma^2) \propto \left(\frac{1}{\tau^2 \sigma^2} \right)^{1/2} \text{exp}\left[-\frac{1}{2 \tau^2 \sigma^2} (\theta_i - \mu)^2 \right]$$
+
+        $$p(\theta | \mu, \tau^2, \sigma^2) \propto \left(\frac{1}{\tau^2 \sigma^2} \right)^{m/2} \text{exp}\left[-\frac{1}{\tau^2 \sigma^2} \sum_{i=1}^m (\theta_i - \mu)^2 \right]$$
+
+        \begin{align*}
+            p(\tau^2 | \theta, \mu, \sigma^2) &\propto \pi_j(\tau^2) p(\theta | \sigma^2 \tau^2 \mu) \\
+            &\propto \left(\frac{1}{\tau^2}\right)^{1/2} \left(\frac{1}{\tau^2 \sigma^2} \right)^{m/2} \text{exp}\left[-\frac{1}{2\tau^2 \sigma^2} \sum_{i=1}^m (\theta_i - \mu)^2 \right] \\
+            &\propto \left(\frac{1}{\tau^2}\right)^{m/2+1} \text{exp}\left[-\frac{1}{\tau^2} \left(\frac{1}{2\sigma^2 } \sum_{i=1}^m (\theta_i - \mu)^2 \right) \right]
+        \end{align*}
+
+        $$\tau^2 | \theta, \mu, \sigma^2 \sim IG\left(\frac{m}{2}, \frac{1}{2\sigma^2 } \sum_{i=1}^m (\theta_i - \mu)^2 \right)$$
+
+        \begin{align*}
+            p(\sigma^2 | \theta, \mu, \tau^2, y) &\propto \pi_j(\sigma^2) p(\theta|\sigma^2 \tau^2 \mu) p(\mathbf{y}| \theta, \sigma^2) \\
+            &\propto \frac{1}{\sigma^2} \left(\frac{1}{\tau^2 \sigma^2} \right)^{m/2} \text{exp}\left[-\frac{1}{2\tau^2 \sigma^2} \sum_{i=1}^m (\theta_i - \mu)^2 \right] \left(\frac{1}{\sigma^2}\right)^{N/2} \text{exp}\left[-\frac{1}{2\sigma^2} \sum_{i=1}^m \sum_{j=1}^{n_i} (\theta_i = y_{ij})^2 \right] \\
+            &\propto \left(\frac{1}{\sigma^2} \right)^{\frac{m+N}{2} + 1} \text{exp}\left[-\frac{1}{\sigma^2} \left( \frac{1}{2\tau^2} \sum_{i+1}^m + \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^{n_i} (\theta_i - y_{ij})^2 \right) \right]
+        \end{align*}
+
+        $$\sigma^2 | \theta, \mu, \tau^2, y \sim IG\left(\frac{m+N}{2} + 1, \frac{1}{2\tau^2} \sum_{i+1}^m + \frac{1}{2} \sum_{i=1}^m \sum_{j=1}^{n_i} (\theta_i - y_{ij})^2 \right)$$
+
+        \begin{align*}
+            p(\theta_i | \mu, \tau^2, \sigma^2, \mathbf{y}) &\propto p(\theta_i | \sigma^2, \tau^2, \mu) p(\bar{y}_i | \theta_i \sigma^2) \\
+            &\propto \left(\frac{1}{\tau^2 \sigma^2} \right)^{1/2} \text{exp}\left[-\frac{1}{2 \tau^2 \sigma^2} (\theta_i - \mu)^2 \right] \left( \frac{1}{\sigma^2}\right)^{n_i/2} \text{exp}\left[-\frac{n_i}{2 \sigma^2} (\theta_i - \bar{y}_i)^2 \right]
+        \end{align*}
+
+        $$\theta_i | \mu, \tau^2, \sigma^2, \mathbf{y} \sim N \left( \frac{\frac{n_i}{\sigma^2} \bar{y}_i + \frac{1}{\tau^2 \sigma^2} \mu}{\frac{n_i}{\sigma^2} + \frac{1}{\tau^2 \sigma^2}}, \left[ \frac{n_i}{\sigma^2} + \frac{1}{\tau^2 \sigma^2}\right]^{-1} \right)$$
 
         \item Suppose you use the posterior mean $\hat{\theta}_i$ from the above model to estimate each school-level mean $\theta_i$.  Define the shrinkage coefficient $\kappa_i$ as
         $$
