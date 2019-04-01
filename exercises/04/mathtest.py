@@ -25,8 +25,8 @@ N = len(data)
 for i in range(m):
     means[i] = scores[i].mean()
 
-iterations = 1000
-burn = 200
+iterations = 500
+burn = 100
 
 tau_sq_trace = Trace('tau_sq', iterations, burn=burn)
 sigma_sq_trace = Trace('sigma_sq', iterations, burn=burn)
@@ -86,8 +86,17 @@ for p in range(iterations):
 
 mean = theta_trace.mean()
 
-k = np.zeros(m)
+k = np.zeros((m, 2))
 
 for i in range(m):
-    k[i] = np.abs((scores[i].mean() - mean[i])/scores[i].mean())
+    k[i] = [np.abs((scores[i].mean() - mean[i])/scores[i].mean()), len(scores[i])]
 
+k = np.sort(k, axis=0)
+
+n = k[:,1]
+k = k[:,0]
+
+
+plt.figure()
+plt.plot(n, k, '.k')
+plt.show()
