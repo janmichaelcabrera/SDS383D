@@ -3,6 +3,7 @@ import numpy as np
 import warnings
 from scipy.stats import multivariate_normal
 from scipy.spatial.distance import euclidean
+from scipy.spatial import distance_matrix
 from numpy.linalg import inv
 from scipy.optimize import minimize
 
@@ -102,14 +103,29 @@ class covariance_functions:
         # Unpack hypereparameters
         b, tau_1_squared, tau_2_squared = hyperparams
 
+
         # Initialize covariance matrix
         C = np.zeros((x_1.shape[0], x_2.shape[0]))
 
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x_1.shape[0]):
-            for j in range(x_2.shape[0]):
-                d = euclidean(x_1[i], x_2[j])
-                C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
+        if len(x_1.shape) == 1:
+            X_1 = [[i] for i in x_1]
+            X_2 = [[i] for i in x_2]
+        else:
+            X_1 = x_1
+            X_2 = x_2
+
+        C = distance_matrix(X_1, X_2)
+
+        C = tau_1_squared*(1 + np.sqrt(5)*(C/b) + (5/3)*(C/b)**2)*np.exp(-np.sqrt(5)*(C/b))
+
+        if np.array_equal(x_1, x_2) == True:
+            C = C + tau_2_squared*np.eye(x_1.shape[0])
+
+        # # Evaluate (i,j) components of covariance matrix
+        # for i in range(x_1.shape[0]):
+        #     for j in range(x_2.shape[0]):
+        #         d = euclidean(x_1[i], x_2[j])
+        #         C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
 
         return C
 
@@ -258,7 +274,7 @@ class gaussian_process:
         """
 
         # Evaluate covariance
-        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, self.hyperparams)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
 
         # Assume initial estimate for variance
         variance = 1
@@ -303,9 +319,9 @@ class gaussian_process:
         # Evaluate C(x^*, x)
         C_x_star_x = getattr(covariance_functions, self.cov)(self.x_star, self.x, self.hyperparams)
         # Evaluate C(x, x)
-        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, self.hyperparams)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, self.hyperparams)
         # Evaluate C(x^*, x^*)
-        C_star_star = getattr(svi_covariance_functions, self.cov)(self.x_star, self.hyperparams)
+        C_star_star = getattr(covariance_functions, self.cov)(self.x_star, self.x_star, self.hyperparams)
 
         # Calculate weights matrix,  W = C(x^*, x) (C(x, x) + \\sigma^2 I)^{-1}
         weights = C_x_star_x @ inv(C_xx + variance*np.eye(self.x.shape[0]))
@@ -340,7 +356,7 @@ class gaussian_process:
         b, tau_1_squared, tau_2_squared = hyperparams
 
         # Evaluate C(x, x)
-        C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
+        C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, hyperparams)
 
         # Evaluates covariance of marginal-likelihood: \sigma^2 I + C
         covariance = variance*np.eye(self.x.shape[0]) + C_xx
@@ -366,7 +382,7 @@ class gaussian_process:
             hyperparams = b, tau_1_squared, 10**-6
 
             # Evaluates covariance function
-            C_xx = getattr(svi_covariance_functions, self.cov)(self.x, hyperparams)
+            C_xx = getattr(covariance_functions, self.cov)(self.x, self.x, hyperparams)
 
             # Evaluates covariance of marginal-likelihood: \sigma^2 I + C
             covariance = variance*np.eye(self.x.shape[0]) + C_xx
