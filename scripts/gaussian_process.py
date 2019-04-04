@@ -7,22 +7,6 @@ from scipy.spatial import distance_matrix
 from numpy.linalg import inv
 from scipy.optimize import minimize
 
-def kronecker_delta(x_1, x_2):
-    """
-    Parameters
-    ----------
-        x_1, x_2: floats (scalars)
-    
-    Returns
-    ----------
-        delta: 0 or 1
-            .. math:: \\delta(x_1, x_2)
-    """
-    if np.array_equal(x_1, x_2) == True:
-        delta = 1
-    else:
-        delta = 0
-    return delta
 
 class covariance_functions:
     """
@@ -51,11 +35,20 @@ class covariance_functions:
         # Initialize covariance matrix
         C = np.zeros((x_1.shape[0], x_2.shape[0]))
 
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x_1.shape[0]):
-            for j in range(x_2.shape[0]):
-                d = euclidean(x_1[i], x_2[j])
-                C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
+        if len(x_1.shape) == 1:
+            X_1 = [[i] for i in x_1]
+            X_2 = [[i] for i in x_2]
+        else:
+            X_1 = x_1
+            X_2 = x_2
+
+        C = distance_matrix(X_1, X_2)
+
+        C = tau_1_squared*np.exp(-(1/2)*(C/b)**2)
+
+        if np.array_equal(x_1, x_2) == True:
+            C = C + tau_2_squared*np.eye(x_1.shape[0])
+
         return C
 
     def matern_32(x_1, x_2, hyperparams):
@@ -78,11 +71,19 @@ class covariance_functions:
         # Initialize covariance matrix
         C = np.zeros((x_1.shape[0], x_2.shape[0]))
 
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x_1.shape[0]):
-            for j in range(x_2.shape[0]):
-                d = euclidean(x_1[i], x_2[j])
-                C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
+        if len(x_1.shape) == 1:
+            X_1 = [[i] for i in x_1]
+            X_2 = [[i] for i in x_2]
+        else:
+            X_1 = x_1
+            X_2 = x_2
+
+        C = distance_matrix(X_1, X_2)
+
+        C = tau_1_squared*(1 + np.sqrt(3)*(C/b))*np.exp(-np.sqrt(3)*(C/b))
+
+        if np.array_equal(x_1, x_2) == True:
+            C = C + tau_2_squared*np.eye(x_1.shape[0])
 
         return C
 
@@ -121,110 +122,8 @@ class covariance_functions:
         if np.array_equal(x_1, x_2) == True:
             C = C + tau_2_squared*np.eye(x_1.shape[0])
 
-        # # Evaluate (i,j) components of covariance matrix
-        # for i in range(x_1.shape[0]):
-        #     for j in range(x_2.shape[0]):
-        #         d = euclidean(x_1[i], x_2[j])
-        #         C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x_1[i], x_2[j])
-
         return C
 
-class svi_covariance_functions:
-    """
-    Single value input covariance functions. Same as above except takes one parameter, x. These functions are slightly more computationally efficient than the above. For a single value input function, the resultant covariance matrix is symmetric. These functions calculate the upper diagonal portion only and then mirrors the results. n^2/2 + n/2 function calls instead of n^2 function calls.
-    """
-    def __init__(self):
-        pass
-
-    def squared_exponential(x, hyperparams):
-        """
-        Parameters
-        ----------
-            x: float (vector)
-                Vector of points
-
-        Returns
-        ----------
-            C: float (matrix)
-                Returns a Matern (5,2) square covariance matrix of size(x)
-                .. math:: C_{SE}(x_1, x_2) = \\tau_1^2 e^{-\\frac{1}{2} (d/b)^2} + \\tau_2^2 \\delta(x_1, x_2)
-        """
-
-        # Unpack hypereparameters
-        b, tau_1_squared, tau_2_squared = hyperparams
-
-        # Initialize covariance matrix
-        C = np.zeros((x.shape[0], x.shape[0]))
-
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x.shape[0]):
-            for j in range(x.shape[0]):
-                if j >= i:
-                    d = euclidean(x[i], x[j])
-                    C[i][j] = tau_1_squared*np.exp(-(1/2)*(d/b)**2) + tau_2_squared*kronecker_delta(x[i], x[j])
-                else:
-                    C[i][j] = C[j][i]
-        return C
-
-    def matern_32(x, hyperparams):
-        """
-        Parameters
-        ----------
-            x: float (vector)
-                Vector of points
-
-        Returns
-        ----------
-            C: float (matrix)
-                Returns a Matern (5,2) square covariance matrix of size(x)
-                .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
-        """
-
-        # Unpack hypereparameters
-        b, tau_1_squared, tau_2_squared = hyperparams
-
-        # Initialize covariance matrix
-        C = np.zeros((x.shape[0], x.shape[0]))
-
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x.shape[0]):
-            for j in range(x.shape[0]):
-                if j >= i:
-                    d = euclidean(x[i], x[j])
-                    C[i][j] = tau_1_squared*(1 + np.sqrt(3)*(d/b))*np.exp(-np.sqrt(3)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
-                else:
-                    C[i][j] = C[j][i]
-        return C
-
-    def matern_52(x, hyperparams):
-        """
-        Parameters
-        ----------
-            x: float (vector)
-                Vector of points
-
-        Returns
-        ----------
-            C: float (matrix)
-                Returns a Matern (5,2) square covariance matrix of size(x)
-                .. math:: C_{5,2}(x_1, x_2) = \\tau_1^2 [1 + \\sqrt{5} d / b + (5/3) (d/b)^2 ] e^{-\\sqrt{5} (d/b)} + \\tau_2^2 \\delta(x_1, x_2)
-        """
-
-        # Unpack hypereparameters
-        b, tau_1_squared, tau_2_squared = hyperparams
-
-        # Initialize covariance matrix
-        C = np.zeros((x.shape[0], x.shape[0]))
-
-        # Evaluate (i,j) components of covariance matrix
-        for i in range(x.shape[0]):
-            for j in range(x.shape[0]):
-                if j>= i:
-                    d = euclidean(x[i], x[j])
-                    C[i][j] = tau_1_squared*(1 + np.sqrt(5)*(d/b) + (5/3)*(d/b)**2)*np.exp(-np.sqrt(5)*(d/b)) + tau_2_squared*kronecker_delta(x[i], x[j])
-                else:
-                    C[i][j] = C[j][i]
-        return C
 
 class gaussian_process:
     """
