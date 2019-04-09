@@ -25,7 +25,6 @@ for s, store in enumerate(stores):
 print(data[0][data[0].disp==1])
 print(data[0][data[0].disp==0])
 
-
 # plt.figure()
 # plt.plot(data[0][data[0].disp==1].price, data[0][data[0].disp==1].vol, '.k')
 # plt.plot(data[0][data[0].disp==0].price, data[0][data[0].disp==0].vol, '.r')
