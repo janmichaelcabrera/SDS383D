@@ -10,15 +10,52 @@ import scipy.stats as stats
 np.random.seed(3)
 
 # Import data
-data = pd.read_csv('../../data/mathtest.csv', delimiter=',')
+df = pd.read_csv('../../data/cheese.csv', delimiter=',')
 
-scores = []
-means = np.zeros(100)
+stores = np.unique(df.store)
 
-for i in range(100):
-    scores.append(data[data.school==i+1]['mathscore'].values)
+data = []
 
-print(data[data.school==1]['mathscore'])
+for s, store in enumerate(stores):
+    data.append(df[df.store==store])
+    data[s].price = np.log(data[s].price)
+    data[s].vol = np.log(data[s].vol)
+
+
+print(data[0][data[0].disp==1])
+print(data[0][data[0].disp==0])
+
+
+# plt.figure()
+# plt.plot(data[0][data[0].disp==1].price, data[0][data[0].disp==1].vol, '.k')
+# plt.plot(data[0][data[0].disp==0].price, data[0][data[0].disp==0].vol, '.r')
+# plt.show()
+
+
+##### Plot b vs tau_1^2
+fig, ax = plt.subplots(88)
+# fig.subplots_adjust(hspace=0.3, wspace=0.2)
+# fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
+fig.set_size_inches(8,4.5)
+for s, store in enumerate(stores):
+    ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.k')
+    ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.r')
+# for i in range(b.shape[0]):
+#     for j in range(tau_1_squared.shape[0]):
+#         ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
+#         hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
+#         # Calculates covariance given x and current hyperparameters
+#         cov = matern_52(x, hyperparams)
+#         # Generates random sample from a multivariate normal
+#         fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+#         ax[i, j].plot(x, fx, '-k')
+plt.show()
+
+# scores = []
+# means = np.zeros(100)
+
+# for i in range(100):
+#     scores.append(data[data.school==i+1]['mathscore'].values)
 
 # m = len(scores)
 # N = len(data)
@@ -72,30 +109,6 @@ print(data[data.school==1]['mathscore'])
 #     sigma_sq_trace.update_trace(p, sigma_sq)
 #     mu_trace.update_trace(p, mu)
 #     theta_trace.update_trace(p, theta)
-
-# # mu_trace.plot(figures_directory='figures/')
-# # mu_trace.histogram(figures_directory='figures/')
-
-# # tau_sq_trace.plot(figures_directory='figures/')
-# # tau_sq_trace.histogram(figures_directory='figures/')
-
-# # sigma_sq_trace.plot(figures_directory='figures/')
-# # sigma_sq_trace.histogram(figures_directory='figures/')
-
-# # theta_trace.plot(figures_directory='figures/theta_trace/')
-# # theta_trace.histogram(figures_directory='figures/theta_trace/')
-
-# mean = theta_trace.mean()
-
-# k = np.zeros((m, 2))
-
-# for i in range(m):
-#     k[i] = [np.abs((scores[i].mean() - mean[i])/scores[i].mean()), len(scores[i])]
-
-# k = np.sort(k, axis=0)
-
-# n = k[:,1]
-# k = k[:,0]
 
 
 # plt.figure()
