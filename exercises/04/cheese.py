@@ -15,15 +15,18 @@ df = pd.read_csv('../../data/cheese.csv', delimiter=',')
 stores = np.unique(df.store)
 
 data = []
+y = []
+X = []
 
 for s, store in enumerate(stores):
     data.append(df[df.store==store])
+    y.append(np.log(data[s].vol))
     data[s].price = np.log(data[s].price)
-    data[s].vol = np.log(data[s].vol)
+    X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
+print(X[0])
 
-print(data[0][data[0].disp==1])
-print(data[0][data[0].disp==0])
+# X_1 = 
 
 # plt.figure()
 # plt.plot(data[0][data[0].disp==1].price, data[0][data[0].disp==1].vol, '.k')
@@ -31,24 +34,23 @@ print(data[0][data[0].disp==0])
 # plt.show()
 
 
-##### Plot b vs tau_1^2
-fig, ax = plt.subplots(88)
-# fig.subplots_adjust(hspace=0.3, wspace=0.2)
-# fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
-fig.set_size_inches(8,4.5)
-for s, store in enumerate(stores):
-    ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.k')
-    ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.r')
-# for i in range(b.shape[0]):
-#     for j in range(tau_1_squared.shape[0]):
-#         ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
-#         hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
-#         # Calculates covariance given x and current hyperparameters
-#         cov = matern_52(x, hyperparams)
-#         # Generates random sample from a multivariate normal
-#         fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
-#         ax[i, j].plot(x, fx, '-k')
-plt.show()
+# fig, ax = plt.subplots(88)
+# # fig.subplots_adjust(hspace=0.3, wspace=0.2)
+# # fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
+# fig.set_size_inches(8,4.5)
+# for s, store in enumerate(stores):
+#     ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.k')
+#     ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.r')
+# # for i in range(b.shape[0]):
+# #     for j in range(tau_1_squared.shape[0]):
+# #         ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
+# #         hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
+# #         # Calculates covariance given x and current hyperparameters
+# #         cov = matern_52(x, hyperparams)
+# #         # Generates random sample from a multivariate normal
+# #         fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
+# #         ax[i, j].plot(x, fx, '-k')
+# plt.show()
 
 # scores = []
 # means = np.zeros(100)
