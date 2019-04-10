@@ -13,23 +13,30 @@ np.random.seed(3)
 # Import data
 df = pd.read_csv('../../data/cheese.csv', delimiter=',')
 
+# Create an array of unique store names
 stores = np.unique(df.store)
+
+# Number of data rows
 n = 5555
 p = 4
 d = p + 1
 
+# Instantiate lists for storing sorted data
 data = []
 y = []
 X = []
 
+# Sort data by store
 for s, store in enumerate(stores):
     data.append(df[df.store==store])
     y.append(np.log(data[s].vol))
     data[s].price = np.log(data[s].price)
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
+# Weights matrix for model
 W = X
 
+# Cashe computation for \sum_{i=1}^88 X_i^T X 
 sum_XX = np.zeros((4,4))
 for i in range(88):
     sum_XX = sum_XX + X[i].T @ X[i]
@@ -41,7 +48,10 @@ sigma_sq = 1
 Sigma = np.random.rand(4,4)
 Sigma = Sigma @ Sigma.T
 
+# Sigma = np.array(([1, 0.8], [0.8, 1]))
+
 mu_beta = np.zeros(4)
+# mu_beta = np.array([-5, 12, -5, 12])
 cov_beta = Sigma
 
 C = Sigma
@@ -55,8 +65,8 @@ sigma_sq_trace = []
 Sigma_trace = []
 
 ### Iterations start here
-iterations = 1000
-burn = 0
+iterations = 100
+burn = 10
 for j in range(iterations):
     ## b_i | y
     for i in range(88):
@@ -98,36 +108,41 @@ for j in range(iterations):
     Sigma = stats.invwishart.rvs(df=d+88, scale=C+Sigma_bb_sum)
     Sigma_trace.append(Sigma)
 
-b_trace_mean = np.mean(b_trace, axis=0)
-beta_trace_mean = np.mean(beta_trace, axis=0)
+beta_trace = np.asarray(beta_trace)
+beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
 
-# print(beta_trace)
+b_trace = np.asarray(b_trace)
+b_trace_mean = np.mean(b_trace[burn:], axis=0)
 
-print(beta_trace_mean)
+print(np.cov(beta_trace))
 
 plt.figure()
-for i in range(iterations):
-    plt.plot(i, beta_trace[i][0], '.k')
-for i in range(iterations):
-    plt.plot(i, beta_trace[i][1], '.r')
-for i in range(iterations):
-    plt.plot(i, beta_trace[i][2], '.b')
-for i in range(iterations):
-    plt.plot(i, beta_trace[i][3], '.g')
+plt.plot(beta_trace[burn:,0])
+plt.plot(beta_trace[burn:,1])
+plt.plot(beta_trace[burn:,2])
+plt.plot(beta_trace[burn:,3])
 plt.show()
 
+x = data[0].price
+slope, intercept, r_value, p_value, std_err = stats.linregress(x,y[0])
 
-# x_hat = X[0][X[0][:,1].argsort()]
-# y_hat = x_hat @ beta_trace_mean + W[0] @ b[0]
+print(slope, intercept, r_value, p_value, std_err)
+
+x_hat = X[0][X[0][:,1].argsort()]
+
+intercept_1 = beta_trace_mean[2]
+slope_1 = beta_trace_mean[3]
+
+y_hat = intercept_1 + slope_1*x_hat[:,1]
 
 # print(y_hat)
 # print(x_hat[:,1])
 
-# plt.figure()
-# plt.plot(data[0][data[0].disp==0].price, np.log(data[0][data[0].disp==0].vol), '.b')
-# plt.plot(data[0][data[0].disp==1].price, np.log(data[0][data[0].disp==1].vol), '.r')
-# plt.plot(x_hat[:,1], y_hat, '.k')
-# plt.show()
+plt.figure()
+plt.plot(data[0][data[0].disp==0].price, np.log(data[0][data[0].disp==0].vol), '.k')
+plt.plot(data[0][data[0].disp==1].price, np.log(data[0][data[0].disp==1].vol), '.r')
+plt.plot(x_hat[:,1], slope*x_hat[:,1] + intercept, '-k')
+plt.show()
 
 # plt.figure()
 # plt.plot(data[0][data[0].disp==1].price, data[0][data[0].disp==1].vol, '.k')
