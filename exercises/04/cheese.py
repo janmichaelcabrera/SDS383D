@@ -6,6 +6,7 @@ import sys
 sys.path.append('../../scripts/')
 from samplers import Trace
 import scipy.stats as stats
+from numpy.linalg import inv
 
 np.random.seed(3)
 
@@ -13,6 +14,9 @@ np.random.seed(3)
 df = pd.read_csv('../../data/cheese.csv', delimiter=',')
 
 stores = np.unique(df.store)
+n = 5555
+p = 4
+d = p + 1
 
 data = []
 y = []
@@ -24,9 +28,106 @@ for s, store in enumerate(stores):
     data[s].price = np.log(data[s].price)
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
-print(X[0])
+W = X
 
-# X_1 = 
+sum_XX = np.zeros((4,4))
+for i in range(88):
+    sum_XX = sum_XX + X[i].T @ X[i]
+
+b = np.zeros((88,4))
+
+sigma_sq = 1
+
+Sigma = np.random.rand(4,4)
+Sigma = Sigma @ Sigma.T
+
+mu_beta = np.zeros(4)
+cov_beta = Sigma
+
+C = Sigma
+
+beta = stats.multivariate_normal.rvs(mean=mu_beta, cov = inv(cov_beta)).T
+
+### Instantiate traces
+b_trace = []
+beta_trace = []
+sigma_sq_trace = []
+Sigma_trace = []
+
+### Iterations start here
+iterations = 1000
+burn = 0
+for j in range(iterations):
+    ## b_i | y
+    for i in range(88):
+        b_cov = inv(inv(Sigma) + (1/sigma_sq)*W[i].T @ W[i])
+        b_mean = (1/sigma_sq)*W[i] @ (y[i] - X[i] @ beta) @ b_cov
+        b[i] = stats.multivariate_normal.rvs(mean=b_mean, cov=b_cov)
+
+    b_trace.append(b)
+
+    ## beta | y
+    beta_cov = inv(inv(Sigma) + (1/sigma_sq)*sum_XX)
+
+    beta_xy_sum = np.zeros(4)
+
+    for i in range(88):
+        beta_xy_sum = beta_xy_sum + X[i] @ (y[i] - W[i] @ b[i])
+
+    beta_mean = (inv(cov_beta) @ mu_beta + (1/sigma_sq) * beta_xy_sum) @ beta_cov
+    beta = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+
+    beta_trace.append(beta)
+
+    ## sigma_sq | y
+    sigma_xy_sum = 0
+
+    for i in range(88):
+        sigma_xy_sum = sigma_xy_sum + (y[i] - X[i] @ beta - W[i] @ b[i]).T @ (y[i] - X[i] @ beta - W[i] @ b[i])
+
+    sigma_sq = stats.invgamma.rvs(n/2, 2/sigma_xy_sum)
+
+    sigma_sq_trace.append(sigma_sq)
+
+    ## Sigma | b
+    Sigma_bb_sum = np.zeros((4,4))
+
+    for i in range(88):
+        Sigma_bb_sum = Sigma_bb_sum + np.tensordot(b[i], b[i].T, axes=0)
+
+    Sigma = stats.invwishart.rvs(df=d+88, scale=C+Sigma_bb_sum)
+    Sigma_trace.append(Sigma)
+
+b_trace_mean = np.mean(b_trace, axis=0)
+beta_trace_mean = np.mean(beta_trace, axis=0)
+
+# print(beta_trace)
+
+print(beta_trace_mean)
+
+plt.figure()
+for i in range(iterations):
+    plt.plot(i, beta_trace[i][0], '.k')
+for i in range(iterations):
+    plt.plot(i, beta_trace[i][1], '.r')
+for i in range(iterations):
+    plt.plot(i, beta_trace[i][2], '.b')
+for i in range(iterations):
+    plt.plot(i, beta_trace[i][3], '.g')
+plt.show()
+
+
+# x_hat = X[0][X[0][:,1].argsort()]
+# y_hat = x_hat @ beta_trace_mean + W[0] @ b[0]
+
+# print(y_hat)
+# print(x_hat[:,1])
+
+# plt.figure()
+# plt.plot(data[0][data[0].disp==0].price, np.log(data[0][data[0].disp==0].vol), '.b')
+# plt.plot(data[0][data[0].disp==1].price, np.log(data[0][data[0].disp==1].vol), '.r')
+# plt.plot(x_hat[:,1], y_hat, '.k')
+# plt.show()
 
 # plt.figure()
 # plt.plot(data[0][data[0].disp==1].price, data[0][data[0].disp==1].vol, '.k')
@@ -50,68 +151,4 @@ print(X[0])
 # #         # Generates random sample from a multivariate normal
 # #         fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
 # #         ax[i, j].plot(x, fx, '-k')
-# plt.show()
-
-# scores = []
-# means = np.zeros(100)
-
-# for i in range(100):
-#     scores.append(data[data.school==i+1]['mathscore'].values)
-
-# m = len(scores)
-# N = len(data)
-
-# for i in range(m):
-#     means[i] = scores[i].mean()
-
-# iterations = 500
-# burn = 100
-
-# tau_sq_trace = Trace('tau_sq', iterations, burn=burn)
-# sigma_sq_trace = Trace('sigma_sq', iterations, burn=burn)
-# mu_trace = Trace('mu', iterations, burn=burn)
-# theta_trace = Trace('theta', iterations, shape=m, burn=burn)
-
-# tau_sq = 0.5
-# sigma_sq = 1
-# mu = 50
-# theta = np.ones(m)
-
-# for p in range(iterations):
-#     a_1 = m/2
-#     b_1 = 1/(2*sigma_sq)*((theta - mu)**2).sum()
-
-#     tau_sq = stats.invgamma.rvs(a_1, 1/b_1)
-
-#     a_2 = (m+N)/2
-#     b_2 = 0
-
-#     for l in range(m):
-#         for j in range(len(scores[l])-1):
-#             b_2 = b_2 + (theta[j] - scores[l][j])**2
-
-#     b_2 = 1/(2*tau_sq)*((theta - mu)**2).sum() + 0.5 * b_2
-
-#     sigma_sq = stats.invgamma.rvs(a_2, 1/b_2)
-
-#     theta_bar = theta.mean()
-    
-#     mu = stats.norm.rvs(theta_bar, scale=(sigma_sq*tau_sq)/m)
-
-#     for i in range(len(theta)):
-#         y_i = scores[i].mean()
-#         n_i = len(scores[i])
-#         v_i = (n_i/sigma_sq + 1/(tau_sq*sigma_sq))**-1
-#         theta_i_star = ((n_i/sigma_sq)*y_i + 1/(tau_sq*sigma_sq)*mu)*v_i
-
-#         theta[i] = stats.norm.rvs(theta_i_star, scale=v_i)
-
-#     tau_sq_trace.update_trace(p, tau_sq)
-#     sigma_sq_trace.update_trace(p, sigma_sq)
-#     mu_trace.update_trace(p, mu)
-#     theta_trace.update_trace(p, theta)
-
-
-# plt.figure()
-# plt.plot(n, k, '.k')
 # plt.show()
