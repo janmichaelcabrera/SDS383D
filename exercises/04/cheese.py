@@ -33,7 +33,7 @@ for s, store in enumerate(stores):
     data[s].price = np.log(data[s].price)
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
-
+d = 10
 s = 88
 sigma_sq = 1
 
@@ -46,11 +46,13 @@ sigma = np.zeros(s)
 
 beta_trace = []
 sigma_trace = []
+V_trace = []
 
 #### Iterations
 iterations = 1000
-burn = 100
+burn = 0
 for j in range(iterations):
+    B = 0
     for store in range(s):
         n = len(y[store])
 
@@ -64,6 +66,10 @@ for j in range(iterations):
 
         sigma[store] = stats.invgamma.rvs(a, 1/b)
     
+        B = B + np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+    # print(B)
+    V = stats.invwishart.rvs(d+s, np.eye(4) + B)
+    # print(V)
     beta_trace.append(beta)
     sigma_trace.append(sigma)
 
@@ -71,7 +77,7 @@ beta_trace = np.asarray(beta_trace)
 beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
 # print(beta_trace_mean)
 
-store_index = 2
+store_index = 1
 
 x_hat = X[store_index][X[store_index][:,1].argsort()]
 
