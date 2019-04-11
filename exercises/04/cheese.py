@@ -30,6 +30,7 @@ X = []
 for s, store in enumerate(stores):
     data.append(df[df.store==store])
     y.append(np.log(data[s].vol))
+    data[s].vol = np.log(data[s].vol)
     data[s].price = np.log(data[s].price)
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
@@ -49,8 +50,8 @@ sigma_trace = []
 V_trace = []
 
 #### Iterations
-iterations = 1000
-burn = 0
+iterations = 100
+burn = 10
 for j in range(iterations):
     B = 0
     for store in range(s):
@@ -75,44 +76,18 @@ for j in range(iterations):
 
 beta_trace = np.asarray(beta_trace)
 beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
-# print(beta_trace_mean)
 
-store_index = 1
 
-x_hat = X[store_index][X[store_index][:,1].argsort()]
+fig, ax = plt.subplots(11, 8, figsize=(10,12))
+fig.subplots_adjust(hspace=0.6)
+n = 0
+for i in range(11):
+    for j in range(8):
+        x_hat = X[n][X[n][:,1].argsort()]
+        ax[i,j].plot(data[n][data[n].disp==0].price, data[n][data[n].disp==0].vol, '.k', linewidth=0.1)
+        ax[i,j].plot(data[n][data[n].disp==1].price, data[n][data[n].disp==1].vol, '.r', linewidth=0.1)
+        ax[i,j].plot(x_hat[:,1], beta_trace_mean[n][0]+beta_trace_mean[n][1]*x_hat[:,1], '-k')
+        ax[i,j].plot(x_hat[:,1], (beta_trace_mean[n][0]+beta_trace_mean[n][2])+(beta_trace_mean[n][1]+beta_trace_mean[n][3])*x_hat[:,1], '-r')
+        n+=1
 
-plt.figure()
-plt.plot(data[store_index][data[store_index].disp==0].price, np.log(data[store_index][data[store_index].disp==0].vol), '.k')
-plt.plot(data[store_index][data[store_index].disp==1].price, np.log(data[store_index][data[store_index].disp==1].vol), '.r')
-plt.plot(x_hat[:,1], beta_trace_mean[store_index][0]+beta_trace_mean[store_index][1]*x_hat[:,1], '-k')
-plt.plot(x_hat[:,1], (beta_trace_mean[store_index][0]+beta_trace_mean[store_index][2])+(beta_trace_mean[store_index][1]+beta_trace_mean[store_index][3])*x_hat[:,1], '-r')
 plt.show()
-
-
-# plt.figure()
-# plt.plot(beta_trace[burn:,0], label='Beta 0')
-# plt.plot(beta_trace[burn:,1], label='Beta 1')
-# plt.plot(beta_trace[burn:,2], label='Beta 2')
-# plt.plot(beta_trace[burn:,3], label='Beta 3')
-# plt.legend(loc=0)
-# plt.show()
-
-
-
-# fig, ax = plt.subplots(88)
-# # fig.subplots_adjust(hspace=0.3, wspace=0.2)
-# # fig.suptitle('$\\tau_2^2$={:.6f}'.format(tau_2_squared[0]))
-# fig.set_size_inches(8,4.5)
-# for s, store in enumerate(stores):
-#     ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.k')
-#     ax[s].plot(data[s][data[s].disp==1].price, data[s][data[s].disp==1].vol, '.r')
-# # for i in range(b.shape[0]):
-# #     for j in range(tau_1_squared.shape[0]):
-# #         ax[i, j].set_title('b={:.2f}'.format(b[i]) + '; $\\tau_1^2$={:.2f}'.format(tau_1_squared[j]), fontsize=8)
-# #         hyperparams = b[i], tau_1_squared[j], tau_2_squared[0]
-# #         # Calculates covariance given x and current hyperparameters
-# #         cov = matern_52(x, hyperparams)
-# #         # Generates random sample from a multivariate normal
-# #         fx = multivariate_normal.rvs(mean=np.zeros(x.shape[0]), cov=cov)
-# #         ax[i, j].plot(x, fx, '-k')
-# plt.show()
