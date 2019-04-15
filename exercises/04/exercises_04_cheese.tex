@@ -1,0 +1,92 @@
+\documentclass[10pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\usepackage{courier}
+\usepackage{subcaption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=Python,
+        basicstyle=\footnotesize\ttfamily,
+        upquote=true,
+        aboveskip={1.0\baselineskip},
+        columns=fixed,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+
+\begin{document}
+
+    \title{SDS 383D, Exercises 4: Hierarchical Models: Data-analysis Problems}
+    \author{Jan-Michael Cabrera}
+    \date{\today}
+    \maketitle
+
+    \section*{Price elasticity of demand}
+
+    The data in ``cheese.csv'' are about sales volume, price, and advertisting display activity for packages of Borden sliced ``cheese.'' The data are taken from Rossi, Allenby, and McCulloch's textbook on \textit{Bayesian Statistics and Marketing.} For each of 88 stores (store) in different US cities, we have repeated observations of the weekly sales volume (vol, in terms of packages sold), unit price (price), and whether the product was advertised with an in-store display during that week (disp = 1 for display).
+
+    Your goal is to estimate, on a store-by-store basis, the effect of display ads on the demand curve for cheese.  A standard form of a demand curve in economics is of the form $Q = \alpha P^\beta$, where $Q$ is quantity demanded (i.e.~sales volume), $P$ is price, and $\alpha$ and $\beta$ are parameters to be estimated.  You'll notice that this is linear on a log-log scale,
+    $$
+    \log P = \log \alpha + \beta \log Q \,
+    $$
+    which you should feel free to assume here.  Economists would refer to $\beta$ as the price elasticity of demand (PED).  Notice that on a log-log scale, the errors enter multiplicatively.
+
+    There are several things for you to consider in analyzing this data set.
+
+    \begin{enumerate}
+        \item The demand curve might shift (different $\alpha$) and also change shape (different $\beta$) depending on whether there is a display ad or not in the store.
+        \item Different stores will have very different typical volumes, and your model should account for this.
+        \item Do different stores have different PEDs?  If so, do you really want to estimate a separate, unrelated $\beta$ for each store?
+        \item If there is an effect on the demand curve due to showing a display ad, does this effect differ store by store, or does it look relatively stable across stores?
+        \item Once you build the best model you can using the log-log specification, do see you any evidence of major model mis-fit?
+    \end{enumerate}
+
+    Propose an appropriate hierarchical model that allows you to address these issues, and use Gibbs sampling to fit your model.
+
+    $$\bar{y}_i = X_i^T \beta_i  + e_i; \hspace{10pt} e_i \sim N(0, \sigma_i^2 I_{n_i})$$
+
+    $$X_i = \begin{bmatrix}1 & \text{log}P_{ij} & \delta_{ij} & \delta_{ij} \text{log}P_{ij} \\
+    \vdots & \vdots & \vdots & \vdots \\
+    1 & \text{log}P_{in_i} & \delta_{in_i} & \delta_{in_i} \text{log}P_{in_i}
+     \end{bmatrix}$$
+
+    $$\beta_i \sim N(\theta, V)$$
+
+    $$p(\bar{y}_i | \beta_i, \sigma_i^2) \propto \text{exp}\left[-\frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T \sigma_i^2 I_{n_i} (\bar{y}_i - X_i^T \beta_i) \right]$$
+
+    $$p(\beta_i | \theta, V) \propto \text{exp} \left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta - \theta) \right]$$
+
+    $$p(\beta_i | \bar{y_i}, \sigma_i^2, \theta, V) \propto  p(\beta_i | \theta, V) p(\bar{y}_i | \beta_i, \sigma_i^2) $$
+
+    $$\beta_i | \bar{y}_i \dots \sim MVN\left(\frac{V^{-1} \theta + \frac{1}{\sigma_i^2 }X_i \bar{y}_i }{V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T}, \left[V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T \right]^{-1} \right)$$
+
+\end{document}
