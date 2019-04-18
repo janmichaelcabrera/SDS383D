@@ -89,4 +89,26 @@
 
     $$\beta_i | \bar{y}_i \dots \sim MVN\left(\frac{V^{-1} \theta + \frac{1}{\sigma_i^2 }X_i \bar{y}_i }{V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T}, \left[V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T \right]^{-1} \right)$$
 
+    $$p(\sigma_i^2) \propto \frac{1}{\sigma_i^2}$$
+
+    \begin{align*}
+    p(\sigma_i^2| \bar{y}_i) &\propto p(\sigma_i^2) p(\bar{y}_i | \beta_i, \sigma_i^2) \\
+    & \propto \frac{1}{\sigma_i^2} \left(\frac{1}{\sigma_i^2}\right)^{n_i/2} \text{exp}\left[ -\frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T \sigma_i^2 I_{n_i} (\bar{y}_i - X_i^T \beta_i)\right]
+    \end{align*}
+
+    $$\sigma_i^2 | \bar{y}_i \dots \sim IG\left(\frac{n_i}{2},  \frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T (\bar{y}_i - X_i^T \beta_i)\right)$$
+
+    $$p(V) \propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right]$$ 
+
+    $$p(\beta_i | \theta, V) \propto | \text{det} V |^{1/2} \text{exp}\left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right]$$
+
+    $$p(\mathbf{\beta} | \theta, V) \propto | \text{det} V |^{s/2} \text{exp}\left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right] $$
+
+    \begin{align*}
+        p(V|\mathbf{\beta}) &\propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right] | \text{det} V |^{s/2} \text{exp}\left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right] \\
+        &\propto |V|^{(d+p+s+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}\left(V^{-1}\left[C + \sum_{i=1}^s(\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right]\right) \right]
+    \end{align*}
+
+    $$V|\mathbf{\beta} \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right)$$
+
 \end{document}
