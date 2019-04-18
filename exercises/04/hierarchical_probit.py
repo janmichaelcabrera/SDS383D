@@ -32,7 +32,17 @@ for s, state in enumerate(states):
     # ['18to29' '30to44' '45to64' '65plus']
     age = pd.get_dummies(data[s].age, drop_first=False)
 
-    x = np.column_stack([ed.values, age.values, data[s].female, data[s].black, data[s].weight])
+    x = np.column_stack([np.ones(len(y[s])), ed.values, age.values, data[s].female, data[s].black, data[s].weight])
 
-    X.append(np.array(x))
+    X.append(x)
 
+# print(X[0])
+
+Z = np.array([stats.halfnorm.rvs() for i in range(len(y[0]))])
+
+print(Z)
+
+# print(-stats.halfnorm.rvs(-1))
+# print(stats.halfnorm.rvs(loc=[1,0]))
+# help(stats.halfnorm)
+# help(stats.halfnorm.rvs)
