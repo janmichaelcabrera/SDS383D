@@ -44,20 +44,33 @@ B_star = np.eye(X[0].shape[1])*10**6
 
 Z = np.zeros(y[0].shape[0])
 
-for i in range(len(Z)):
-    # print(y[0][i])
-    if y[0][i] == 1.0:
-        a = 0
-        b = np.inf
-    else:
-        a = -np.inf
-        b = 0
+beta_trace = []
+Z_trace = []
 
-    Z[i] = stats.truncnorm.rvs(a, b, loc=X[0][i,:] @ beta)
+iterations = 1000
+burn = 0 
 
-beta_cov = inv(inv(B_star) + X[0].T @ X[0])
-beta_mean = beta_cov @ (inv(B_star) @ beta_star + X[0].T @ Z)
+for p in range(iterations):
+    for i in range(len(Z)):
+        if y[0][i] == 1.0:
+            a = 0
+            b = np.inf
+        else:
+            a = -np.inf
+            b = 0
 
-beta = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+        Z[i] = stats.truncnorm.rvs(a, b, loc=X[0][i,:] @ beta)
 
-print(beta)
+    beta_cov = inv(inv(B_star) + X[0].T @ X[0])
+    beta_mean = beta_cov @ (inv(B_star) @ beta_star + X[0].T @ Z)
+
+    beta = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+    Z_trace.append(Z)
+    beta_trace.append(beta)
+
+beta_trace = np.asarray(beta_trace)
+beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
+
+plt.figure()
+plt.plot(beta_trace[:,6])
+plt.show()
