@@ -1,4 +1,4 @@
-\documentclass[10pt]{article}
+\documentclass[12pt]{article}
 \usepackage{amsfonts}
 \usepackage{fancyhdr}
 \usepackage{comment}
@@ -25,7 +25,7 @@
     tabsize=4,
     rulecolor=,
     language=Python,
-        basicstyle=\footnotesize\ttfamily,
+        basicstyle=\scriptsize\ttfamily,
         upquote=true,
         aboveskip={1.0\baselineskip},
         columns=fixed,
@@ -70,39 +70,70 @@
         \item Once you build the best model you can using the log-log specification, do see you any evidence of major model mis-fit?
     \end{enumerate}
 
-    Propose an appropriate hierarchical model that allows you to address these issues, and use Gibbs sampling to fit your model.
+    Propose an appropriate hierarchical model that allows you to address these issues, and use Gibbs sampling to fit your model.\\
+    \\
+
+    We begin by specifying the form of the hierarchical linear model:
 
     $$\bar{y}_i = X_i^T \beta_i  + e_i; \hspace{10pt} e_i \sim N(0, \sigma_i^2 I_{n_i})$$
 
-    $$X_i = \begin{bmatrix}1 & \text{log}P_{ij} & \delta_{ij} & \delta_{ij} \text{log}P_{ij} \\
+    \noindent where the index $i$ corresponds to a particular store. The covariates for a particular store $X_i^T$ is a matrix with $n_i$ rows corresponding to the number of samples taken for store $i$ and $p$ columns:
+
+    $$X_i^T = \begin{bmatrix}1 & \text{log}P_{ij} & \delta_{ij} & \delta_{ij} \text{log}P_{ij} \\
     \vdots & \vdots & \vdots & \vdots \\
-    1 & \text{log}P_{in_i} & \delta_{in_i} & \delta_{in_i} \text{log}P_{in_i}
+    1 & \text{log}P_{in_i} & \delta_{in_i} & \delta_{in_i} \text{log}P_{in_i}.
      \end{bmatrix}$$
 
-    $$\beta_i \sim N(\theta, V)$$
+    \noindent Here $\delta_{ij}$ corresponds to whether sample $j$ for store $i$ had a display or not. 
+
+    Each $\beta_i$ has a prior of the form,
+
+    $$\beta_i \sim MVN(\theta, V).$$
+
+    \noindent For store $i$ the likelihood is multivariate normal with 
 
     $$p(\bar{y}_i | \beta_i, \sigma_i^2) \propto \text{exp}\left[-\frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T \sigma_i^2 I_{n_i} (\bar{y}_i - X_i^T \beta_i) \right]$$
 
-    $$p(\beta_i | \theta, V) \propto \text{exp} \left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta - \theta) \right]$$
+    \noindent Here we show the prior for $\beta_i$ explicitly
 
-    $$p(\beta_i | \bar{y_i}, \sigma_i^2, \theta, V) \propto  p(\beta_i | \theta, V) p(\bar{y}_i | \beta_i, \sigma_i^2) $$
+    $$p(\beta_i | \theta, V) \propto \text{exp} \left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta - \theta) \right].$$
+
+    \noindent We would like to find the conditional distribution for $\beta_i$ given the data given by
+
+    $$p(\beta_i | \bar{y_i}, \sigma_i^2, \theta, V) \propto  p(\beta_i | \theta, V) p(\bar{y}_i | \beta_i, \sigma_i^2). $$
+
+    \noindent Combining the likelihood and prior and completing the square we find that the posterior for $\beta_i$ is also multivariate normal:
 
     $$\beta_i | \bar{y}_i \dots \sim MVN\left(\frac{V^{-1} \theta + \frac{1}{\sigma_i^2 }X_i \bar{y}_i }{V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T}, \left[V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T \right]^{-1} \right)$$
 
-    $$p(\sigma_i^2) \propto \frac{1}{\sigma_i^2}$$
+    The prior for the scaling parameter is assumed to be an improper non-informative Jeffrey's prior:
+
+    $$p(\sigma_i^2) \propto \frac{1}{\sigma_i^2}.$$
+
+    \noindent The conditional distribution is then,
 
     \begin{align*}
     p(\sigma_i^2| \bar{y}_i) &\propto p(\sigma_i^2) p(\bar{y}_i | \beta_i, \sigma_i^2) \\
-    & \propto \frac{1}{\sigma_i^2} \left(\frac{1}{\sigma_i^2}\right)^{n_i/2} \text{exp}\left[ -\frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T \sigma_i^2 I_{n_i} (\bar{y}_i - X_i^T \beta_i)\right]
+    & \propto \frac{1}{\sigma_i^2} \left(\frac{1}{\sigma_i^2}\right)^{n_i/2} \text{exp}\left[ -\frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T \sigma_i^2 I_{n_i} (\bar{y}_i - X_i^T \beta_i)\right].
     \end{align*}
 
-    $$\sigma_i^2 | \bar{y}_i \dots \sim IG\left(\frac{n_i}{2},  \frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T (\bar{y}_i - X_i^T \beta_i)\right)$$
+    \noindent The conditional distribution has the form of an inverse-gamma distribution with the following parameters:
 
-    $$p(V) \propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right]$$ 
+    $$\sigma_i^2 | \bar{y}_i \dots \sim IG\left(\frac{n_i}{2},  \frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T (\bar{y}_i - X_i^T \beta_i)\right).$$
 
-    $$p(\beta_i | \theta, V) \propto | \text{det} V |^{1/2} \text{exp}\left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right]$$
+    The prior for the variance for the coefficients, $\beta_i$ is assumed to have the form of an inverse-Wishart prior.
+
+    $$p(V) \propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right]$$
+
+    The 'likelihood' for this prior comes from the coefficients and has the form,
+
+    $$p(\beta_i | \theta, V) \propto | \text{det} V |^{1/2} \text{exp}\left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right],$$
+
+    \noindent noting that the term in the determinant is necessary for finding the conditional distribution for the variance. The full 'likelihood' is then,
 
     $$p(\mathbf{\beta} | \theta, V) \propto | \text{det} V |^{s/2} \text{exp}\left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right] $$
+
+    \noindent Combining this with the inverse-Wishart prior, we can show that the condition distribution is also inverse-Wishart:
 
     \begin{align*}
         p(V|\mathbf{\beta}) &\propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right] | \text{det} V |^{s/2} \text{exp}\left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right] \\
@@ -110,5 +141,167 @@
     \end{align*}
 
     $$V|\mathbf{\beta} \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right)$$
+
+    A Gibbs sampler was written using Python 3.7 to sample from the derived conditional distributions (see Appendix and repo). The linear fits for all the stores is shown in figure~\ref{fig:all_cheese}. Here the black dots represent data from stores where a display was not present and the red dots represent data from stores where the display was present. The black and red lines correspond the fits for display not present and present respectively. 
+
+    A noteworthy trend is that for many of the stores, having a display increased sales (i.e. volume) but also tended to increase price sensitivity (shown by the steeper slopes). The model also appears to do supprisingly well for stores where little or no data is available. Figures~\ref{fig:cheese_10}, \ref{fig:cheese_41}, \ref{fig:cheese_55} show examples of these cases.
+
+    \begin{figure}[ht] 
+      \centering 
+      \includegraphics[width=7in]{figures/cheese_all_plots.pdf}
+      \vskip-10pt
+      \caption{\label{fig:all_cheese}Data and fits of posterior means for all stores}
+    \end{figure}
+
+    \begin{figure}[ht] 
+      \centering 
+      \includegraphics[width=3.5in]{figures/cheese_plots_10.pdf}
+      \vskip-10pt
+      \caption{\label{fig:cheese_10} Data and fit for store 10}
+    \end{figure}
+
+    \begin{figure}[ht] 
+      \centering 
+      \includegraphics[width=3.5in]{figures/cheese_plots_41.pdf}
+      \vskip-10pt
+      \caption{\label{fig:cheese_41} Data and fit for store 41}
+    \end{figure}
+
+    \begin{figure}[ht] 
+      \centering 
+      \includegraphics[width=3.5in]{figures/cheese_plots_55.pdf}
+      \vskip-10pt
+      \caption{\label{fig:cheese_55} Data and fit for store 55}
+    \end{figure}
+
+    \clearpage
+
+    \appendix
+
+    \section*{cheese.py}
+    \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+import matplotlib.pyplot as plt
+import pandas as pd
+import sys
+sys.path.append('../../scripts/')
+from samplers import Trace
+import scipy.stats as stats
+from numpy.linalg import inv
+
+np.random.seed(3)
+
+# Import data
+df = pd.read_csv('../../data/cheese.csv', delimiter=',')
+
+# Create an array of unique store names
+stores = np.unique(df.store)
+
+# Number of data rows
+n = 5555
+p = 4
+d = 10
+
+# Instantiate lists for storing sorted data
+data = []
+y = []
+X = []
+
+# Sort data by store
+for s, store in enumerate(stores):
+    data.append(df[df.store==store])
+
+    # \bar{y}_i
+    y.append(np.log(data[s].vol))
+    data[s].vol = np.log(data[s].vol)
+    data[s].price = np.log(data[s].price)
+
+    # X_i^T
+    X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
+
+# Number of stores
+s = 88
+
+### Instantiate priors and traces
+sigma_sq = 1
+
+theta = np.zeros(p)
+V = np.eye(p)*10**6
+
+beta = np.zeros((s,p))
+sigma = np.zeros(s)
+
+beta_trace = []
+sigma_trace = []
+V_trace = []
+
+#### Iterations
+iterations = 5000
+burn = 500
+for j in range(iterations):
+    # Store variable for inverse-Wishart
+    B = 0
+    # Iterate over stores to calculate \beta_i's
+    for store in range(s):
+
+        n = len(y[store])
+        # beta_cov = [V^{-1} + X_i \frac{1}{\sigma_i^2} I_{n_i} X_i^T]^{-1}
+        beta_cov = inv(inv(V) + X[store].T @ ((1/sigma_sq)*np.eye(n)) @ X[store])
+
+        # beta_mean = beta_cov [V^{-1} \theta + \frac{1}{\sigma_i^2}X_i \bar{y}_i]
+        beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq) * (X[store] @ y[store]))
+
+        # Sample from multivariate normal for each store
+        beta[store] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+
+        # Shape and scale parameters for sigma
+        a = n/2
+        b = (y[store] - X[store] @ beta[store]) @ (y[store] - X[store] @ beta[store])/2
+
+        # Sample from inverse-gamma distribution
+        sigma[store] = stats.invgamma.rvs(a, 1/b)
+    
+        # Sum variable for inverse-Wishart
+        B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+
+    # Sample from inverse-Wishart distribution
+    V = stats.invwishart.rvs(d+s, np.eye(p) + B)
+
+    # Append samples to trace
+    beta_trace.append(beta)
+    sigma_trace.append(sigma)
+
+# Reduce trace
+beta_trace = np.asarray(beta_trace)
+beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
+
+# Plot all stores together into one plot
+fig, ax = plt.subplots(11, 8, figsize=(10,12))
+fig.subplots_adjust(hspace=0.6)
+n = 0
+for i in range(11):
+    for j in range(8):
+        x_hat = X[n][X[n][:,1].argsort()]
+        ax[i,j].plot(data[n][data[n].disp==0].price, data[n][data[n].disp==0].vol, '.k', linewidth=0.1)
+        ax[i,j].plot(data[n][data[n].disp==1].price, data[n][data[n].disp==1].vol, '.r', linewidth=0.1)
+        ax[i,j].plot(x_hat[:,1], beta_trace_mean[n][0]+beta_trace_mean[n][1]*x_hat[:,1], '-k')
+        ax[i,j].plot(x_hat[:,1], (beta_trace_mean[n][0]+beta_trace_mean[n][2])+(beta_trace_mean[n][1]+beta_trace_mean[n][3])*x_hat[:,1], '-r')
+        n+=1
+
+plt.savefig('figures/cheese_all_plots.pdf')
+
+# Plot selected stores
+i = 10, 41, 55
+for p, plots in enumerate(i):
+    plt.figure()
+    x_hat = X[plots][X[plots][:,1].argsort()]
+    plt.plot(data[plots][data[plots].disp==0].price, data[plots][data[plots].disp==0].vol, '.k', linewidth=2)
+    plt.plot(data[plots][data[plots].disp==1].price, data[plots][data[plots].disp==1].vol, '.r', linewidth=2)
+    plt.plot(x_hat[:,1], beta_trace_mean[plots][0]+beta_trace_mean[plots][1]*x_hat[:,1], '-k', linewidth=2)
+    plt.plot(x_hat[:,1], (beta_trace_mean[plots][0]+beta_trace_mean[plots][2])+(beta_trace_mean[plots][1]+beta_trace_mean[plots][3])*x_hat[:,1], '-r', linewidth=2)
+
+    plt.savefig('figures/cheese_plots_'+str(plots)+'.pdf')
+    \end{lstlisting}
 
 \end{document}
