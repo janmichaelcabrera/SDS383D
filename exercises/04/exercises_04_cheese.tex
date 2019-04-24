@@ -137,12 +137,13 @@
 
     \begin{align*}
         p(V|\mathbf{\beta}) &\propto |V|^{(d+p+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}(C V^{-1}) \right] | \text{det} V |^{s/2} \text{exp}\left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right] \\
-        &\propto |V|^{(d+p+s+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}\left(V^{-1}\left[C + \sum_{i=1}^s(\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right]\right) \right]
+        &\propto |V|^{(d+p+s+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}\left(V^{-1}\left[C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right]\right) \right]
     \end{align*}
 
-    $$V|\mathbf{\beta} \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right)$$
+    $$V|\mathbf{\beta} \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right)$$
 
     A Gibbs sampler was written using Python 3.7 to sample from the derived conditional distributions (see Appendix and repo). The linear fits for all the stores is shown in figure~\ref{fig:all_cheese}. Here the black dots represent data from stores where a display was not present and the red dots represent data from stores where the display was present. The black and red lines correspond the fits for display not present and present respectively. 
+
 
     A noteworthy trend is that for many of the stores, having a display increased sales (i.e. volume) but also tended to increase price sensitivity (shown by the steeper slopes). The model also appears to do supprisingly well for stores where little or no data is available. Figures~\ref{fig:cheese_10}, \ref{fig:cheese_41}, \ref{fig:cheese_55} show examples of these cases.
 

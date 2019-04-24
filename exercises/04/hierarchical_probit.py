@@ -44,29 +44,29 @@ for s, state in enumerate(states):
     Z.append(np.zeros(len(y[s])))
     w.append(np.ones(len(y[s])))
 
+X = np.asarray(X)
+w = np.asarray(w)
+
 cols = X[0].shape[1]
-
-sum_XX = np.array([X[i].T @ X[i] for i in range(S)]).sum(axis=0)
-
-mu = np.ones(S)
+d = 1
 
 theta = np.zeros(cols)
-V = np.eye(cols)*10**6
+V = np.eye(cols)*10**5
+beta = stats.multivariate_normal.rvs(mean=theta, cov=V, size=S)
 
-beta = stats.multivariate_normal.rvs(mean=theta, cov=V)
-
-sigma_sq = stats.invgamma.rvs(S/2, (0.5*(mu**2).sum())**-1)
-
+m = 0
+v = 1*10**5
+mu = stats.norm.rvs(loc=m, scale=v, size=S)
 
 beta_trace = []
 mu_trace = []
 sigma_trace = []
 
 ## Iterations
-iterations = 1000
-burn = 0
+iterations = 5000
 
 for p in range(iterations):
+    B = np.zeros((cols,cols))
     for i in range(S):
         n_i = y[i].shape[0]
         for j in range(n_i):
@@ -76,51 +76,32 @@ for p in range(iterations):
             else:
                 a = -np.inf
                 b = 0
+            Z[i][j] = stats.truncnorm.rvs(a, b, loc=X[i][j,:] @ beta[i])
 
-            Z[i][j] = stats.truncnorm.rvs(a, b, loc=X[i][j,:] @ beta)
+        beta_cov = inv(inv(V) + X[i].T @ X[i])
+        beta_mean = beta_cov @ (inv(V) @ theta + X[i].T @ (Z[i] - w[i]*mu[i]))
+        beta[i] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
 
-        mu_var = (1/sigma_sq + n_i)**-1
-        mu_mean = w[i].T @ (Z[i] - X[i] @ beta)*mu_var
+        mu_var = (1/v + w[i].T @ w[i])**-1
+        mu_mean = mu_var*(m/v + w[i].T @ (Z[i] - X[i] @ beta[i]))
         mu[i] = stats.norm.rvs(loc=mu_mean, scale=mu_var)
-    
-    beta_cov = inv(inv(V) + sum_XX)
-    sum_ZX = np.array([X[i].T @ (Z[i] - w[i] * mu[i]) for i in range(S)]).sum(axis=0)
-    beta_mean = beta_cov @ (inv(V) @ theta + sum_ZX)
-    beta = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
 
-    sigma_sq = stats.invgamma.rvs(S/2-1, (0.5*(mu**2).sum())**-1)
+        B += np.tensordot((beta[i] - theta).T, (beta[i] - theta), axes=0)
 
-    beta_trace.append(beta)
+    theta = stats.multivariate_normal.rvs(mean=(1/S)*beta.sum(axis=0), cov=V/S)
+
+    V = stats.invwishart.rvs(d+S, np.eye(cols) + B)
+
+    v = stats.invgamma.rvs(S/2 - 1, (0.5*((mu - m)**2).sum())**-1)
+
+    m = stats.norm.rvs(loc=mu.mean(), scale=(S/v)**-1)
+
+    beta_trace.append(beta.copy())
     mu_trace.append(mu.copy())
-    sigma_trace.append(sigma_sq)
 
 
 beta_trace = np.asarray(beta_trace)
 mu_trace = np.asarray(mu_trace)
-sigma_trace = np.asarray(sigma_trace)
 
-plt.figure()
-plt.plot(beta_trace[burn:])
-plt.show()
-
-
-# for p in range(iterations):
-#     for i in range(len(Z)):
-#         if y[0][i] == 1.0:
-#             a = 0
-#             b = np.inf
-#         else:
-#             a = -np.inf
-#             b = 0
-
-#         Z[i] = stats.truncnorm.rvs(a, b, loc=X[0][i,:] @ beta)
-
-#     beta_cov = inv(inv(B_star) + X[0].T @ X[0])
-#     beta_mean = beta_cov @ (inv(B_star) @ beta_star + X[0].T @ Z)
-
-#     beta = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
-#     Z_trace.append(Z)
-#     beta_trace.append(beta)
-
-# beta_trace = np.asarray(beta_trace)
-# beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
+np.save('traces/hierarchical_probit/beta_trace', beta_trace)
+np.save('traces/hierarchical_probit/mu_trace', mu_trace)
