@@ -9,7 +9,7 @@ class Trace:
     """
     This class instantiates traces
     """
-    def __init__(self, name, iterations, shape=1, burn=100):
+    def __init__(self, name):
         """
         Parameters
         ----------
@@ -24,51 +24,51 @@ class Trace:
 
         """
         self.name = name
-        self.trace = np.zeros((iterations, shape))
-        self.burn = burn
+        self.trace = []
+        # self.burn = burn
 
-        if burn > iterations:
-            raise ValueError('Burn length %i is greater than total iterations %i'%(burn, iterations))
+        # if burn > iterations:
+        #     raise ValueError('Burn length %i is greater than total iterations %i'%(burn, iterations))
 
-    def plot(self, figures_directory='', plot_index=0):
-        """
-        Parameters
-        ----------
-            figures_directory: str
-                sets the directory for which figures are to be saved in
-                default behavior is to show the figure rather than saving
+    # def plot(self, figures_directory='', plot_index=0):
+    #     """
+    #     Parameters
+    #     ----------
+    #         figures_directory: str
+    #             sets the directory for which figures are to be saved in
+    #             default behavior is to show the figure rather than saving
 
-        """
-        if len(figures_directory) == 0:
-            plt.plot(self.trace[self.burn:], '-k')
-            plt.ticklabel_format(useOffset=False)
-            plt.show()
-        else:
-            for i in range(self.trace.shape[1]):
-                plt.figure()
-                plt.plot(self.trace[self.burn:,i], '-k', label=self.name+'_'+str(i))
-                plt.ticklabel_format(useOffset=False)
-                plt.savefig(figures_directory+self.name+'_'+str(i)+'_trace.png')
-                plt.close()
+    #     """
+    #     if len(figures_directory) == 0:
+    #         plt.plot(self.trace[self.burn:], '-k')
+    #         plt.ticklabel_format(useOffset=False)
+    #         plt.show()
+    #     else:
+    #         for i in range(self.trace.shape[1]):
+    #             plt.figure()
+    #             plt.plot(self.trace[self.burn:,i], '-k', label=self.name+'_'+str(i))
+    #             plt.ticklabel_format(useOffset=False)
+    #             plt.savefig(figures_directory+self.name+'_'+str(i)+'_trace.png')
+    #             plt.close()
 
-    def histogram(self, figures_directory='', plot_index=0):
-        plt.figure()
-        if len(figures_directory) == 0:
-            plt.hist(self.trace[self.burn:], color='k')
-            plt.ticklabel_format(useOffset=False)
-            plt.locator_params(axis='x', nbins=5)
-            plt.show()
-        else:
-            for i in range(self.trace.shape[1]):
-                plt.figure()
-                plt.hist(self.trace[self.burn:, i], color='k')
-                plt.ticklabel_format(useOffset=False)
-                plt.locator_params(axis='x', nbins=5)
-                plt.savefig(figures_directory+self.name+'_'+str(i)+'_hist.png')
-                plt.close()
-        return 0
+    # def histogram(self, figures_directory='', plot_index=0):
+    #     plt.figure()
+    #     if len(figures_directory) == 0:
+    #         plt.hist(self.trace[self.burn:], color='k')
+    #         plt.ticklabel_format(useOffset=False)
+    #         plt.locator_params(axis='x', nbins=5)
+    #         plt.show()
+    #     else:
+    #         for i in range(self.trace.shape[1]):
+    #             plt.figure()
+    #             plt.hist(self.trace[self.burn:, i], color='k')
+    #             plt.ticklabel_format(useOffset=False)
+    #             plt.locator_params(axis='x', nbins=5)
+    #             plt.savefig(figures_directory+self.name+'_'+str(i)+'_hist.png')
+    #             plt.close()
+    #     return 0
 
-    def update_trace(self, index, value):
+    def update_trace(self, value):
         """
         Parameters
         ----------
@@ -78,7 +78,7 @@ class Trace:
                 the value passed to trace at index
 
         """
-        self.trace[index] = value
+        self.trace.append(value)
 
     def mean(self):
         """
@@ -88,10 +88,11 @@ class Trace:
                 calculates the mean for each column in a given trace
 
         """
-        mean = np.zeros(self.trace.shape[1])
-        for i in range(len(mean)):
-            mean[i] = self.trace[self.burn:,i].mean()
+        mean = np.mean(np.asarray(self.trace), axis=0)
         return mean
+
+    def save_trace(self, out_directory=''):
+        np.save(out_directory+self.name+'_trace', np.asarray(self.trace))
 
 class Gibbs:
     """
@@ -182,3 +183,82 @@ class Gibbs:
             Lambda_trace.update_trace(i, lambda_diag)
 
         return beta_trace, omega_trace, Lambda_trace
+
+    def cheese(self):
+        """
+        Attributes
+        ----------
+            beta_trace: array
+                samples from conditional distribution for beta
+
+            mu_trace: array
+                samples from conditional distribution for beta
+        """
+        out_directory = 'traces/cheese/'
+        iterations = self.samples
+
+        # Instantiate traces
+        beta_trace = Trace('beta')
+        sigma_trace = Trace('sigma')
+        V_trace = Trace('V')
+
+        # Number of data rows
+        n = 5555
+        p = 4
+        d = 10
+
+        # Number of stores
+        s = 88
+
+        ### Instantiate priors
+        sigma_sq = 1
+
+        theta = np.zeros(p)
+        V = np.eye(p)*10**6
+
+        beta = np.zeros((s,p))
+        sigma = np.zeros(s)
+
+        #### Iterations
+        # iterations = 5000
+        # burn = 500
+        for j in range(iterations):
+            # Store variable for inverse-Wishart
+            B = 0
+            # Iterate over stores to calculate \beta_i's
+            for store in range(s):
+
+                n = len(self.Y[store])
+                # beta_cov = [V^{-1} + X_i \frac{1}{\sigma_i^2} I_{n_i} X_i^T]^{-1}
+                beta_cov = inv(inv(V) + self.X[store].T @ ((1/sigma_sq)*np.eye(n)) @ self.X[store])
+
+                # beta_mean = beta_cov [V^{-1} \theta + \frac{1}{\sigma_i^2}X_i \bar{y}_i]
+                beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq) * (self.X[store] @ self.Y[store]))
+
+                # Sample from multivariate normal for each store
+                beta[store] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+
+                # Shape and scale parameters for sigma
+                a = n/2
+                b = (self.Y[store] - self.X[store] @ beta[store]) @ (self.Y[store] - self.X[store] @ beta[store])/2
+
+                # Sample from inverse-gamma distribution
+                sigma[store] = stats.invgamma.rvs(a, 1/b)
+            
+                # Sum variable for inverse-Wishart
+                B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+
+            # Sample from inverse-Wishart distribution
+            V = stats.invwishart.rvs(d+s, np.eye(p) + B)
+
+            # Append samples to trace
+            beta_trace.update_trace(beta)
+            sigma_trace.update_trace(sigma)
+            V_trace.update_trace(V)
+
+        # Save traces for later use
+        beta_trace.save_trace(out_directory=out_directory)
+        sigma_trace.save_trace(out_directory=out_directory)
+        V_trace.save_trace(out_directory=out_directory)
+
+        return 0

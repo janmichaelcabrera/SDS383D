@@ -12,6 +12,7 @@ burn=0
 
 beta_trace = np.load('traces/hierarchical_probit/beta_trace.npy')
 mu_trace = np.load('traces/hierarchical_probit/mu_trace.npy')
+Z_trace = np.load('traces/hierarchical_probit/Z_trace.npy')
 
 mu_trace_mean = np.mean(mu_trace[burn:], axis=0)
 
