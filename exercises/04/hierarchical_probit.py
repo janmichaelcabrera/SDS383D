@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 sys.path.append('../../scripts/')
-from samplers import Trace
+# from samplers import Trace
 import scipy.stats as stats
 from numpy.linalg import inv
 
@@ -40,6 +40,7 @@ for s, state in enumerate(states):
 
     # x = np.column_stack([data[s].HS, data[s].NoHS, data[s].SomeColl, data[s]['30to44'], data[s]['45to64'], data[s]['65plus'], data[s].female, data[s].black])
     x = np.column_stack([data[s].Bacc, data[s].HS, data[s].NoHS, data[s].SomeColl, data[s]['18to29'], data[s]['30to44'], data[s]['45to64'], data[s]['65plus'], data[s].female, data[s].black])
+
     X.append(x)
     Z.append(np.zeros(len(y[s])))
     w.append(np.ones(len(y[s])))
@@ -51,14 +52,15 @@ cols = X[0].shape[1]
 d = 1
 
 theta = np.zeros(cols)
-V = np.eye(cols)*10**5
+V = np.eye(cols)
 beta = stats.multivariate_normal.rvs(mean=theta, cov=V, size=S)
 
 m = 0
-v = 1*10**5
+v = 1
 mu = stats.norm.rvs(loc=m, scale=v, size=S)
 
 beta_trace = []
+Z_trace = []
 mu_trace = []
 sigma_trace = []
 
@@ -98,10 +100,13 @@ for p in range(iterations):
 
     beta_trace.append(beta.copy())
     mu_trace.append(mu.copy())
+    Z_trace.append(Z.copy())
 
 
 beta_trace = np.asarray(beta_trace)
 mu_trace = np.asarray(mu_trace)
+Z_trace = np.asarray(Z_trace)
 
 np.save('traces/hierarchical_probit/beta_trace', beta_trace)
 np.save('traces/hierarchical_probit/mu_trace', mu_trace)
+np.save('traces/hierarchical_probit/Z_trace', Z_trace)
