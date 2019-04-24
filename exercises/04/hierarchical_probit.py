@@ -65,7 +65,7 @@ mu_trace = []
 sigma_trace = []
 
 ## Iterations
-iterations = 500
+iterations = 3000
 
 for p in range(iterations):
     B = np.zeros((cols,cols))
