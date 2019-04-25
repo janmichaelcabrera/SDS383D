@@ -134,10 +134,3 @@ def plot_together(input_directory, output_directory, out_name, show=False):
     else:
         plt.show()
     plt.close()
-
-input_directory = '../data/smoothed/15_kw_m2/'
-output_directory = '../data/smoothed/15_kw_m2/plots/'
-out_name = '15_kw_m2_together.pdf'
-plot_together(input_directory, output_directory, out_name, show=False)
-
-plot(input_directory, output_directory, show=False)
