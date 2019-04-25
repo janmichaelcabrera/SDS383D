@@ -1,0 +1,120 @@
+\documentclass[10pt]{article}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage[letterpaper, top=2.5cm, bottom=2.5cm, left=2.2cm, right=2.2cm]%
+{geometry}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{changepage}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\usepackage{courier}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.96,0.96,0.96}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=Python,
+        basicstyle=\footnotesize\ttfamily,
+        upquote=true,
+        aboveskip={1.0\baselineskip},
+        columns=fixed,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+\newcommand{\by}{\mathbf{y}}
+
+
+\begin{document}
+
+    \title{SDS 383D, Exercises 2: Peer Review for Qiaohui Lin}
+    \author{Jan-Michael Cabrera}
+    \date{\today}
+    \maketitle
+
+    \section*{A simple Gaussian location model}
+
+    \begin{enumerate}[label=(\Alph*)]
+
+      \item The mathematical definitions here are very clear. The derivation for the final form of the t-distribution is also concise.
+
+      \item The derivation for the normal-gamma posterior here is also very concise. One thing I find a little difficult to follow, and this may just be me, is all the text in the exponent. It may be worth in the future writing $\text{exp}( \dots )$, so that it is clear what is exponentiated, and also so the text in the exponent is larger.
+
+      \item It looks like the html is doing something funky with the bars over the $y$'s, but that could just be on my screen. Otherwise, it's good.
+
+      \item This is good. 
+
+      \item This is also good. Btw, do you know if there's way with the html equations to make the parenthesis larger for the outside of large expressions? I think something like this could improve the aesthetic. 
+
+      \item The reasoning here is very clear. I like the examples given, especially for the t-distribution case.
+
+      \item This is good.
+
+      \item This is very good. I like that you further elaborated on the frequentist approach here.
+
+    \end{enumerate}
+
+    \section*{The Conjugate Gaussian Linear Model}
+
+    \subsection*{Basics}
+
+    \begin{enumerate}[label=(\Alph*)]
+
+      \item Very concise derivation. 
+
+      \item Here, also, the derivation is concise.
+
+      \item The derivation here is good.
+
+      \item This is a cool way to fit the Bayesian model. It looks like your reconstructing the full posterior distributions. I like your inclusion of the histogram for these distributions. 
+
+    \end{enumerate}
+
+    \subsection*{A heavy-tailed error model}
+
+    \begin{enumerate}[label=(\Alph*)]
+
+      \item The derivation here is pretty clear. Maybe use a '$\cdot$' here instead of '$*$'. I think the latter is usually for convolutions. 
+
+      \item This is good.
+
+      \item This is also good.
+
+      \item Your code here is very concise. It may be useful in the future to generalize the code a bit in case you want to use it for other data. This could be wrapping it in functions that will take inputs such as the number of iterations to perform, or what kind of priors to set, etc. 
+
+      I like the inclusion of traceplots here and the histogram for one of the lambda's. 
+
+    \end{enumerate}
+
+  \section*{General Comments}
+
+    \begin{itemize}
+
+      \item Overall, the derivations are very good and concise. Using larger parenthesis/brackets in places will definitely make it a bit easier on the eyes.
+
+      \item In my opinion, I think a bit more exposition in the derivations would help make the derivations more readable. What you did in 'Bayesian CI under Non-informative Prior' was really good. More of this throughout would be awesome.
+
+      \item The code is relatively easy to follow, but could be packaged to be more useful to you in the future. 
+
+      \item This was very good. Keep it up!
+
+    \end{itemize}
+
+\end{document}

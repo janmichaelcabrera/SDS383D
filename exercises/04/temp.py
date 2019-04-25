@@ -8,7 +8,7 @@ sys.path.append('../../scripts/')
 import scipy.stats as stats
 from numpy.linalg import inv
 
-burn=2000
+burn=0
 
 beta_trace = np.load('traces/hierarchical_probit/beta_trace.npy')
 mu_trace = np.load('traces/hierarchical_probit/mu_trace.npy')
@@ -34,4 +34,22 @@ plt.show()
 
 # plt.figure()
 # plt.plot(Z_trace[burn:])
+# plt.show()
+
+# y = 0
+
+# loc = 2
+
+# if y == 1:
+#     a = 0
+#     b = np.inf
+
+# else:
+#     a = -np.inf
+#     b = 0
+
+# x = stats.truncnorm.rvs(a - loc, b - loc, loc = loc, size=1000000)
+
+# plt.figure()
+# plt.hist(x, bins=50)
 # plt.show()

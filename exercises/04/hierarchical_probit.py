@@ -23,6 +23,8 @@ y = []
 X = []
 Z = []
 w = []
+a = []
+b = []
 
 # ['Bacc' 'HS' 'NoHS' 'SomeColl']
 ed = pd.get_dummies(df.edu, drop_first=False)
@@ -45,6 +47,17 @@ for s, state in enumerate(states):
     Z.append(np.zeros(len(y[s])))
     w.append(np.ones(len(y[s])))
 
+    a.append(np.zeros(len(y[s])))
+    b.append(np.zeros(len(y[s])))
+
+    for j in range(len(y[s])):
+        if y[s][j] == 1.:
+            a[s][j] = 0 
+            b[s][j] = np.inf
+        else:
+            a[s][j] = np.inf
+            b[s][j] = 0
+
 X = np.asarray(X)
 w = np.asarray(w)
 
@@ -54,6 +67,15 @@ d = 1
 theta = np.zeros(cols)
 V = np.eye(cols)
 beta = stats.multivariate_normal.rvs(mean=theta, cov=V, size=S)
+
+
+# print((X[0] @ beta[0]).shape)
+# print(a[0].shape)
+
+# np.random.seed(3)
+# Z[0] = stats.truncnorm.rvs(a[0], b[0], loc=X[0] @ beta[0])
+
+# print(Z[0])
 
 m = 0
 v = 1
@@ -65,20 +87,20 @@ mu_trace = []
 sigma_trace = []
 
 ## Iterations
-iterations = 1000
+iterations = 10000
 
 for p in range(iterations):
     B = np.zeros((cols,cols))
     for i in range(S):
-        n_i = y[i].shape[0]
-        for j in range(n_i):
-            if y[i][j] == 1.0:
-                a = 0 
-                b = np.inf
-            else:
-                a = -np.inf
-                b = 0
-            Z[i][j] = stats.truncnorm.rvs(a - X[i][j,:] @ beta[i], b - X[i][j,:] @ beta[i], loc=X[i][j,:] @ beta[i])
+        # n_i = y[i].shape[0]
+        # for j in range(n_i):
+        #     if y[i][j] == 1.0:
+        #         a = 0 
+        #         b = np.inf
+        #     else:
+        #         a = -np.inf
+        #         b = 0
+        Z[i] = stats.truncnorm.rvs(a[i] - X[i] @ beta[i], b[i] - X[i] @ beta[i], loc=X[i] @ beta[i])
 
         beta_cov = inv(inv(V) + X[i].T @ X[i])
         beta_mean = beta_cov @ (inv(V) @ theta + X[i].T @ (Z[i] - w[i]*mu[i]))
