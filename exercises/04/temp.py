@@ -8,28 +8,40 @@ sys.path.append('../../scripts/')
 import scipy.stats as stats
 from numpy.linalg import inv
 
-burn=0
+burn=000
 
 beta_trace = np.load('traces/hierarchical_probit/beta_trace.npy')
 mu_trace = np.load('traces/hierarchical_probit/mu_trace.npy')
-Z_trace = np.load('traces/hierarchical_probit/Z_trace.npy')
+# Z_trace = np.load('traces/hierarchical_probit/Z_trace.npy')
 
 mu_trace_mean = np.mean(mu_trace[burn:], axis=0)
 beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
 
-print(Z_trace[burn:].shape)
-print(Z_trace[burn:].shape)
+X = np.load('traces/hierarchical_probit/X.npy')
+y = np.load('traces/hierarchical_probit/y.npy')
 
+y_hat = y.copy()
 
+n_states = y_hat.shape[0]
 
-# print(beta_trace_mean)
+print((stats.norm.cdf(x=X[2] @ beta_trace_mean[2])>=0.5).astype(int))
+pred = np.zeros(n_states)
 
-# plt.figure()
-# plt.plot(mu_trace[burn:])
-# plt.show()
+for s in range(n_states):
+    y_hat[s] = stats.norm.cdf(mu_trace_mean[s] + X[s] @ beta_trace_mean[s])
+    p =((y_hat[s])>=0.5).astype(int)
+    pred[s] = np.sum((p - y[s]) == 0)/y[s].shape[0]
+
+print(pred)
+print(pred.mean())
 
 plt.figure()
-plt.plot(beta_trace[burn:,0])
+plt.plot(mu_trace[burn:])
+plt.show()
+
+plt.figure()
+for i in range(n_states):
+    plt.plot(beta_trace[burn:,i])
 plt.show()
 
 # plt.figure()

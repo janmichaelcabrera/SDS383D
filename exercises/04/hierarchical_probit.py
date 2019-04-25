@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 sys.path.append('../../scripts/')
-# from samplers import Trace
 import scipy.stats as stats
 from numpy.linalg import inv
 
@@ -40,8 +39,7 @@ for s, state in enumerate(states):
     data.append(df[df.state==state])
     y.append(np.nan_to_num(data[s].bush.values))
 
-    # x = np.column_stack([data[s].HS, data[s].NoHS, data[s].SomeColl, data[s]['30to44'], data[s]['45to64'], data[s]['65plus'], data[s].female, data[s].black])
-    x = np.column_stack([data[s].Bacc, data[s].HS, data[s].NoHS, data[s].SomeColl, data[s]['18to29'], data[s]['30to44'], data[s]['45to64'], data[s]['65plus'], data[s].female, data[s].black])
+    x = np.column_stack([data[s].HS, data[s].NoHS, data[s].SomeColl, data[s]['30to44'], data[s]['45to64'], data[s]['65plus'], data[s].female, data[s].black])
 
     X.append(x)
     Z.append(np.zeros(len(y[s])))
@@ -58,8 +56,8 @@ for s, state in enumerate(states):
             a[s][j] = np.inf
             b[s][j] = 0
 
-X = np.asarray(X)
-w = np.asarray(w)
+# np.save('traces/hierarchical_probit/X', X)
+# np.save('traces/hierarchical_probit/y', y)
 
 cols = X[0].shape[1]
 d = 1
@@ -67,15 +65,6 @@ d = 1
 theta = np.zeros(cols)
 V = np.eye(cols)
 beta = stats.multivariate_normal.rvs(mean=theta, cov=V, size=S)
-
-
-# print((X[0] @ beta[0]).shape)
-# print(a[0].shape)
-
-# np.random.seed(3)
-# Z[0] = stats.truncnorm.rvs(a[0], b[0], loc=X[0] @ beta[0])
-
-# print(Z[0])
 
 m = 0
 v = 1
@@ -87,20 +76,17 @@ mu_trace = []
 sigma_trace = []
 
 ## Iterations
-iterations = 10000
+iterations = 5000
+
+# print(np.tensordot((beta[0] -theta).T, beta[0] - theta, axes=0))
 
 for p in range(iterations):
     B = np.zeros((cols,cols))
     for i in range(S):
-        # n_i = y[i].shape[0]
-        # for j in range(n_i):
-        #     if y[i][j] == 1.0:
-        #         a = 0 
-        #         b = np.inf
-        #     else:
-        #         a = -np.inf
-        #         b = 0
-        Z[i] = stats.truncnorm.rvs(a[i] - X[i] @ beta[i], b[i] - X[i] @ beta[i], loc=X[i] @ beta[i])
+        loc = mu[i]*w[i] + X[i] @ beta[i]
+        # Z[i] = stats.truncnorm.rvs(a[i], b[i], loc=loc)
+        # Z[i] = stats.truncnorm.rvs(a[i] - loc, b[i] - loc)
+        Z[i] = stats.truncnorm.rvs(a[i] - loc, b[i] - loc, loc=loc)
 
         beta_cov = inv(inv(V) + X[i].T @ X[i])
         beta_mean = beta_cov @ (inv(V) @ theta + X[i].T @ (Z[i] - w[i]*mu[i]))
@@ -110,13 +96,13 @@ for p in range(iterations):
         mu_mean = mu_var*(m/v + w[i].T @ (Z[i] - X[i] @ beta[i]))
         mu[i] = stats.norm.rvs(loc=mu_mean, scale=mu_var)
 
-        B += np.tensordot((beta[i] - theta).T, (beta[i] - theta), axes=0)
+        B += np.tensordot((beta[i] - theta), (beta[i] - theta), axes=0)
 
     theta = stats.multivariate_normal.rvs(mean=(1/S)*beta.sum(axis=0), cov=V/S)
 
-    V = stats.invwishart.rvs(d+S, np.eye(cols) + B)
+    V = stats.invwishart.rvs(d+S, scale=np.eye(cols) + B)
 
-    v = stats.invgamma.rvs(S/2 - 1, (0.5*((mu - m)**2).sum())**-1)
+    v = stats.invgamma.rvs(S/2, (0.5*((mu - m)**2).sum())**-1)
 
     m = stats.norm.rvs(loc=mu.mean(), scale=(S/v)**-1)
 
