@@ -39,14 +39,14 @@ for s, store in enumerate(stores):
     # X_i^T
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
-iterations = 1000
+iterations = 5000
 
 # Wrapper for running the model
 def run_model(X, y, iterations):
     model = Gibbs(X, y, samples=iterations)
     model.cheese()
 
-# run_model(X, y, iterations)
+run_model(X, y, iterations)
 
 # Load trace
 burn=100

@@ -211,13 +211,11 @@ class Gibbs:
         s = 88
 
         ### Instantiate priors
-        sigma_sq = 1
-
         theta = np.zeros(p)
         V = np.eye(p)*10**6
 
         beta = np.zeros((s,p))
-        sigma = np.zeros(s)
+        sigma_sq = np.ones(s)
 
         #### Iterations
         # iterations = 5000
@@ -230,30 +228,33 @@ class Gibbs:
 
                 n = len(self.Y[store])
                 # beta_cov = [V^{-1} + X_i \frac{1}{\sigma_i^2} I_{n_i} X_i^T]^{-1}
-                beta_cov = inv(inv(V) + self.X[store].T @ ((1/sigma_sq)*np.eye(n)) @ self.X[store])
+                beta_cov = inv(inv(V) + (1/sigma_sq[store]) * self.X[store].T @ self.X[store])
 
                 # beta_mean = beta_cov [V^{-1} \theta + \frac{1}{\sigma_i^2}X_i \bar{y}_i]
-                beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq) * (self.X[store] @ self.Y[store]))
+                beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq[store]) * (self.X[store] @ self.Y[store]))
 
                 # Sample from multivariate normal for each store
                 beta[store] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
 
                 # Shape and scale parameters for sigma
                 a = n/2
-                b = (self.Y[store] - self.X[store] @ beta[store]) @ (self.Y[store] - self.X[store] @ beta[store])/2
+                b = (self.Y[store] - self.X[store] @ beta[store]).T @ (self.Y[store] - self.X[store] @ beta[store])/2
 
                 # Sample from inverse-gamma distribution
-                sigma[store] = stats.invgamma.rvs(a, 1/b)
+                sigma_sq[store] = stats.invgamma.rvs(a, 1/b)
             
                 # Sum variable for inverse-Wishart
                 B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+
+            # Sample from multivarate normal, theta_mean = 1/s \sum_{i=1}^s \beta_i, theta_cov = V/s
+            theta = stats.multivariate_normal.rvs(mean=(1/s)*beta.sum(axis=0), cov=V/s)
 
             # Sample from inverse-Wishart distribution
             V = stats.invwishart.rvs(d+s, np.eye(p) + B)
 
             # Append samples to trace
             beta_trace.update_trace(beta)
-            sigma_trace.update_trace(sigma)
+            sigma_trace.update_trace(sigma_sq)
             V_trace.update_trace(V)
 
         # Save traces for later use
