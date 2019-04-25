@@ -65,7 +65,7 @@ mu_trace = []
 sigma_trace = []
 
 ## Iterations
-iterations = 3000
+iterations = 1000
 
 for p in range(iterations):
     B = np.zeros((cols,cols))
@@ -73,12 +73,12 @@ for p in range(iterations):
         n_i = y[i].shape[0]
         for j in range(n_i):
             if y[i][j] == 1.0:
-                a = 0 - X[i][j,:] @ beta[i]
+                a = 0 
                 b = np.inf
             else:
                 a = -np.inf
-                b = 0 - X[i][j,:] @ beta[i]
-            Z[i][j] = stats.truncnorm.rvs(a, b, loc=X[i][j,:] @ beta[i])
+                b = 0
+            Z[i][j] = stats.truncnorm.rvs(a - X[i][j,:] @ beta[i], b - X[i][j,:] @ beta[i], loc=X[i][j,:] @ beta[i])
 
         beta_cov = inv(inv(V) + X[i].T @ X[i])
         beta_mean = beta_cov @ (inv(V) @ theta + X[i].T @ (Z[i] - w[i]*mu[i]))

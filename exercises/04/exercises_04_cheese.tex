@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 \usepackage{amsfonts}
 \usepackage{fancyhdr}
 \usepackage{comment}
@@ -96,7 +96,7 @@
 
     \noindent Here we show the prior for $\beta_i$ explicitly
 
-    $$p(\beta_i | \theta, V) \propto \text{exp} \left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta - \theta) \right].$$
+    $$p(\beta_i | \theta, V) \propto \text{exp} \left[-\frac{1}{2} (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right].$$
 
     \noindent We would like to find the conditional distribution for $\beta_i$ given the data given by
 
@@ -120,6 +120,14 @@
     \noindent The conditional distribution has the form of an inverse-gamma distribution with the following parameters:
 
     $$\sigma_i^2 | \bar{y}_i \dots \sim IG\left(\frac{n_i}{2},  \frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T (\bar{y}_i - X_i^T \beta_i)\right).$$
+
+    The prior for $\theta$ is assumed to be flat and the conditional takes the form:
+
+    $$p(\theta | \beta) \propto \text{exp} \left[-\frac{1}{2} \sum_{i=1}^s (\beta_i - \theta)^T V^{-1} (\beta_i - \theta) \right].$$
+
+    This reduces to a multivariate normal distribution of the from:
+
+    $$\theta | \beta \sim MVN \left(\frac{1}{s} \sum_{i=1}^s \beta_i, \frac{1}{s}V \right)$$
 
     The prior for the variance for the coefficients, $\beta_i$ is assumed to have the form of an inverse-Wishart prior.
 
@@ -187,7 +195,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 sys.path.append('../../scripts/')
-from samplers import Trace
 import scipy.stats as stats
 from numpy.linalg import inv
 
@@ -265,6 +272,9 @@ for j in range(iterations):
     
         # Sum variable for inverse-Wishart
         B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+
+    # Sample from multivarate normal, theta_mean = 1/s \sum_{i=1}^s \beta_i, theta_cov = V/s
+    theta = stats.multivariate_normal.rvs(mean=(1/s)*beta.sum(axis=0), cov=V/s)
 
     # Sample from inverse-Wishart distribution
     V = stats.invwishart.rvs(d+s, np.eye(p) + B)
