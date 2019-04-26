@@ -96,7 +96,7 @@ class Trace:
 
 class Gibbs:
     """
-	This class will use a Gibbs sampling methods to draw posterior distributions
+	This class will use a Gibbs sampling methods to draw full conditional distributions
     """
     def __init__(self, X, Y, samples=100):
         """

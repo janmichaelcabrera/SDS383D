@@ -127,7 +127,7 @@
 
     This reduces to a multivariate normal distribution of the from:
 
-    $$\theta | \beta \sim MVN \left(\frac{1}{s} \sum_{i=1}^s \beta_i, \frac{1}{s}V \right)$$
+    $$\theta | \beta \dots \sim MVN \left(\frac{1}{s} \sum_{i=1}^s \beta_i, \frac{1}{s}V \right)$$
 
     The prior for the variance for the coefficients, $\beta_i$ is assumed to have the form of an inverse-Wishart prior.
 
@@ -148,7 +148,18 @@
         &\propto |V|^{(d+p+s+1)/2} \text{exp}\left[-\frac{1}{2} \text{tr}\left(V^{-1}\left[C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right]\right) \right]
     \end{align*}
 
-    $$V|\mathbf{\beta} \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right)$$
+    $$V|\mathbf{\beta} \dots \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right)$$
+
+    \clearpage
+    \subsection*{Conditionals for Gibbs Sampling}
+
+    $$\beta_i | \bar{y}_i \dots \sim MVN\left(\frac{V^{-1} \theta + \frac{1}{\sigma_i^2 }X_i \bar{y}_i }{V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T}, \left[V^{-1} + X_i \frac{1}{\sigma_i^2 I_{n_i}} X_i^T \right]^{-1} \right)$$
+
+    $$\sigma_i^2 | \bar{y}_i \dots \sim IG\left(\frac{n_i}{2},  \frac{1}{2} (\bar{y}_i - X_i^T \beta_i)^T (\bar{y}_i - X_i^T \beta_i)\right)$$
+
+    $$\theta | \beta \dots \sim MVN \left(\frac{1}{s} \sum_{i=1}^s \beta_i, \frac{1}{s}V \right)$$
+
+    $$V|\mathbf{\beta} \dots \sim IW\left( d+ s, C + \sum_{i=1}^s(\beta_i - \theta)^T (\beta_i - \theta) \right)$$
 
     A Gibbs sampler was written using Python 3.7 to sample from the derived conditional distributions (see Appendix and repo). The linear fits for all the stores is shown in figure~\ref{fig:all_cheese}. Here the black dots represent data from stores where a display was not present and the red dots represent data from stores where the display was present. The black and red lines correspond the fits for display not present and present respectively. 
 

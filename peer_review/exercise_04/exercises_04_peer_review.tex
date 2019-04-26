@@ -44,66 +44,32 @@
 
 \begin{document}
 
-    \title{SDS 383D, Exercises 2: Peer Review for Qiaohui Lin}
+    \title{SDS 383D, Exercises 4: Peer Review for Yilin He}
     \author{Jan-Michael Cabrera}
     \date{\today}
     \maketitle
 
-    \section*{A simple Gaussian location model}
+    \section*{Price elasticity of demand}
 
-    \begin{enumerate}[label=(\Alph*)]
+    \subsection*{Part I: data preparation}
 
-      \item The mathematical definitions here are very clear. The derivation for the final form of the t-distribution is also concise.
+    I like the idea of using training data and testing data for evaluating the fit of a model. Although each store does have more than 50 samples, for some stores the effect of having a display or not may not be captured correctly in your testing data since some of the stores have no data for this effect. 
 
-      \item The derivation for the normal-gamma posterior here is also very concise. One thing I find a little difficult to follow, and this may just be me, is all the text in the exponent. It may be worth in the future writing $\text{exp}( \dots )$, so that it is clear what is exponentiated, and also so the text in the exponent is larger.
+    I like your idea here of "rectangulating" your data set. It's not something I've thought of before.
 
-      \item It looks like the html is doing something funky with the bars over the $y$'s, but that could just be on my screen. Otherwise, it's good.
+    \subsection*{Part II: fit the Bayesian linear model}
 
-      \item This is good. 
+    I also initially looked at getting the full conditional for each $\beta_{0i}$, $\beta_{1i}$, etc. Deriving that result was a pain, wasn't it? I highly recommend collecting each $\beta$ coefficient into a vector:
 
-      \item This is also good. Btw, do you know if there's way with the html equations to make the parenthesis larger for the outside of large expressions? I think something like this could improve the aesthetic. 
+    $$\beta_i = \begin{bmatrix} \beta_0 \\ \beta_1 \\ \vdots  \end{bmatrix}_i$$
 
-      \item The reasoning here is very clear. I like the examples given, especially for the t-distribution case.
+    \noindent This makes deriving the full conditional much, much easier and also makes the code run much faster. Of course you'll also need to collect your $x_{ij}$'s into a matrix of $X_i$'s. 
 
-      \item This is good.
+    
 
-      \item This is very good. I like that you further elaborated on the frequentist approach here.
+    \subsection*{Part III Comparison: bayesian v.s. 16 random effects models}
 
-    \end{enumerate}
-
-    \section*{The Conjugate Gaussian Linear Model}
-
-    \subsection*{Basics}
-
-    \begin{enumerate}[label=(\Alph*)]
-
-      \item Very concise derivation. 
-
-      \item Here, also, the derivation is concise.
-
-      \item The derivation here is good.
-
-      \item This is a cool way to fit the Bayesian model. It looks like your reconstructing the full posterior distributions. I like your inclusion of the histogram for these distributions. 
-
-    \end{enumerate}
-
-    \subsection*{A heavy-tailed error model}
-
-    \begin{enumerate}[label=(\Alph*)]
-
-      \item The derivation here is pretty clear. Maybe use a '$\cdot$' here instead of '$*$'. I think the latter is usually for convolutions. 
-
-      \item This is good.
-
-      \item This is also good.
-
-      \item Your code here is very concise. It may be useful in the future to generalize the code a bit in case you want to use it for other data. This could be wrapping it in functions that will take inputs such as the number of iterations to perform, or what kind of priors to set, etc. 
-
-      I like the inclusion of traceplots here and the histogram for one of the lambda's. 
-
-    \end{enumerate}
-
-  \section*{General Comments}
+    \section*{General Comments}
 
     \begin{itemize}
 
