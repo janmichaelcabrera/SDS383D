@@ -253,9 +253,9 @@ class Gibbs:
             V = stats.invwishart.rvs(d+s, np.eye(p) + B)
 
             # Append samples to trace
-            beta_trace.update_trace(beta)
-            sigma_trace.update_trace(sigma_sq)
-            V_trace.update_trace(V)
+            beta_trace.update_trace(beta.copy())
+            sigma_trace.update_trace(sigma_sq.copy())
+            V_trace.update_trace(V.copy())
 
         # Save traces for later use
         beta_trace.save_trace(out_directory=out_directory)

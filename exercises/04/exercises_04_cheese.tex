@@ -163,6 +163,19 @@
 
     A Gibbs sampler was written using Python 3.7 to sample from the derived conditional distributions (see Appendix and repo). The linear fits for all the stores is shown in figure~\ref{fig:all_cheese}. Here the black dots represent data from stores where a display was not present and the red dots represent data from stores where the display was present. The black and red lines correspond the fits for display not present and present respectively. 
 
+        \begin{figure}
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/coeff_0_store_0_hist}
+            \end{subfigure}%
+            \begin{subfigure}{.5\textwidth}
+              \centering
+              \includegraphics[width=.9\linewidth]{figures/coeff_0_store_0_trace}
+            \end{subfigure}
+        \caption{Histogram and trace for coefficient zero for store zero}
+        % \label{fig:cross_validation}
+        \end{figure}
+
 
     A noteworthy trend is that for many of the stores, having a display increased sales (i.e. volume) but also tended to increase price sensitivity (shown by the steeper slopes). The model also appears to do supprisingly well for stores where little or no data is available. Figures~\ref{fig:cheese_10}, \ref{fig:cheese_41}, \ref{fig:cheese_55} show examples of these cases.
 
@@ -206,6 +219,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 sys.path.append('../../scripts/')
+from samplers import Trace
+from samplers import Gibbs
 import scipy.stats as stats
 from numpy.linalg import inv
 
@@ -239,64 +254,32 @@ for s, store in enumerate(stores):
     # X_i^T
     X.append(np.array([np.ones(data[s].shape[0]), data[s].price, data[s].disp, data[s].price*data[s].disp]).T)
 
-# Number of stores
-s = 88
-
-### Instantiate priors and traces
-sigma_sq = 1
-
-theta = np.zeros(p)
-V = np.eye(p)*10**6
-
-beta = np.zeros((s,p))
-sigma = np.zeros(s)
-
-beta_trace = []
-sigma_trace = []
-V_trace = []
-
-#### Iterations
 iterations = 5000
-burn = 500
-for j in range(iterations):
-    # Store variable for inverse-Wishart
-    B = 0
-    # Iterate over stores to calculate \beta_i's
-    for store in range(s):
 
-        n = len(y[store])
-        # beta_cov = [V^{-1} + X_i \frac{1}{\sigma_i^2} I_{n_i} X_i^T]^{-1}
-        beta_cov = inv(inv(V) + X[store].T @ ((1/sigma_sq)*np.eye(n)) @ X[store])
+# Wrapper for running the model
+def run_model(X, y, iterations):
+    model = Gibbs(X, y, samples=iterations)
+    model.cheese()
 
-        # beta_mean = beta_cov [V^{-1} \theta + \frac{1}{\sigma_i^2}X_i \bar{y}_i]
-        beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq) * (X[store] @ y[store]))
+# run_model(X, y, iterations)
 
-        # Sample from multivariate normal for each store
-        beta[store] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
-
-        # Shape and scale parameters for sigma
-        a = n/2
-        b = (y[store] - X[store] @ beta[store]) @ (y[store] - X[store] @ beta[store])/2
-
-        # Sample from inverse-gamma distribution
-        sigma[store] = stats.invgamma.rvs(a, 1/b)
-    
-        # Sum variable for inverse-Wishart
-        B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
-
-    # Sample from multivarate normal, theta_mean = 1/s \sum_{i=1}^s \beta_i, theta_cov = V/s
-    theta = stats.multivariate_normal.rvs(mean=(1/s)*beta.sum(axis=0), cov=V/s)
-
-    # Sample from inverse-Wishart distribution
-    V = stats.invwishart.rvs(d+s, np.eye(p) + B)
-
-    # Append samples to trace
-    beta_trace.append(beta)
-    sigma_trace.append(sigma)
-
-# Reduce trace
-beta_trace = np.asarray(beta_trace)
+# Load trace
+burn=1000
+beta_trace = np.load('traces/cheese/beta_trace.npy')
 beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
+
+# Example Trace and Histogram Plot showing convergence
+plt.figure()
+plt.title('Coefficient 0 for Store 0')
+plt.plot(beta_trace[burn:,0,0], color='k')
+# plt.show()
+plt.savefig('figures/coeff_0_store_0_trace.pdf')
+
+plt.figure()
+plt.title('Coefficient 0 for Store 0')
+plt.hist(beta_trace[burn:,0,0],bins = 30, color='k')
+# plt.show()
+plt.savefig('figures/coeff_0_store_0_hist.pdf')
 
 # Plot all stores together into one plot
 fig, ax = plt.subplots(11, 8, figsize=(10,12))
@@ -311,6 +294,7 @@ for i in range(11):
         ax[i,j].plot(x_hat[:,1], (beta_trace_mean[n][0]+beta_trace_mean[n][2])+(beta_trace_mean[n][1]+beta_trace_mean[n][3])*x_hat[:,1], '-r')
         n+=1
 
+# plt.show()
 plt.savefig('figures/cheese_all_plots.pdf')
 
 # Plot selected stores
@@ -322,8 +306,170 @@ for p, plots in enumerate(i):
     plt.plot(data[plots][data[plots].disp==1].price, data[plots][data[plots].disp==1].vol, '.r', linewidth=2)
     plt.plot(x_hat[:,1], beta_trace_mean[plots][0]+beta_trace_mean[plots][1]*x_hat[:,1], '-k', linewidth=2)
     plt.plot(x_hat[:,1], (beta_trace_mean[plots][0]+beta_trace_mean[plots][2])+(beta_trace_mean[plots][1]+beta_trace_mean[plots][3])*x_hat[:,1], '-r', linewidth=2)
-
+    # plt.show()
     plt.savefig('figures/cheese_plots_'+str(plots)+'.pdf')
+    \end{lstlisting}
+
+    \section*{samplers.py}
+
+        \begin{lstlisting}
+from __future__ import division
+import numpy as np 
+ifrom __future__ import division
+import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+from numpy.linalg import inv
+
+class Trace:
+    """
+    This class instantiates traces
+    """
+    def __init__(self, name):
+        """
+        Parameters
+        ----------
+        name: str
+            name of the trace for file i/o purposes
+
+        iterations: int
+            number of iterations to be ran for a given trace
+
+        shape: int
+            sets size of trace, default=1
+
+        """
+        self.name = name
+        self.trace = []
+
+    def update_trace(self, value):
+        """
+        Parameters
+        ----------
+            index: int
+                point in trace to update
+            value: float
+                the value passed to trace at index
+
+        """
+        self.trace.append(value)
+
+    def mean(self):
+        """
+        Returns
+        ----------
+            mean: float
+                calculates the mean for each column in a given trace
+
+        """
+        mean = np.mean(np.asarray(self.trace), axis=0)
+        return mean
+
+    def save_trace(self, out_directory=''):
+        np.save(out_directory+self.name+'_trace', np.asarray(self.trace))
+
+class Gibbs:
+    """
+    This class will use a Gibbs sampling methods to draw full conditional distributions
+    """
+    def __init__(self, X, Y, samples=100):
+        """
+        Parameters
+        ----------
+            X:  float
+                feature matrix
+
+            Y:  float
+                response vector
+
+            samples: int
+                number of samples to be drawn from posteriors, default is 100 for debugging purposes
+
+        """
+        self.X = X
+        self.Y = Y
+        self.samples = samples
+
+    def cheese(self):
+        """
+        Attributes
+        ----------
+            beta_trace: array
+                samples from conditional distribution for beta
+
+            mu_trace: array
+                samples from conditional distribution for beta
+        """
+        out_directory = 'traces/cheese/'
+        iterations = self.samples
+
+        # Instantiate traces
+        beta_trace = Trace('beta')
+        sigma_trace = Trace('sigma')
+        V_trace = Trace('V')
+
+        # Number of data rows
+        n = 5555
+        p = 4
+        d = 10
+
+        # Number of stores
+        s = 88
+
+        ### Instantiate priors
+        theta = np.zeros(p)
+        V = np.eye(p)*10**6
+
+        beta = np.zeros((s,p))
+        sigma_sq = np.ones(s)
+
+        #### Iterations
+        # iterations = 5000
+        # burn = 500
+        for j in range(iterations):
+            # Store variable for inverse-Wishart
+            B = 0
+            # Iterate over stores to calculate \beta_i's
+            for store in range(s):
+
+                n = len(self.Y[store])
+                # beta_cov = [V^{-1} + X_i \frac{1}{\sigma_i^2} I_{n_i} X_i^T]^{-1}
+                beta_cov = inv(inv(V) + (1/sigma_sq[store]) * self.X[store].T @ self.X[store])
+
+                # beta_mean = beta_cov [V^{-1} \theta + \frac{1}{\sigma_i^2}X_i \bar{y}_i]
+                beta_mean = beta_cov @ (inv(V) @ theta + (1/sigma_sq[store]) * (self.X[store] @ self.Y[store]))
+
+                # Sample from multivariate normal for each store
+                beta[store] = stats.multivariate_normal.rvs(mean=beta_mean, cov=beta_cov)
+
+                # Shape and scale parameters for sigma
+                a = n/2
+                b = (self.Y[store] - self.X[store] @ beta[store]).T @ (self.Y[store] - self.X[store] @ beta[store])/2
+
+                # Sample from inverse-gamma distribution
+                sigma_sq[store] = stats.invgamma.rvs(a, 1/b)
+            
+                # Sum variable for inverse-Wishart
+                B += np.tensordot((beta[store] - theta),(beta[store] - theta).T, axes=0)
+
+            # Sample from multivarate normal, theta_mean = 1/s \sum_{i=1}^s \beta_i, theta_cov = V/s
+            theta = stats.multivariate_normal.rvs(mean=(1/s)*beta.sum(axis=0), cov=V/s)
+
+            # Sample from inverse-Wishart distribution
+            V = stats.invwishart.rvs(d+s, np.eye(p) + B)
+
+            # Append samples to trace
+            beta_trace.update_trace(beta.copy())
+            sigma_trace.update_trace(sigma_sq.copy())
+            V_trace.update_trace(V.copy())
+
+        # Save traces for later use
+        beta_trace.save_trace(out_directory=out_directory)
+        sigma_trace.save_trace(out_directory=out_directory)
+        V_trace.save_trace(out_directory=out_directory)
+
+        return 0
     \end{lstlisting}
 
 \end{document}

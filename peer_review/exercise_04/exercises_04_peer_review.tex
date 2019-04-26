@@ -1,4 +1,4 @@
-\documentclass[10pt]{article}
+\documentclass[12pt]{article}
 \usepackage{amsfonts}
 \usepackage{fancyhdr}
 \usepackage{comment}
@@ -65,21 +65,37 @@
 
     \noindent This makes deriving the full conditional much, much easier and also makes the code run much faster. Of course you'll also need to collect your $x_{ij}$'s into a matrix of $X_i$'s. 
 
-    
+    I like that you included the histograms for each coefficient, although I'm not entirely sure to which store these might belong to. A note in the comments could help clarify this.
 
     \subsection*{Part III Comparison: bayesian v.s. 16 random effects models}
+
+    This is an interesting route to take. I'm not sure I understand one hundred percent what is going on, but to me it looks like you are varying the number of possible random effects from 0 to 16? And then fitting an OLS for each permutation?
+
+    I think it would have been cool to see how the fits match up with the data. The summary at the end was very concise though.
 
     \section*{General Comments}
 
     \begin{itemize}
 
-      \item Overall, the derivations are very good and concise. Using larger parenthesis/brackets in places will definitely make it a bit easier on the eyes.
+      \item You have good coding practices. The variable names are intuitive and make sense.
 
-      \item In my opinion, I think a bit more exposition in the derivations would help make the derivations more readable. What you did in 'Bayesian CI under Non-informative Prior' was really good. More of this throughout would be awesome.
+      \item Your comments in the code are very good. There are places where you might keep the exposition to the report and leave less of the comment. Example:
+      \begin{lstlisting}
+# Split dataset into training set and eval set for OLS model.
+# We're about to train the model on the training set and evaluate its performance on the eval set.
+# Specifically, we're going to compare the performance of the model fitted via gibbs sampling and 
+# the ones by solving OLS. 
+      \end{lstlisting}
 
-      \item The code is relatively easy to follow, but could be packaged to be more useful to you in the future. 
+      \noindent Would turn into:
 
-      \item This was very good. Keep it up!
+      \begin{lstlisting}
+# Split dataset into training set and eval set for OLS model.
+      \end{lstlisting}
+
+      \noindent I understand, though, that this was to make my life easier as someone reviewing the content, but, maybe this is just me, I like the commenting to be concise.
+
+      \item Good job overall. I think maybe more eye candy would be great (i.e. plots)!
 
     \end{itemize}
 

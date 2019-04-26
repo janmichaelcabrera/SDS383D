@@ -46,12 +46,25 @@ def run_model(X, y, iterations):
     model = Gibbs(X, y, samples=iterations)
     model.cheese()
 
-run_model(X, y, iterations)
+# run_model(X, y, iterations)
 
 # Load trace
-burn=100
+burn=1000
 beta_trace = np.load('traces/cheese/beta_trace.npy')
 beta_trace_mean = np.mean(beta_trace[burn:], axis=0)
+
+# Example Trace and Histogram Plot showing convergence
+plt.figure()
+plt.title('Coefficient 0 for Store 0')
+plt.plot(beta_trace[burn:,0,0], color='k')
+# plt.show()
+plt.savefig('figures/coeff_0_store_0_trace.pdf')
+
+plt.figure()
+plt.title('Coefficient 0 for Store 0')
+plt.hist(beta_trace[burn:,0,0],bins = 30, color='k')
+# plt.show()
+plt.savefig('figures/coeff_0_store_0_hist.pdf')
 
 # Plot all stores together into one plot
 fig, ax = plt.subplots(11, 8, figsize=(10,12))
