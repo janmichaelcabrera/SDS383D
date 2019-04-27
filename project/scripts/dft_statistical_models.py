@@ -9,6 +9,7 @@ import pandas as pd
 from dft_esm import energy_storage
 from scipy.signal import savgol_filter
 from scipy.optimize import minimize
+import scipy.stats as stats
 
 class Traces:
     """
@@ -101,7 +102,33 @@ class Models:
             return ((q_pred - q_obs)**2).sum()
 
         # Minimize loss function
-        res = minimize(func, k_init, args=(self.q_obs, self..time, self.T_f, self.T_r))
+        res = minimize(func, k_init, args=(self.q_obs, self.time, self.T_f, self.T_r))
 
         # Optimized parameter
         return res.x
+
+    def metropolis(self, k_init, samples):
+        alpha_trace = Traces('alpha')
+        sigma_trace = Traces('sigma')
+        alpha = k_init
+        q_hat = energy_storage(self.T_f, self.T_r, self.time, alpha=alpha)
+        var_epsilon = 0.3
+        sigma_sq = 1
+        for i in range(samples):
+            epsilon = stats.norm.rvs(scale=var_epsilon)
+            alpha_star = alpha + epsilon
+            print(alpha_star)
+            q_hat_star = energy_storage(self.T_f, self.T_r, self.time, alpha=alpha_star)
+            beta = stats.multivariate_normal.pdf(alpha_star, mean=(self.q_obs - q_hat_star), cov=sigma_sq*np.eye(len(self.q_obs))) / stats.multivariate_normal.pdf(alpha, mean=(self.q_obs - q_hat), cov=sigma_sq*np.eye(len(self.q_obs)))
+            
+            if np.random.uniform() < np.minimum(1, beta):
+                alpha = alpha_star
+                q_hat = q_hat_star
+            else:
+                pass
+
+            sigma_sq = stats.invgamma.rvs(len(self.q_obs)/2, 1/(0.5*((self.q_obs - q_hat)**2).sum()))
+
+            alpha_trace.update_trace(alpha)
+            sigma_trace.update_trace(sigma_sq.copy())
+        return alpha_trace, sigma_trace

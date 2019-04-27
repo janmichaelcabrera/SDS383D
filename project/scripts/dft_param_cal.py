@@ -7,6 +7,7 @@ from datetime import datetime
 import os, sys, time
 import pandas as pd
 from dft_esm import energy_storage
+from dft_statistical_models import Models
 from scipy.signal import savgol_filter
 from scipy.optimize import minimize
 
@@ -37,55 +38,28 @@ q_obs = np.zeros(len(data.time))
 # Set elements in array from minute 1 to minute 6 at 5 kW/m^2
 q_obs[60:360] =5
 
-# Wrapper function for minimizing parameter of interest, k
-def func(k, q_obs, time, T_f, T_r):
-    """
-    Inputs
-    ----------
-        k: scalar
-            thermal conductivity W/m-k
+# Initialize stats models
+DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
+DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-        q_obs: vector
-            observed heat flux kW/m^2
+DFT.metropolis(0.4, 1)
 
-        time: vector
-            experimental times
+# # Get MLE
+# k_hat = DFT.mle(0.01)
+# all_k_hat = DFT_all.mle(0.01)
 
-        T_f: vector
-            measured temperature on front of device
+# # Evaluate model at optimized parameter
+# q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+# all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
 
-        T_r: vector
-            measured temperature at rear of device
-
-    Returns
-    ----------
-        squared error loss
-            .. math: loss = \\sum_{time} (q_pred - q_obs)^2
-    """
-    q_pred = energy_storage(T_f, T_r, time, alpha=k)
-    return ((q_pred - q_obs)**2).sum()
-
-# Minimize loss function
-res = minimize(func, 0.01, args=(q_obs, data.time, data.tc_1, data.tc_2))
-
-all_res = minimize(func, 0.01, args=(q_obs, all_time, Tfm, Trm))
-# Optimized parameter
-k_hat = res.x
-all_k_hat = all_res.x
-print(k_hat, all_k_hat)
-
-# Evaluate model at optimized parameter
-q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
-all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
-
-# Plot results
-plt.figure()
-plt.plot(data.time, q_obs, label='Observed')
-plt.plot(data.time, q_hat, label='Predicted '+str(dat_index))
-plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
-plt.plot(data.time, all_q_hat, label='Mean Predicted')
-plt.xlim((0,420))
-plt.xlabel('Time (s)')
-plt.ylabel('Heat Flux (kW/m$^2$)')
-plt.legend(loc=0)
-plt.show()
+# # Plot results
+# plt.figure()
+# plt.plot(data.time, q_obs, label='Observed')
+# plt.plot(data.time, q_hat, label='Predicted '+str(dat_index))
+# plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
+# plt.plot(data.time, all_q_hat, label='Mean Predicted')
+# plt.xlim((0,420))
+# plt.xlabel('Time (s)')
+# plt.ylabel('Heat Flux (kW/m$^2$)')
+# plt.legend(loc=0)
+# plt.show()
