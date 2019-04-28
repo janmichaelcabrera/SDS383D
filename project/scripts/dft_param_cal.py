@@ -42,9 +42,9 @@ q_obs[60:360] =5
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-alpha_trace, sigma_trace = DFT.metropolis(0.4, 1000)
+alpha_trace, sigma_trace = DFT.metropolis(0.1, 10000)
 
-print(alpha_trace.mean())
+k_hat_mh = alpha_trace.mean()
 
 plt.figure()
 plt.plot(alpha_trace.trace)
@@ -54,24 +54,24 @@ plt.figure()
 plt.plot(sigma_trace.trace)
 plt.show()
 
-# print(alpha_trace.mean())
-
-# # Get MLE
-# k_hat = DFT.mle(0.01)
+# Get MLE
+k_hat = DFT.mle(0.01)
 # all_k_hat = DFT_all.mle(0.01)
 
-# # Evaluate model at optimized parameter
-# q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+# Evaluate model at optimized parameter
+q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
 # all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
 
-# # Plot results
-# plt.figure()
-# plt.plot(data.time, q_obs, label='Observed')
-# plt.plot(data.time, q_hat, label='Predicted '+str(dat_index))
-# plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
+# Plot results
+plt.figure()
+plt.plot(data.time, q_obs, label='Observed')
+plt.plot(data.time, q_hat, label='MLE '+str(dat_index))
+plt.plot(data.time, q_hat_mh, label='MH '+str(dat_index))
+plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
 # plt.plot(data.time, all_q_hat, label='Mean Predicted')
-# plt.xlim((0,420))
-# plt.xlabel('Time (s)')
-# plt.ylabel('Heat Flux (kW/m$^2$)')
-# plt.legend(loc=0)
-# plt.show()
+plt.xlim((0,420))
+plt.xlabel('Time (s)')
+plt.ylabel('Heat Flux (kW/m$^2$)')
+plt.legend(loc=0)
+plt.show()
