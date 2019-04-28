@@ -99,7 +99,7 @@ class Models:
                     .. math: loss = \\sum_{time} (q_pred - q_obs)^2
             """
             q_pred = energy_storage(T_f, T_r, time, alpha=k)
-            return ((q_pred - q_obs)**2).sum()
+            return (q_pred - q_obs).T @ (q_pred - q_obs)
 
         # Minimize loss function
         res = minimize(func, k_init, args=(self.q_obs, self.time, self.T_f, self.T_r))
