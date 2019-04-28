@@ -112,20 +112,31 @@ class Models:
         sigma_trace = Traces('sigma')
         alpha = k_init
         q_hat = energy_storage(self.T_f, self.T_r, self.time, alpha=alpha)
-        var_epsilon = 0.3
+        var_epsilon = 0.01
         sigma_sq = 1
+        acceptance_count = 0
+        p_optimal = 0.45
         for i in range(samples):
             epsilon = stats.norm.rvs(scale=var_epsilon)
             alpha_star = alpha + epsilon
-            print(alpha_star)
+            
             q_hat_star = energy_storage(self.T_f, self.T_r, self.time, alpha=alpha_star)
-            beta = stats.multivariate_normal.pdf(alpha_star, mean=(self.q_obs - q_hat_star), cov=sigma_sq*np.eye(len(self.q_obs))) / stats.multivariate_normal.pdf(alpha, mean=(self.q_obs - q_hat), cov=sigma_sq*np.eye(len(self.q_obs)))
+
+            log_beta = -(1/(2*sigma_sq))*(((self.q_obs - q_hat_star)**2).sum() - ((self.q_obs - q_hat)**2).sum())
+
+            beta = np.exp(log_beta)
             
             if np.random.uniform() < np.minimum(1, beta):
                 alpha = alpha_star
                 q_hat = q_hat_star
+                acceptance_count += 1
             else:
-                pass
+                alpha = alpha
+                q_hat = q_hat
+
+            if (i+1) % 100 == 0:
+                p_accept = acceptance_count/i
+                var_epsilon = var_epsilon * (stats.norm.ppf(p_optimal/2)/stats.norm.ppf(p_accept/2))
 
             sigma_sq = stats.invgamma.rvs(len(self.q_obs)/2, 1/(0.5*((self.q_obs - q_hat)**2).sum()))
 

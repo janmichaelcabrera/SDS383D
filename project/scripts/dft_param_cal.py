@@ -42,14 +42,19 @@ q_obs[60:360] =5
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-DFT.metropolis(0.4, 1)
+alpha_trace, sigma_trace = DFT.metropolis(0.4, 1000)
 
-q_hat = energy_storage(data.tc_1, data.tc_2, data.time)
+print(alpha_trace.mean())
 
-print(((q_obs - q_hat)**2).sum())
-print((q_obs - q_hat).T @ (q_obs - q_hat))
+plt.figure()
+plt.plot(alpha_trace.trace)
+plt.show()
 
+plt.figure()
+plt.plot(sigma_trace.trace)
+plt.show()
 
+# print(alpha_trace.mean())
 
 # # Get MLE
 # k_hat = DFT.mle(0.01)
