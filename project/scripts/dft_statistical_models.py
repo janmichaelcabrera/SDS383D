@@ -151,7 +151,7 @@ class Models:
             Parameter traces for thermal conductivity and standard deviation
         """
         # Set trace directory
-        trace_directory = 'traces'
+        trace_directory = 'traces/'
 
         # Initialize traces
         alpha_trace = Traces('alpha')
@@ -218,6 +218,8 @@ class Models:
             # Append traces
             alpha_trace.update_trace(alpha)
             sigma_trace.update_trace(sigma_sq.copy())
+
+        # print(var_epsilon,p_optimal, p_accept)
 
         # Save traces
         alpha_trace.save_trace(out_directory=trace_directory)

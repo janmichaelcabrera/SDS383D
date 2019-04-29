@@ -38,40 +38,68 @@ q_obs = np.zeros(len(data.time))
 # Set elements in array from minute 1 to minute 6 at 5 kW/m^2
 q_obs[60:360] =5
 
-# Initialize stats models
+# # Initialize stats models
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
-DFT_all = Models(Tfm, Trm, data.time, q_obs)
+# DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-alpha_trace, sigma_trace = DFT.metropolis(0.1, 10000)
+# DFT.metropolis(0.1, 10000)
 
-k_hat_mh = alpha_trace.mean()
+# k_hat_mh = alpha_trace.mean()
+
+burn = 1000
+
+alpha_trace = np.load('traces/alpha_trace.npy')[burn:]
+sigma_trace = np.load('traces/sigma_trace.npy')[burn:]
+
+k_hat_mh = np.mean(alpha_trace)
 
 plt.figure()
-plt.plot(alpha_trace.trace)
+plt.plot(alpha_trace)
 plt.show()
 
 plt.figure()
-plt.plot(sigma_trace.trace)
+plt.hist(alpha_trace, bins=30)
 plt.show()
 
-# Get MLE
-k_hat = DFT.mle(0.01)
-# all_k_hat = DFT_all.mle(0.01)
+plt.figure()
+plt.plot(sigma_trace)
+plt.show()
 
-# Evaluate model at optimized parameter
-q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+plt.figure()
+plt.hist(sigma_trace, bins=30)
+plt.show()
+
 q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
-# all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
 
-# Plot results
 plt.figure()
+for i in range(len(alpha_trace)):
+    plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time, alpha=alpha_trace[i]), color='grey')
 plt.plot(data.time, q_obs, label='Observed')
-plt.plot(data.time, q_hat, label='MLE '+str(dat_index))
-plt.plot(data.time, q_hat_mh, label='MH '+str(dat_index))
-plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
-# plt.plot(data.time, all_q_hat, label='Mean Predicted')
+plt.plot(data.time, q_hat_mh, label='MH')
 plt.xlim((0,420))
 plt.xlabel('Time (s)')
 plt.ylabel('Heat Flux (kW/m$^2$)')
 plt.legend(loc=0)
 plt.show()
+
+# # Get MLE
+# k_hat = DFT.mle(0.01)
+# # all_k_hat = DFT_all.mle(0.01)
+
+# # Evaluate model at optimized parameter
+# q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+# q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
+# # all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
+
+# # Plot results
+# plt.figure()
+# plt.plot(data.time, q_obs, label='Observed')
+# plt.plot(data.time, q_hat, label='MLE '+str(dat_index))
+# plt.plot(data.time, q_hat_mh, label='MH '+str(dat_index))
+# plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), label='uncalibrated')
+# # plt.plot(data.time, all_q_hat, label='Mean Predicted')
+# plt.xlim((0,420))
+# plt.xlabel('Time (s)')
+# plt.ylabel('Heat Flux (kW/m$^2$)')
+# plt.legend(loc=0)
+# plt.show()
