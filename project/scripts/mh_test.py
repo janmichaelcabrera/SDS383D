@@ -13,16 +13,19 @@ import scipy.stats as stats
 
 np.random.seed(3)
 
-def func(x, exponent=2):
+def func(x, exponent=3):
     return x**exponent
 
-x = np.linspace(0,10)
+x = np.linspace(0,10, num=50)
 
-y_obs = func(x) + stats.norm.rvs(scale=10, size=len(x))
+y_obs = func(x) + stats.norm.rvs(scale=50, size=len(x))
 
 # Initialize traces
 alpha_trace = []
 sigma_trace = []
+
+alpha_accepted = []
+alpha_rejected = []
 
 # Set initial guess for alpha in the M-H Algorithm
 alpha = 1
@@ -31,7 +34,7 @@ alpha = 1
 y_hat = func(x, exponent=alpha)
 
 # Set initial tuning parameter for proposal distribution
-var_epsilon = 0.01
+var_epsilon = 10
 
 # Set initial guess for variance for data
 sigma_sq = 1
@@ -43,7 +46,7 @@ acceptance_count = 0
 p_optimal = 0.45
 
 
-samples = 5000
+samples = 20000
 # Begin sampling
 for i in range(samples):
     # Sample from proposal distribution given var_epsilon
@@ -68,9 +71,11 @@ for i in range(samples):
         y_hat = y_hat_star
         # Iterate acceptance count
         acceptance_count += 1
+        alpha_accepted.append(alpha)
     else:
         alpha = alpha
         y_hat = y_hat
+        alpha_rejected.append(alpha)
 
     # Tune variance of proposal distribution every 100 steps
     if (i+1) % 100 == 0:
@@ -97,10 +102,16 @@ sigma_trace = sigma_trace[burn:]
 alpha_hat = np.mean(alpha_trace)
 
 print(alpha_hat)
+print(np.mean(sigma_trace))
 
 plt.figure()
-plt.plot(alpha_trace)
+plt.plot(alpha_accepted[burn:])
 plt.show()
+
+# plt.figure()
+# plt.plot(alpha_accepted, '.b')
+# plt.plot(alpha_rejected, 'xr')
+# plt.show()
 
 plt.figure()
 plt.plot(sigma_trace)
@@ -109,6 +120,8 @@ plt.show()
 plt.figure()
 # for i in range(len(alpha_trace)):
 #     plt.plot(x, func(x, exponent=alpha_trace[i]), color='grey')
-plt.plot(x, y_obs, '.k')
-plt.plot(x, func(x, exponent=alpha_hat))
+plt.plot(x, y_obs, '.k', label='Data')
+plt.plot(x, func(x, exponent=alpha_hat), label='Predicted')
+plt.plot(x, func(x), '--k', label='True')
+plt.legend(loc=0)
 plt.show()
