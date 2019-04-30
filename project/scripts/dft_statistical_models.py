@@ -176,7 +176,9 @@ class Models:
         p_optimal = 0.45
 
         # Begin sampling
-        for i in range(samples):
+        # for i in range(samples):
+        i = 0
+        while acceptance_count < samples:
             # Sample from proposal distribution given var_epsilon
             epsilon = stats.norm.rvs(scale=var_epsilon)
 
@@ -199,9 +201,8 @@ class Models:
                 q_hat = q_hat_star
                 # Iterate acceptance count
                 acceptance_count += 1
-            else:
-                alpha = alpha
-                q_hat = q_hat
+                # Append alpha_trace
+                alpha_trace.update_trace(alpha)
 
             # Tune variance of proposal distribution every 100 steps
             if (i+1) % 100 == 0:
@@ -213,11 +214,11 @@ class Models:
 
             # Perform Gibbs sampling step on \sigma^2
             # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (q_{inc,i} - \hat{q}_{inc,i})^2)
-            sigma_sq = stats.invgamma.rvs(len(self.q_obs)/2, 1/(0.5*((self.q_obs - q_hat)**2).sum()))
+            sigma_sq = stats.invgamma.rvs(len(self.q_obs)/2, scale=(0.5*((self.q_obs - q_hat)**2).sum()))
 
             # Append traces
-            alpha_trace.update_trace(alpha)
             sigma_trace.update_trace(sigma_sq.copy())
+            i += 1
 
         # print(var_epsilon,p_optimal, p_accept)
 

@@ -46,7 +46,7 @@ acceptance_count = 0
 p_optimal = 0.45
 
 
-samples = 20000
+samples = 10000
 # Begin sampling
 for i in range(samples):
     # Sample from proposal distribution given var_epsilon
@@ -87,7 +87,7 @@ for i in range(samples):
 
     # Perform Gibbs sampling step on \sigma^2
     # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (q_{inc,i} - \hat{q}_{inc,i})^2)
-    sigma_sq = stats.invgamma.rvs(len(y_obs)/2, 1/(0.5*((y_obs - y_hat)**2).sum()))
+    sigma_sq = stats.invgamma.rvs(len(y_obs)/2, scale=(0.5*((y_obs - y_hat)**2).sum()))
 
     # Append traces
     alpha_trace.append(alpha)
@@ -96,10 +96,13 @@ for i in range(samples):
 print(var_epsilon, p_optimal, p_accept)
 
 burn = 1000
+burn_accept = int(np.around(0.1*len(alpha_accepted)))
 
 alpha_trace = alpha_trace[burn:]
 sigma_trace = sigma_trace[burn:]
 alpha_hat = np.mean(alpha_trace)
+
+alpha_accepted = alpha_accepted[burn_accept:]
 
 print(alpha_hat)
 print(np.mean(sigma_trace))
@@ -108,18 +111,18 @@ plt.figure()
 plt.plot(alpha_accepted[burn:])
 plt.show()
 
-# plt.figure()
-# plt.plot(alpha_accepted, '.b')
-# plt.plot(alpha_rejected, 'xr')
-# plt.show()
+plt.figure()
+plt.plot(alpha_accepted, '.b')
+plt.plot(alpha_rejected, 'xr')
+plt.show()
 
 plt.figure()
 plt.plot(sigma_trace)
 plt.show()
 
 plt.figure()
-# for i in range(len(alpha_trace)):
-#     plt.plot(x, func(x, exponent=alpha_trace[i]), color='grey')
+for i in range(len(alpha_trace)):
+    plt.plot(x, func(x, exponent=alpha_trace[i]), color='grey')
 plt.plot(x, y_obs, '.k', label='Data')
 plt.plot(x, func(x, exponent=alpha_hat), label='Predicted')
 plt.plot(x, func(x), '--k', label='True')

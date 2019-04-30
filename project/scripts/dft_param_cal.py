@@ -42,7 +42,7 @@ q_obs[60:360] =5
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 # DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-# DFT.metropolis(0.1, 10000)
+DFT.metropolis(0.1, 10000)
 
 # k_hat_mh = alpha_trace.mean()
 
