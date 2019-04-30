@@ -14,11 +14,11 @@ import scipy.stats as stats
 np.random.seed(3)
 
 def func(x, exponent=3):
-    return x**exponent
+    return x + exponent
 
 x = np.linspace(0,10, num=50)
 
-y_obs = func(x) + stats.norm.rvs(scale=50, size=len(x))
+y_obs = func(x) + stats.norm.rvs(scale=1, size=len(x))
 
 # Initialize traces
 alpha_trace = []
@@ -46,7 +46,7 @@ acceptance_count = 0
 p_optimal = 0.45
 
 
-samples = 10000
+samples = 5000
 # Begin sampling
 for i in range(samples):
     # Sample from proposal distribution given var_epsilon
@@ -95,7 +95,7 @@ for i in range(samples):
 
 print(var_epsilon, p_optimal, p_accept)
 
-burn = 1000
+burn = 500
 burn_accept = int(np.around(0.1*len(alpha_accepted)))
 
 alpha_trace = alpha_trace[burn:]
@@ -103,6 +103,10 @@ sigma_trace = sigma_trace[burn:]
 alpha_hat = np.mean(alpha_trace)
 
 alpha_accepted = alpha_accepted[burn_accept:]
+
+# 95% credible interval
+alpha_upper = alpha_hat + np.std(alpha_trace)*1.96
+alpha_lower = alpha_hat - np.std(alpha_trace)*1.96
 
 print(alpha_hat)
 print(np.mean(sigma_trace))
@@ -121,10 +125,12 @@ plt.plot(sigma_trace)
 plt.show()
 
 plt.figure()
-for i in range(len(alpha_trace)):
-    plt.plot(x, func(x, exponent=alpha_trace[i]), color='grey')
+# for i in range(len(alpha_accepted)):
+#     plt.plot(x, func(x, exponent=alpha_accepted[i]), color='grey')
 plt.plot(x, y_obs, '.k', label='Data')
 plt.plot(x, func(x, exponent=alpha_hat), label='Predicted')
 plt.plot(x, func(x), '--k', label='True')
+plt.plot(x, func(x, exponent=alpha_lower), '-g')
+plt.plot(x, func(x, exponent=alpha_upper), '-g')
 plt.legend(loc=0)
 plt.show()

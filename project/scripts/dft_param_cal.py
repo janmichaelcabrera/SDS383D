@@ -42,7 +42,7 @@ q_obs[60:360] =5
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 # DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
-DFT.metropolis(0.1, 10000)
+# DFT.metropolis(0.1, 10000)
 
 # k_hat_mh = alpha_trace.mean()
 
@@ -52,6 +52,8 @@ alpha_trace = np.load('traces/alpha_trace.npy')[burn:]
 sigma_trace = np.load('traces/sigma_trace.npy')[burn:]
 
 k_hat_mh = np.mean(alpha_trace)
+k_hat_lower = k_hat_mh - np.std(alpha_trace)*1.96
+k_hat_upper = k_hat_mh + np.std(alpha_trace)*1.96
 
 plt.figure()
 plt.plot(alpha_trace)
@@ -70,10 +72,13 @@ plt.hist(sigma_trace, bins=30)
 plt.show()
 
 q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
+q_hat_lower = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_lower)
+q_hat_upper = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_upper)
 
 plt.figure()
-for i in range(len(alpha_trace)):
-    plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time, alpha=alpha_trace[i]), color='grey')
+# for i in range(len(alpha_trace)):
+#     plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time, alpha=alpha_trace[i]), color='grey')
+plt.fill_between(x=data.time, y1=q_hat_lower, y2=q_hat_upper, color='grey')
 plt.plot(data.time, q_obs, label='Observed')
 plt.plot(data.time, q_hat_mh, label='MH')
 plt.xlim((0,420))
