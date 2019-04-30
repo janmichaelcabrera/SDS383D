@@ -176,7 +176,6 @@ class Models:
         p_optimal = 0.45
 
         # Begin sampling
-        # for i in range(samples):
         i = 0
         while acceptance_count < samples:
             # Sample from proposal distribution given var_epsilon

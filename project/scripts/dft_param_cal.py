@@ -40,12 +40,12 @@ q_obs = np.zeros(len(data.time))
 # Set elements in array from minute 1 to minute 6 at 5 kW/m^2
 q_obs[60:360] =5
 
-# # Initialize stats models
+# Initialize stats models
 DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 # DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
 # # Run model
-# DFT.metropolis(0.1, 10000)
+DFT.metropolis(0.1, 10000)
 
 burn = 1000
 
@@ -71,7 +71,7 @@ q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
 q_hat_lower = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_lower)
 q_hat_upper = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_upper)
 
-plot = False
+plot = True
 if plot == True:
     # Plot results
     plt.figure()
