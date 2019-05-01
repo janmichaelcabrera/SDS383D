@@ -10,6 +10,7 @@ from dft_esm import energy_storage
 from scipy.signal import savgol_filter
 from scipy.optimize import minimize
 import scipy.stats as stats
+from metropolis_hastings import Models
 
 np.random.seed(3)
 
@@ -17,112 +18,52 @@ def func(x, params=[20, 2, 0.5]):
     beta_0, beta_1, beta_2 = params
     return beta_0 + x*beta_1 + beta_2*x**2
 
+def func1(x, params=2):
+    beta_0 = params
+    return x**beta_0
+
 x = np.linspace(0,10, num=50)
 
-y_true = func(x)
-y_obs = func(x) + stats.norm.rvs(scale=5, size=len(x))
+y_true = func1(x)
+y_obs = func1(x) + stats.norm.rvs(scale=5, size=len(x))
 
-# Initialize traces
-alpha_trace = []
-sigma_trace = []
+params = [1]
+# params = [1, 1, 1]
 
-# Set initial guess for alpha in the M-H Algorithm
-alpha = [1, 1, 1]
+model = Models('test', func1, x, y_obs, params)
 
-# Number of dimensions
-d = len(alpha)
+print(model.mle())
 
-# Set initial guess for variance for data
-sigma_sq = 1
+# alpha_trace, sigma_trace = model.metropolis_random_walk(samples=100)
 
-# Set initial predicted values for heat flux given initial guess in thermal conductivity
-y_hat = func(x, params=alpha)
+# print('acceptance: {:2.4f}'.format(model.p_accept))
 
-# Set initial tuning parameter for proposal distribution
-epsilon_cov = np.eye(d)
+# burn = 10
 
-# Initialize acceptance count for determining the acceptance probability
-acceptance_count = 0
+# alpha_trace = np.load('traces/test_alpha_trace.npy')[burn:]
+# sigma_trace = np.load('traces/test_sigma_trace.npy')[burn:]
 
-# Optimal acceptance probability
-p_optimal = 0.45
+# alpha_hat = np.mean(alpha_trace, axis=0)
 
-samples = 4000
-tune_every = 10 # samples
-times_tune = 100 # number of times to tune
-tune_total = tune_every*times_tune
-# Begin sampling
-i = 0
-t = 0
-while acceptance_count < samples+tune_total:
-    # Sample from proposal distribution given var_epsilon
-    epsilon = stats.multivariate_normal.rvs(cov=epsilon_cov)
+# print(alpha_hat)
 
-    # Propose new value for alpha given epsilon
-    alpha_star = alpha + epsilon
-    
-    # Predicted at proposed value
-    y_hat_star = func(x, params=alpha_star)
+# # 95% credible interval
+# y_bar = model.y_hat
+# y_bar_lower = y_bar - np.sqrt(np.mean(sigma_trace))*1.96
+# y_bar_upper = y_bar + np.sqrt(np.mean(sigma_trace))*1.96
 
-    # Log ratio of posteriors, to make computation tractable
-    log_beta = -(1/(2*sigma_sq))*(((y_obs - y_hat_star)**2).sum() - ((y_obs - y_hat)**2).sum())
+# plt.figure()
+# plt.plot(alpha_trace)
+# plt.show()
 
-    # Ratio of posteriors, \beta = \frac{p(\alpha^{star}|data)}{p(\alpha | data)}
-    beta = np.exp(log_beta)
-    
-    # Determine acceptance of proposed value
-    if np.random.uniform() < np.minimum(1, beta):
-        # Set proposed values
-        alpha = alpha_star
-        y_hat = y_hat_star
-        # Iterate acceptance count
-        acceptance_count += 1
-        alpha_trace.append(alpha.copy())
+# plt.figure()
+# plt.hist(sigma_trace, bins=30, color='black')
+# plt.show()
 
-    # Tune variance of proposal distribution
-    if (acceptance_count+1) % tune_every == 0 and t < tune_total:
-        # Calculates the current acceptance probability
-        p_accept = acceptance_count/i
-
-        # New epsilon_cov = 2.4^2 S_b / d
-        S = np.var(alpha_trace[-tune_every:], axis=0)
-        epsilon_cov = 2.4**2 * np.diag(S)/d
-        t+=1
-
-    # Perform Gibbs sampling step on \sigma^2
-    # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (q_{inc,i} - \hat{q}_{inc,i})^2)
-    sigma_sq = stats.invgamma.rvs(len(y_obs)/2, scale=(0.5*((y_obs - y_hat)**2).sum()))
-
-    # Append traces
-    sigma_trace.append(sigma_sq.copy())
-    i += 1
-
-print('acceptance: {:2.4f}'.format(acceptance_count/i))
-burn = 1000
-
-alpha_trace = alpha_trace[burn:]
-sigma_trace = sigma_trace[burn:]
-alpha_hat = np.mean(alpha_trace, axis=0)
-
-print(alpha_hat)
-
-# 95% credible interval
-y_bar = func(x, params=alpha_hat)
-y_bar_lower = y_bar - np.sqrt(np.mean(sigma_trace))*1.96
-y_bar_upper = y_bar + np.sqrt(np.mean(sigma_trace))*1.96
-
-plt.figure()
-plt.plot(alpha_trace)
-plt.show()
-
-plt.figure()
-plt.hist(sigma_trace)
-plt.show()
-
-plt.figure()
-plt.plot(x, y_obs, '.k', label='Data')
-plt.plot(x, y_bar, label='Predicted')
-plt.plot(x, y_true, '--k', label='True')
-plt.fill_between(x=x, y1=y_bar_lower, y2=y_bar_upper, color='grey')
-plt.legend(loc=0)
-plt.show()
+# plt.figure()
+# plt.plot(x, y_obs, '.k', label='Data')
+# plt.plot(x, y_bar, label='Predicted')
+# plt.plot(x, y_true, '--k', label='True')
+# plt.fill_between(x=x, y1=y_bar_lower, y2=y_bar_upper, color='grey')
+# plt.legend(loc=0)
+# plt.show()
