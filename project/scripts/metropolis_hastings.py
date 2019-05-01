@@ -67,13 +67,40 @@ class Traces:
 
 
 class Models:
+    """
+    This class runs various models for calibrating parameters
+    """
     def __init__(self, model, func, X, y_obs, params):
+        """
+        Parameters
+        ----------
+            model: str
+                Model name for file i/o purposes
+
+            func: function object
+                The function to be evaluated when optimizing the parameters of interest. The assumed functional form of y_obs
+
+            X: array-like
+                Inputs that describe the model
+                .. math: y_obs = f(X) + e
+
+            y_obs: array-like
+                Observed values with which to fit the function, func, with inputs, X characterized by parameters, param.
+
+            params: list
+                The starting values for evaluatin the statistical models
+
+        Attributes
+        ----------
+            y_hat: array-like
+                The function func, evaluated at the inputs, X, given the initial parameters, params
+        """
         self.model = model
         self.func = func
         self.X = X
         self.y_obs = y_obs
         self.params = params
-        self.y_hat = func(X, params=params)
+        self.y_hat = func(X, params)
 
     def mle(self):
         """
@@ -151,9 +178,9 @@ class Models:
         # Initialize the acceptance_count
         acceptance_count = 0
 
-        # Begin sampling
         i = 0
         t = 0
+        # Begin sampling
         while acceptance_count < samples+tune_total:
             # Sample from proposal distribution given var_epsilon
             epsilon = stats.multivariate_normal.rvs(cov=epsilon_cov)
@@ -162,7 +189,7 @@ class Models:
             alpha_star = alpha + epsilon
             
             # Predicted at proposed value
-            y_hat_star = self.func(self.X, params=alpha_star)
+            y_hat_star = self.func(self.X, alpha_star)
 
             # Log ratio of posteriors, to make computation tractable
             log_beta = -(1/(2*sigma_sq))*(((self.y_obs - y_hat_star)**2).sum() - ((self.y_obs - self.y_hat)**2).sum())
