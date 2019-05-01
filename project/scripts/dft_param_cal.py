@@ -45,7 +45,7 @@ DFT = Models(data.tc_1, data.tc_2, data.time, q_obs)
 # DFT_all = Models(Tfm, Trm, data.time, q_obs)
 
 # # Run model
-DFT.metropolis(0.1, 10000)
+# DFT.metropolis(0.1, 10000)
 
 burn = 1000
 
@@ -57,19 +57,20 @@ print('Thermal conductivity - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(alpha_
 print('Variance - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(sigma_trace), np.std(sigma_trace)))
 
 k_hat_mh = np.mean(alpha_trace)
-k_hat_lower = k_hat_mh - np.std(alpha_trace)*1.96
-k_hat_upper = k_hat_mh + np.std(alpha_trace)*1.96
+# k_hat_lower = k_hat_mh - np.std(alpha_trace)*1.96
+# k_hat_upper = k_hat_mh + np.std(alpha_trace)*1.96
 
 # Get MLE
 k_hat = DFT.mle(0.01)
 # # all_k_hat = DFT_all.mle(0.01)
 
 # # Evaluate model at optimized parameter
-q_hat = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+q_hat_mle = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat)
+
 # all_q_hat = energy_storage(Tfm, Trm, all_time, alpha=all_k_hat)
 q_hat_mh = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_mh)
-q_hat_lower = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_lower)
-q_hat_upper = energy_storage(data.tc_1, data.tc_2, data.time, alpha=k_hat_upper)
+q_hat_lower = q_hat_mh - np.sqrt(np.mean(sigma_trace))*1.96
+q_hat_upper = q_hat_mh + np.sqrt(np.mean(sigma_trace))*1.96
 
 plot = True
 if plot == True:
@@ -79,7 +80,7 @@ if plot == True:
     plt.plot(data.time, q_obs, '-k', linewidth=1.5, label='Observed')
     plt.plot(data.time, q_hat_mh, '-b', linewidth=1.5, label='MH '+str(dat_index))
     plt.plot(data.time, energy_storage(data.tc_1, data.tc_2, data.time), '-r', linewidth=1.5, label='Uncalibrated')
-    plt.plot(data.time, q_hat,'--g', linewidth=1.5, label='MLE '+str(dat_index))
+    plt.plot(data.time, q_hat_mle,'--g', linewidth=1.5, label='MLE '+str(dat_index))
     plt.xlim((0,420))
     plt.xlabel('Time (s)')
     plt.ylabel('Heat Flux (kW/m$^2$)')

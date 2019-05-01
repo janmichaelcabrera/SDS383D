@@ -119,6 +119,10 @@ def energy_storage(Tf, Tr, my_times, alpha=None):
     # Calcs insulation temperature as average of front and back temperatures
     T_ins = (Tf + Tr)/2
 
+    # Film Temperatures
+    T_ff = (Tf + Tf[0])/2 # film temp on front plate
+    T_fr = (Tr + Tr[0])/2 # film temp on rear plate
+
     # Evalutes ESM at Tf and Tr
     q_net = rCp_s(Tf+273)*L_p*np.gradient(Tf, my_times) + k_c(T_ins+273, alpha=alpha)*(Tf-Tr)/l_i+rCp_c(T_ins+273)*l_i*np.gradient(T_ins, my_times)
 
@@ -127,8 +131,9 @@ def energy_storage(Tf, Tr, my_times, alpha=None):
     # Emitted heat flux loss
     q_emit = epsilon*sigma*((Tf+273)**4 - (Tf[0]+273)**4) + epsilon*sigma*((Tr+273)**4 - (Tr[0]+273)**4)
     # Convective heat flux loss
-    q_conv = h_p(T_ins+273)*(Tf - Tf[0]) + h_p(T_ins+273)*(Tr - Tr[0])
+    # T_f (T_f + T_inf)/2
+    q_conv = h_p(T_ff+273)*(Tf - Tf[0]) + h_p(T_fr+273)*(Tr - Tr[0])
     # Incident heat flux
-    q_inc = q_net + q_ref + q_emit + q_conv
+    q_inc = q_net/epsilon + q_emit/epsilon + q_conv/epsilon
 
     return q_inc/1000
