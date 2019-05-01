@@ -13,50 +13,56 @@ import scipy.stats as stats
 
 np.random.seed(3)
 
-def func(x, exponent=2):
-    return np.sin(x)*exponent
+def func(x, params=[20, 2, 0.5]):
+    beta_0, beta_1, beta_2 = params
+    return beta_0 + x*beta_1 + beta_2*x**2
 
 x = np.linspace(0,10, num=50)
 
-y_obs = func(x) + stats.norm.rvs(scale=1, size=len(x))
+y_true = func(x)
+y_obs = func(x) + stats.norm.rvs(scale=5, size=len(x))
 
 # Initialize traces
 alpha_trace = []
 sigma_trace = []
 
-alpha_accepted = []
-alpha_rejected = []
-
 # Set initial guess for alpha in the M-H Algorithm
-alpha = 1
+alpha = [1, 1, 1]
 
-# Set initial predicted values for heat flux given initial guess in thermal conductivity
-y_hat = func(x, exponent=alpha)
-
-# Set initial tuning parameter for proposal distribution
-var_epsilon = 10
+# Number of dimensions
+d = len(alpha)
 
 # Set initial guess for variance for data
 sigma_sq = 1
 
-# Initialize acceptance cound for determining the acceptance probability
+# Set initial predicted values for heat flux given initial guess in thermal conductivity
+y_hat = func(x, params=alpha)
+
+# Set initial tuning parameter for proposal distribution
+epsilon_cov = np.eye(d)
+
+# Initialize acceptance count for determining the acceptance probability
 acceptance_count = 0
 
 # Optimal acceptance probability
 p_optimal = 0.45
 
-
-samples = 10000
+samples = 4000
+tune_every = 10 # samples
+times_tune = 100 # number of times to tune
+tune_total = tune_every*times_tune
 # Begin sampling
-for i in range(samples):
+i = 0
+t = 0
+while acceptance_count < samples+tune_total:
     # Sample from proposal distribution given var_epsilon
-    epsilon = stats.norm.rvs(scale=var_epsilon)
+    epsilon = stats.multivariate_normal.rvs(cov=epsilon_cov)
 
     # Propose new value for alpha given epsilon
     alpha_star = alpha + epsilon
     
-    # Predicted heat flux at proposed value
-    y_hat_star = func(x, exponent=alpha_star)
+    # Predicted at proposed value
+    y_hat_star = func(x, params=alpha_star)
 
     # Log ratio of posteriors, to make computation tractable
     log_beta = -(1/(2*sigma_sq))*(((y_obs - y_hat_star)**2).sum() - ((y_obs - y_hat)**2).sum())
@@ -71,66 +77,52 @@ for i in range(samples):
         y_hat = y_hat_star
         # Iterate acceptance count
         acceptance_count += 1
-        alpha_accepted.append(alpha)
-    else:
-        alpha = alpha
-        y_hat = y_hat
-        alpha_rejected.append(alpha)
+        alpha_trace.append(alpha.copy())
 
-    # Tune variance of proposal distribution every 100 steps
-    if (i+1) % 100 == 0:
+    # Tune variance of proposal distribution
+    if (acceptance_count+1) % tune_every == 0 and t < tune_total:
         # Calculates the current acceptance probability
         p_accept = acceptance_count/i
 
-        # New var_epsilon = var_epsilon \frac{\Phi^{-1}(p_{opt}/2)}{\Phi^{-1}(p_{cur}/2)}
-        var_epsilon = var_epsilon * (stats.norm.ppf(p_optimal/2)/stats.norm.ppf(p_accept/2))
+        # New epsilon_cov = 2.4^2 S_b / d
+        S = np.var(alpha_trace[-tune_every:], axis=0)
+        epsilon_cov = 2.4**2 * np.diag(S)/d
+        t+=1
 
     # Perform Gibbs sampling step on \sigma^2
     # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (q_{inc,i} - \hat{q}_{inc,i})^2)
     sigma_sq = stats.invgamma.rvs(len(y_obs)/2, scale=(0.5*((y_obs - y_hat)**2).sum()))
 
     # Append traces
-    alpha_trace.append(alpha)
     sigma_trace.append(sigma_sq.copy())
+    i += 1
 
-burn = 500
-burn_accept = int(np.around(0.1*len(alpha_accepted)))
+print('acceptance: {:2.4f}'.format(acceptance_count/i))
+burn = 1000
 
 alpha_trace = alpha_trace[burn:]
 sigma_trace = sigma_trace[burn:]
-alpha_hat = np.mean(alpha_trace)
+alpha_hat = np.mean(alpha_trace, axis=0)
 
-alpha_accepted = alpha_accepted[burn_accept:]
+print(alpha_hat)
 
 # 95% credible interval
-y_bar = func(x, exponent=alpha_hat)
+y_bar = func(x, params=alpha_hat)
 y_bar_lower = y_bar - np.sqrt(np.mean(sigma_trace))*1.96
 y_bar_upper = y_bar + np.sqrt(np.mean(sigma_trace))*1.96
 
-print(alpha_hat)
-print(np.mean(sigma_trace))
-
 plt.figure()
-plt.plot(alpha_accepted[burn:])
+plt.plot(alpha_trace)
 plt.show()
-
-# plt.figure()
-# plt.plot(alpha_accepted, '.b')
-# plt.plot(alpha_rejected, 'xr')
-# plt.show()
 
 plt.figure()
 plt.hist(sigma_trace)
 plt.show()
 
 plt.figure()
-# for i in range(len(alpha_accepted)):
-#     plt.plot(x, func(x, exponent=alpha_accepted[i]), color='grey')
 plt.plot(x, y_obs, '.k', label='Data')
 plt.plot(x, y_bar, label='Predicted')
-plt.plot(x, func(x), '--k', label='True')
+plt.plot(x, y_true, '--k', label='True')
 plt.fill_between(x=x, y1=y_bar_lower, y2=y_bar_upper, color='grey')
-# plt.plot(x, y_bar_lower, '-g')
-# plt.plot(x, y_bar_upper, '-g')
 plt.legend(loc=0)
 plt.show()
