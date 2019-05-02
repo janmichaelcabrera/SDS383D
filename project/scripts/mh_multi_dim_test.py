@@ -16,7 +16,7 @@ np.random.seed(3)
 
 def func(x, params=[20, 2, 0.5]):
     beta_0, beta_1, beta_2 = params
-    return beta_0 + x*beta_1 + beta_2*x**2
+    return beta_0 + x*beta_1 + x**beta_2
 
 def func1(x, params=2):
     beta_0 = params
@@ -25,7 +25,7 @@ def func1(x, params=2):
 x = np.linspace(0,10, num=50)
 
 y_true = func(x)
-y_obs = func(x) + stats.norm.rvs(scale=5, size=len(x))
+y_obs = func(x) + stats.norm.rvs(scale=1, size=len(x))
 
 # params = [1]
 params = [1, 1, 1]

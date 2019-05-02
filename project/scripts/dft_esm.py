@@ -80,7 +80,7 @@ def k_c(x, alpha=None):
         y = alpha
     return y
 
-def energy_storage(Tf, Tr, my_times, alpha=None):
+def energy_storage(X, alpha=None):
     """
     Inputs
     ----------
@@ -102,7 +102,11 @@ def energy_storage(Tf, Tr, my_times, alpha=None):
             Incident heat flux to DFT using Energy Storage Method (ASTM E3057) in kW/m^2
 
     """
-    ### DFT Geometry
+    ### Unpack model inputs
+
+    Tf, Tr, my_times = X
+
+    ### DFT geometry
 
     # Plate thickness (m)
     L_p = 0.001905

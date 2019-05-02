@@ -88,12 +88,12 @@ class Models:
                 Observed values with which to fit the function, func, with inputs, X characterized by parameters, param.
 
             params: list
-                The starting values for evaluatin the statistical models
+                The starting values for evaluating the statistical models
 
         Attributes
         ----------
             y_hat: array-like
-                The function func, evaluated at the inputs, X, given the initial parameters, params
+                The function, func, evaluated at the inputs, X, given the initial parameters, params
         """
         self.model = model
         self.func = func
@@ -204,6 +204,7 @@ class Models:
                 self.y_hat = y_hat_star
                 # Iterate acceptance count
                 acceptance_count += 1
+                # Append alpha trace
                 alpha_trace.update_trace(alpha.copy())
 
             # Tune variance of proposal distribution
@@ -218,14 +219,14 @@ class Models:
             # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (y_{obs,i} - \hat{y}_i)^2)
             sigma_sq = stats.invgamma.rvs(len(self.y_obs)/2, scale=(0.5*((self.y_obs - self.y_hat)**2).sum()))
 
-            # Append traces
+            # Append sigma trace
             sigma_trace.update_trace(sigma_sq.copy())
             i += 1
 
         # Calculates the acceptance probability
         self.p_accept = acceptance_count/i
 
-        # Save traces
+        # Save traces as numpy arrays
         alpha_trace.save_trace(out_directory=trace_directory)
         sigma_trace.save_trace(out_directory=trace_directory)
 
