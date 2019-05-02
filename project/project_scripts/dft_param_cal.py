@@ -31,25 +31,29 @@ q_obs[60:360] =5
 # Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
+k_init = [-3, 0.01]
+model_name = 'dft_5_kwm2_2'
 # Initialize stats models
-DFT = Models('dft_5_kwm2', energy_storage, X, q_obs, [0.3])
+DFT = Models(model_name, energy_storage, X, q_obs, k_init)
+print(DFT.mle())
+print(DFT.params)
 
-# # Run Metropolis algorithm
-# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=2000)
+# Run Metropolis algorithm
+alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=500, tune_every=2, times_tune=10)
 
-# alpha_trace.save_trace()
-# sigma_trace.save_trace()
+alpha_trace.save_trace()
+sigma_trace.save_trace()
 
 burn = 0
 # Load traces
-alpha_trace = np.load('traces/dft_5_kwm2_alpha_trace.npy')[burn:]
-sigma_trace = np.load('traces/dft_5_kwm2_sigma_trace.npy')[burn:]
+alpha_trace = np.load('traces/'+model_name+'_alpha_trace.npy')[burn:]
+sigma_trace = np.load('traces/'+model_name+'_sigma_trace.npy')[burn:]
 
 print('Thermal conductivity - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(alpha_trace), np.std(alpha_trace)))
 
 print('Variance - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(sigma_trace), np.std(sigma_trace)))
 
-k_hat_mh = np.mean(alpha_trace)
+k_hat_mh = np.mean(alpha_trace, axis=0)
 
 # Get MLE
 k_hat = DFT.mle()
@@ -63,7 +67,7 @@ q_hat_mh = energy_storage(X, alpha=k_hat_mh)
 q_hat_lower = q_hat_mh - np.sqrt(np.mean(sigma_trace))*1.96
 q_hat_upper = q_hat_mh + np.sqrt(np.mean(sigma_trace))*1.96
 
-plot = True
+plot = False
 if plot == True:
     # Plot results
     plt.figure()
@@ -77,25 +81,25 @@ if plot == True:
     plt.ylabel('Heat Flux (kW/m$^2$)')
     plt.legend(loc=0)
     # plt.show()
-    plt.savefig(figures_directory+'calibrated_results.pdf')
+    plt.savefig(figures_directory+'calibrated_results_2.pdf')
 
     # Plot traces and histograms
     plt.figure()
     plt.plot(alpha_trace, color='black')
     # plt.show()
-    plt.savefig(figures_directory+'alpha_trace.pdf')
+    plt.savefig(figures_directory+'alpha_trace_2.pdf')
 
     plt.figure()
     plt.hist(alpha_trace, color='black', bins=30)
     # plt.show()
-    plt.savefig(figures_directory+'alpha_hist.pdf')
+    plt.savefig(figures_directory+'alpha_hist_2.pdf')
 
     plt.figure()
     plt.plot(sigma_trace, color='black')
     # plt.show()
-    plt.savefig(figures_directory+'sigma_trace.pdf')
+    plt.savefig(figures_directory+'sigma_trace_2.pdf')
 
     plt.figure()
     plt.hist(sigma_trace, color='black', bins=30)
     # plt.show()
-    plt.savefig(figures_directory+'sigma_hist.pdf')
+    plt.savefig(figures_directory+'sigma_hist_2.pdf')

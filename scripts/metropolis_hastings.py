@@ -178,7 +178,7 @@ class Models:
         while acceptance_count < samples+tune_total:
             # Sample from proposal distribution given var_epsilon
             epsilon = stats.multivariate_normal.rvs(cov=epsilon_cov)
-
+            
             # Propose new value for alpha given epsilon
             alpha_star = alpha + epsilon
             
@@ -200,6 +200,7 @@ class Models:
                 acceptance_count += 1
                 # Append alpha trace
                 alpha_trace.update_trace(alpha.copy())
+                print(acceptance_count, alpha_trace.mean())
 
             # Tune variance of proposal distribution
             if (acceptance_count+1) % tune_every == 0 and t < tune_total:
@@ -207,6 +208,7 @@ class Models:
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d
+                print(acceptance_count/i)
                 t+=1
 
             # Perform Gibbs sampling step on \sigma^2
