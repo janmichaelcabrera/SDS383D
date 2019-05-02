@@ -3,14 +3,12 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
 import os, sys, time
 import pandas as pd
 from dft_esm import energy_storage
-# from dft_statistical_models import Models
-from metropolis_hastings import Models
-from scipy.signal import savgol_filter
 from scipy.optimize import minimize
+sys.path.append('../../scripts/')
+from metropolis_hastings import Models
 
 # Directories
 input_directory = '../data/smoothed/5_kw_m2/'
@@ -30,13 +28,17 @@ q_obs = np.zeros(len(data.time))
 # Set elements in array from minute 1 to minute 6 at 5 kW/m^2
 q_obs[60:360] =5
 
+# Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
 # Initialize stats models
 DFT = Models('dft_5_kwm2', energy_storage, X, q_obs, [0.3])
 
-# Run Metropolis algorithm
-DFT.metropolis_random_walk(samples=2000)
+# # Run Metropolis algorithm
+# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=2000)
+
+# alpha_trace.save_trace()
+# sigma_trace.save_trace()
 
 burn = 0
 # Load traces

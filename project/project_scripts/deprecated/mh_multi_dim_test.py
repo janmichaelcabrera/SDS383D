@@ -3,13 +3,10 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
 import os, sys, time
-import pandas as pd
-from dft_esm import energy_storage
-from scipy.signal import savgol_filter
 from scipy.optimize import minimize
 import scipy.stats as stats
+sys.path.append('../../../scripts/')
 from metropolis_hastings import Models
 
 np.random.seed(3)
@@ -34,7 +31,10 @@ model = Models('test', func, x, y_obs, params)
 
 print(model.mle())
 
-model.metropolis_random_walk(samples=1000)
+alpha_trace, sigma_trace = model.metropolis_random_walk(samples=1000)
+
+alpha_trace.save_trace()
+sigma_trace.save_trace()
 
 print('acceptance: {:2.4f}'.format(model.p_accept))
 

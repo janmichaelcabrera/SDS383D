@@ -84,6 +84,9 @@ def energy_storage(X, alpha=None):
     """
     Inputs
     ----------
+        X: list
+            Wrapper for Tf, Tr, my_times
+
         Tf: vector
             Front temperature of DFT in deg C
 
@@ -103,7 +106,6 @@ def energy_storage(X, alpha=None):
 
     """
     ### Unpack model inputs
-
     Tf, Tr, my_times = X
 
     ### DFT geometry
@@ -135,7 +137,6 @@ def energy_storage(X, alpha=None):
     # Emitted heat flux loss
     q_emit = epsilon*sigma*((Tf+273)**4 - (Tf[0]+273)**4) + epsilon*sigma*((Tr+273)**4 - (Tr[0]+273)**4)
     # Convective heat flux loss
-    # T_f (T_f + T_inf)/2
     q_conv = h_p(T_ff+273)*(Tf - Tf[0]) + h_p(T_fr+273)*(Tr - Tr[0])
     # Incident heat flux
     q_inc = q_net/epsilon + q_emit/epsilon + q_conv/epsilon

@@ -3,11 +3,8 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
 import os, sys, time
 import pandas as pd
-from dft_esm import energy_storage
-from scipy.signal import savgol_filter
 from scipy.optimize import minimize
 import scipy.stats as stats
 
@@ -27,7 +24,6 @@ class Traces:
 
         shape: int
             sets size of trace, default=1
-
         """
         self.name = name
         self.model = model
@@ -41,7 +37,6 @@ class Traces:
                 point in trace to update
             value: float
                 the value passed to trace at index
-
         """
         self.trace.append(value)
 
@@ -56,13 +51,15 @@ class Traces:
         mean = np.mean(np.asarray(self.trace), axis=0)
         return mean
 
-    def save_trace(self, out_directory=''):
+    def save_trace(self, out_directory='traces/'):
         """
         Parameters
         ----------
-            out_directory: str
+            out_directory: str (optional)
                 directory to save trace object as npy binary
         """
+        if os.path.isdir(out_directory) == True: pass
+        else: os.mkdir(out_directory)
         np.save(out_directory+self.model+'_'+self.name+'_trace', np.asarray(self.trace))
 
 
@@ -78,7 +75,7 @@ class Models:
                 Model name for file i/o purposes
 
             func: function object
-                The function to be evaluated when optimizing the parameters of interest. The assumed functional form of y_obs
+                The function to be evaluated when optimizing the parameters of interest. The assumed functional form of y_obs.
 
             X: array-like
                 Inputs that describe the model
@@ -155,9 +152,6 @@ class Models:
                 Acceptance probablity
         """
 
-        # Set trace directory
-        trace_directory = 'traces/'
-
         # Initialize traces
         alpha_trace = Traces('alpha', self.model)
         sigma_trace = Traces('sigma', self.model)
@@ -225,9 +219,5 @@ class Models:
 
         # Calculates the acceptance probability
         self.p_accept = acceptance_count/i
-
-        # Save traces as numpy arrays
-        alpha_trace.save_trace(out_directory=trace_directory)
-        sigma_trace.save_trace(out_directory=trace_directory)
 
         return alpha_trace, sigma_trace
