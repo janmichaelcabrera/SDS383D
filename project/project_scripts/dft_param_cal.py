@@ -10,6 +10,8 @@ from scipy.optimize import minimize
 sys.path.append('../../scripts/')
 from metropolis_hastings import Models
 
+
+
 # Directories
 input_directory = '../data/smoothed/5_kw_m2/'
 in_file = '1903-02_05.csv', '1903-03_05.csv', '1903-04_05.csv', '1903-05_05.csv', '1903-06_05.csv', '1903-07_05.csv', '1903-08_05.csv', '1903-09_05.csv', '1903-10_05.csv', '1903-12_05.csv', '1903-13_05.csv', '1903-15_05.csv', '1903-16_05.csv', '1903-17_05.csv', '1903-18_05.csv', '1903-19_05.csv'
@@ -31,25 +33,28 @@ q_obs[60:360] =5
 # Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
-k_init = [-3, 0.01]
+k_init = [-4.196, 0.013]
 model_name = 'dft_5_kwm2_2'
 # Initialize stats models
 DFT = Models(model_name, energy_storage, X, q_obs, k_init)
-print(DFT.mle())
-print(DFT.params)
 
-# Run Metropolis algorithm
-alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=500, tune_every=2, times_tune=10)
+# # Run Metropolis algorithm
+# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=20000, tune_every=5, times_tune=100)
 
-alpha_trace.save_trace()
-sigma_trace.save_trace()
+# alpha_trace.save_trace()
+# sigma_trace.save_trace()
 
 burn = 0
 # Load traces
 alpha_trace = np.load('traces/'+model_name+'_alpha_trace.npy')[burn:]
 sigma_trace = np.load('traces/'+model_name+'_sigma_trace.npy')[burn:]
 
-print('Thermal conductivity - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(alpha_trace), np.std(alpha_trace)))
+# print(alpha_trace[:,1])
+
+np.set_printoptions(precision=3)
+print('Thermal conductivity - mean: \n', np.mean(alpha_trace, axis=0))
+
+print('std: \n', np.std(alpha_trace, axis=0))
 
 print('Variance - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(sigma_trace), np.std(sigma_trace)))
 
@@ -67,7 +72,7 @@ q_hat_mh = energy_storage(X, alpha=k_hat_mh)
 q_hat_lower = q_hat_mh - np.sqrt(np.mean(sigma_trace))*1.96
 q_hat_upper = q_hat_mh + np.sqrt(np.mean(sigma_trace))*1.96
 
-plot = False
+plot = True
 if plot == True:
     # Plot results
     plt.figure()
@@ -84,15 +89,17 @@ if plot == True:
     plt.savefig(figures_directory+'calibrated_results_2.pdf')
 
     # Plot traces and histograms
-    plt.figure()
-    plt.plot(alpha_trace, color='black')
-    # plt.show()
-    plt.savefig(figures_directory+'alpha_trace_2.pdf')
+    for p in range(len(k_init)):
+        plt.figure()
+        plt.plot(alpha_trace[:,p], color='black')
+        # plt.show()
+        plt.savefig(figures_directory+'alpha_trace_2'+str(p)+'.pdf')
+        plt.close()
 
-    plt.figure()
-    plt.hist(alpha_trace, color='black', bins=30)
-    # plt.show()
-    plt.savefig(figures_directory+'alpha_hist_2.pdf')
+        plt.figure()
+        plt.hist(alpha_trace[:,p], color='black', bins=30)
+        # plt.show()
+        plt.savefig(figures_directory+'alpha_hist_2'+str(p)+'.pdf')
 
     plt.figure()
     plt.plot(sigma_trace, color='black')

@@ -128,7 +128,7 @@ class Models:
         # Optimized parameter
         return self.params
 
-    def metropolis_random_walk(self, samples=100, tune_every=10, times_tune=100):
+    def metropolis_random_walk(self, samples=100, cov_scale=2.38, tune_every=10, times_tune=100):
         """
         Parameters
         ----------
@@ -167,7 +167,8 @@ class Models:
         d = len(alpha)
 
         # Initialize proposal covariance
-        epsilon_cov = np.eye(d)
+        # epsilon_cov = cov_scale*np.eye(d)/np.sqrt(d)
+        epsilon_cov = np.diag([1.66579242e-02, 1.37417513e-07])
 
         # Initialize the acceptance_count
         acceptance_count = 0
@@ -176,12 +177,16 @@ class Models:
         t = 0
         # Begin sampling
         while acceptance_count < samples+tune_total:
+            # Perform Gibbs sampling step on \sigma^2
+            # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (y_{obs,i} - \hat{y}_i)^2)
+            sigma_sq = stats.invgamma.rvs(len(self.y_obs)/2, scale=(0.5*((self.y_obs - self.y_hat)**2).sum()))
+
             # Sample from proposal distribution given var_epsilon
             epsilon = stats.multivariate_normal.rvs(cov=epsilon_cov)
             
             # Propose new value for alpha given epsilon
             alpha_star = alpha + epsilon
-            
+            # print(alpha_star)
             # Predicted at proposed value
             y_hat_star = self.func(self.X, alpha_star)
 
@@ -200,7 +205,10 @@ class Models:
                 acceptance_count += 1
                 # Append alpha trace
                 alpha_trace.update_trace(alpha.copy())
-                print(acceptance_count, alpha_trace.mean())
+                # Append sigma trace
+                sigma_trace.update_trace(sigma_sq.copy())
+
+                # print(acceptance_count, alpha ,epsilon)
 
             # Tune variance of proposal distribution
             if (acceptance_count+1) % tune_every == 0 and t < tune_total:
@@ -208,15 +216,9 @@ class Models:
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d
-                print(acceptance_count/i)
+                print(S)
                 t+=1
 
-            # Perform Gibbs sampling step on \sigma^2
-            # sigma_sq | data \sim IG(N/2, \frac{1}{2} \sum_{i=1}^N (y_{obs,i} - \hat{y}_i)^2)
-            sigma_sq = stats.invgamma.rvs(len(self.y_obs)/2, scale=(0.5*((self.y_obs - self.y_hat)**2).sum()))
-
-            # Append sigma trace
-            sigma_trace.update_trace(sigma_sq.copy())
             i += 1
 
         # Calculates the acceptance probability

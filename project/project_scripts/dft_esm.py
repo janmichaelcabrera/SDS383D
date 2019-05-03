@@ -85,7 +85,7 @@ def k_c(x, alpha=None):
         y = alpha[0] + alpha[1]*x
     return y
 
-def energy_storage(X, alpha=None):
+def energy_storage(X, alpha=[None]):
     """
     Inputs
     ----------
