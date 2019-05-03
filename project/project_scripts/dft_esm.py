@@ -66,6 +66,10 @@ def k_c(x, alpha=None):
         x: scalar, or vector
             temperature in K
 
+        alpha: list
+            coefficients for polynomials. Automatically generates and evalutes the coefficients, thusly, for arbitrary number of coefficients.
+                .. math: y = alpha_0 + alpha_1 x + alpha_2 x^2 + ...
+
     Returns
     ----------
         Thermal conductivity of insulation (W/mK)
