@@ -77,12 +77,12 @@ def k_c(x, alpha=None):
         # INSWOOL
         # y = -2E-10*x**3 + 6E-07*x**2 - 0.0002*x + 0.0755
     else:
-        # alpha = np.asarray(alpha)
-        # Temp = np.zeros((len(alpha), len(x.copy())))
-        # for p in range(len(alpha)):
-        #     Temp[p] = x.copy()**p
-        # y = alpha @ Temp
-        y = alpha[0] + alpha[1]*x
+        alpha = np.asarray(alpha)
+        Temp = np.zeros((len(alpha), len(x.copy())))
+        for p in range(len(alpha)):
+            Temp[p] = x.copy()**p
+        y = alpha @ Temp
+        # y = alpha[0] + alpha[1]*x
     return y
 
 def energy_storage(X, alpha=[None]):
