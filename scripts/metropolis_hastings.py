@@ -167,8 +167,8 @@ class Models:
         d = len(alpha)
 
         # Initialize proposal covariance
-        # epsilon_cov = cov_scale*np.eye(d)/np.sqrt(d)
-        epsilon_cov = np.diag([1.66579242e-02, 1.37417513e-07])
+        epsilon_cov = cov_scale*np.eye(d)/np.sqrt(d)
+        # epsilon_cov = np.diag([1.66579242e-02, 1.37417513e-07])
 
         # Initialize the acceptance_count
         acceptance_count = 0
@@ -216,7 +216,6 @@ class Models:
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d
-                print(S)
                 t+=1
 
             i += 1
