@@ -31,12 +31,12 @@ model = Models('test', func, x, y_obs, params)
 
 print(model.mle())
 
-alpha_trace, sigma_trace = model.metropolis_random_walk(samples=1000)
+# alpha_trace, sigma_trace = model.metropolis_random_walk(samples=1000)
 
-alpha_trace.save_trace()
-sigma_trace.save_trace()
+# alpha_trace.save_trace()
+# sigma_trace.save_trace()
 
-print('acceptance: {:2.4f}'.format(model.p_accept))
+# print('acceptance: {:2.4f}'.format(model.p_accept))
 
 burn = 1000
 
@@ -52,18 +52,20 @@ y_bar = model.y_hat
 y_bar_lower = y_bar - np.sqrt(np.mean(sigma_trace))*1.96
 y_bar_upper = y_bar + np.sqrt(np.mean(sigma_trace))*1.96
 
-plt.figure()
-plt.plot(alpha_trace)
-plt.show()
+# plt.figure()
+# plt.plot(alpha_trace)
+# plt.show()
+
+# plt.figure()
+# plt.hist(sigma_trace, bins=30, color='black')
+# plt.show()
 
 plt.figure()
-plt.hist(sigma_trace, bins=30, color='black')
-plt.show()
-
-plt.figure()
+for i in range(len(alpha_trace)):
+    plt.plot(x, func(x, params=alpha_trace[i]), color='grey')
 plt.plot(x, y_obs, '.k', label='Data')
 plt.plot(x, y_bar, label='Predicted')
 plt.plot(x, y_true, '--k', label='True')
-plt.fill_between(x=x, y1=y_bar_lower, y2=y_bar_upper, color='grey')
+# plt.fill_between(x=x, y1=y_bar_lower, y2=y_bar_upper, color='grey')
 plt.legend(loc=0)
 plt.show()

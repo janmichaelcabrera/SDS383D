@@ -33,8 +33,8 @@ q_obs[60:360] =5
 # Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
-k_init = [-4.196, 0.013]
-model_name = 'dft_5_kwm2_2'
+k_init = [-4.1962]
+model_name = 'dft_5_kwm2'
 # Initialize stats models
 DFT = Models(model_name, energy_storage, X, q_obs, k_init)
 
@@ -44,7 +44,7 @@ DFT = Models(model_name, energy_storage, X, q_obs, k_init)
 # alpha_trace.save_trace()
 # sigma_trace.save_trace()
 
-burn = 0
+burn = 1000
 # Load traces
 alpha_trace = np.load('traces/'+model_name+'_alpha_trace.npy')[burn:]
 sigma_trace = np.load('traces/'+model_name+'_sigma_trace.npy')[burn:]
@@ -69,14 +69,14 @@ q_hat_mle = energy_storage(X, alpha=k_hat)
 
 # Metropolis Random Walk and 95% credible interval
 q_hat_mh = energy_storage(X, alpha=k_hat_mh)
-q_hat_lower = q_hat_mh - np.sqrt(np.mean(sigma_trace))*1.96
-q_hat_upper = q_hat_mh + np.sqrt(np.mean(sigma_trace))*1.96
 
 plot = True
 if plot == True:
     # Plot results
     plt.figure()
-    plt.fill_between(x=data.time, y1=q_hat_lower, y2=q_hat_upper, color='grey')
+    for i in range(len(alpha_trace)):
+        plt.plot(data.time, energy_storage(X, alpha_trace[i]), color='grey')
+    # plt.fill_between(x=data.time, y1=q_hat_lower, y2=q_hat_upper, color='grey')
     plt.plot(data.time, q_obs, '-k', linewidth=1.5, label='Observed')
     plt.plot(data.time, q_hat_mh, '-b', linewidth=1.5, label='MH '+str(dat_index))
     plt.plot(data.time, energy_storage(X), '-r', linewidth=1.5, label='Uncalibrated')
@@ -86,27 +86,27 @@ if plot == True:
     plt.ylabel('Heat Flux (kW/m$^2$)')
     plt.legend(loc=0)
     # plt.show()
-    plt.savefig(figures_directory+'calibrated_results_2.pdf')
+    plt.savefig(figures_directory+'calibrated_results_2'+model_name+'.png')
 
     # Plot traces and histograms
     for p in range(len(k_init)):
         plt.figure()
         plt.plot(alpha_trace[:,p], color='black')
         # plt.show()
-        plt.savefig(figures_directory+'alpha_trace_2'+str(p)+'.pdf')
+        plt.savefig(figures_directory+'alpha_trace_2'+str(p)+''+model_name+'.pdf')
         plt.close()
 
         plt.figure()
         plt.hist(alpha_trace[:,p], color='black', bins=30)
         # plt.show()
-        plt.savefig(figures_directory+'alpha_hist_2'+str(p)+'.pdf')
+        plt.savefig(figures_directory+'alpha_hist_2'+str(p)+''+model_name+'.pdf')
 
     plt.figure()
     plt.plot(sigma_trace, color='black')
     # plt.show()
-    plt.savefig(figures_directory+'sigma_trace_2.pdf')
+    plt.savefig(figures_directory+'sigma_trace_2'+model_name+'.pdf')
 
     plt.figure()
     plt.hist(sigma_trace, color='black', bins=30)
     # plt.show()
-    plt.savefig(figures_directory+'sigma_hist_2.pdf')
+    plt.savefig(figures_directory+'sigma_hist_2'+model_name+'.pdf')
