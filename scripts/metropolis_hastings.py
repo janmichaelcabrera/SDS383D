@@ -186,7 +186,6 @@ class Models:
             
             # Propose new value for alpha given epsilon
             alpha_star = alpha + epsilon
-            # print(alpha_star)
             # Predicted at proposed value
             y_hat_star = self.func(self.X, alpha_star)
 
@@ -203,16 +202,14 @@ class Models:
                 self.y_hat = y_hat_star
                 # Iterate acceptance count
                 acceptance_count += 1
+
                 # Append alpha trace
                 alpha_trace.update_trace(alpha.copy())
                 # Append sigma trace
                 sigma_trace.update_trace(sigma_sq.copy())
 
-                # print(acceptance_count, alpha ,epsilon)
-
             # Tune variance of proposal distribution
             if (acceptance_count+1) % tune_every == 0 and t < tune_total:
-
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d

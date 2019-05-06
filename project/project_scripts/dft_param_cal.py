@@ -10,8 +10,6 @@ from scipy.optimize import minimize
 sys.path.append('../../scripts/')
 from metropolis_hastings import Models
 
-
-
 # Directories
 input_directory = '../data/smoothed/5_kw_m2/'
 in_file = '1903-02_05.csv', '1903-03_05.csv', '1903-04_05.csv', '1903-05_05.csv', '1903-06_05.csv', '1903-07_05.csv', '1903-08_05.csv', '1903-09_05.csv', '1903-10_05.csv', '1903-12_05.csv', '1903-13_05.csv', '1903-15_05.csv', '1903-16_05.csv', '1903-17_05.csv', '1903-18_05.csv', '1903-19_05.csv'
@@ -33,16 +31,19 @@ q_obs[60:360] =5
 # Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
-k_init = [-4.1962]
-model_name = 'dft_5_kwm2'
+k_init = [-4.1962, 1]
+model_name = 'dft_5_kwm2_2'
 # Initialize stats models
 DFT = Models(model_name, energy_storage, X, q_obs, k_init)
 
-# # Run Metropolis algorithm
-# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=20000, tune_every=5, times_tune=100)
+# Get MLE
+k_hat = DFT.mle()
 
-# alpha_trace.save_trace()
-# sigma_trace.save_trace()
+# Run Metropolis algorithm
+alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=5000, tune_every=10, times_tune=100, cov_scale=10**-1)
+
+alpha_trace.save_trace()
+sigma_trace.save_trace()
 
 burn = 1000
 # Load traces
@@ -59,9 +60,8 @@ print('std: \n', np.std(alpha_trace, axis=0))
 print('Variance - mean: {:2.2f}, std: {:2.4f}'.format(np.mean(sigma_trace), np.std(sigma_trace)))
 
 k_hat_mh = np.mean(alpha_trace, axis=0)
-
-# Get MLE
-k_hat = DFT.mle()
+k_hat_lower = np.min(alpha_trace) # k_hat_mh - np.std(alpha_trace)*3.3
+k_hat_upper = np.max(alpha_trace) # k_hat_mh + np.std(alpha_trace)*3.3
 
 ### Evaluate model at optimized parameter
 # MLE
@@ -69,6 +69,8 @@ q_hat_mle = energy_storage(X, alpha=k_hat)
 
 # Metropolis Random Walk and 95% credible interval
 q_hat_mh = energy_storage(X, alpha=k_hat_mh)
+q_hat_lower = energy_storage(X, alpha=[k_hat_lower])
+q_hat_upper = energy_storage(X, alpha=[k_hat_upper])
 
 plot = True
 if plot == True:
@@ -86,27 +88,27 @@ if plot == True:
     plt.ylabel('Heat Flux (kW/m$^2$)')
     plt.legend(loc=0)
     # plt.show()
-    plt.savefig(figures_directory+'calibrated_results_2'+model_name+'.png')
+    plt.savefig(figures_directory+'calibrated_results_'+model_name+'.png')
 
     # Plot traces and histograms
     for p in range(len(k_init)):
         plt.figure()
         plt.plot(alpha_trace[:,p], color='black')
         # plt.show()
-        plt.savefig(figures_directory+'alpha_trace_2'+str(p)+''+model_name+'.pdf')
+        plt.savefig(figures_directory+'alpha_trace_'+str(p)+'_'+model_name+'.pdf')
         plt.close()
 
         plt.figure()
         plt.hist(alpha_trace[:,p], color='black', bins=30)
         # plt.show()
-        plt.savefig(figures_directory+'alpha_hist_2'+str(p)+''+model_name+'.pdf')
+        plt.savefig(figures_directory+'alpha_hist_'+str(p)+'_'+model_name+'.pdf')
 
     plt.figure()
     plt.plot(sigma_trace, color='black')
     # plt.show()
-    plt.savefig(figures_directory+'sigma_trace_2'+model_name+'.pdf')
+    plt.savefig(figures_directory+'sigma_trace_'+model_name+'.pdf')
 
     plt.figure()
     plt.hist(sigma_trace, color='black', bins=30)
     # plt.show()
-    plt.savefig(figures_directory+'sigma_hist_2'+model_name+'.pdf')
+    plt.savefig(figures_directory+'sigma_hist_'+model_name+'.pdf')

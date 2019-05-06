@@ -1,5 +1,4 @@
 \documentclass[article]{proc}
-% \usepackage{subcaption}
 
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
@@ -29,7 +28,7 @@ Some Text
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-    The purposes of this project was to ascertain the validity of two different heat transfer coefficient models in determining the mass flux from a flat surface with an impinging jet. An experiment was ran to obtain the mass flux values from a system and Bayesian methods were employed to parameterize the two models and to determine the relative performance of each model. The following sections outline in detail the experimental setup and procedures ran.
+    Start writing.
 
 \section{DFT Model}
 
@@ -40,6 +39,7 @@ Some Text
 \begin{align}\label{eq:dft_balance}
     \dot{E}_{in} &= q_{inc,r} \\
     \dot{E}_{out} &= q_{refl} + q_{emit} + q_{conv} \\
+    \dot{E}_{gen} & = 0
 \end{align}
 
 \begin{align}\label{eq:q_net}
@@ -69,6 +69,14 @@ Some Text
     q_{net} = \left(\rho_s c_{p,s}(T) l_s \frac{dT_{DFT}}{dt} \right) + \left( k_{ins}(T) \frac{T_f - T_r}{l_{ins}} \right) + \left(\rho_{ins} c_{p,ins}(T) l_{ins} \frac{dT_{ins}}{dt}\right)
 \end{equation}
 
+\begin{equation}\label{eq:k_ins_1}
+    k_{ins}^{(1)}(T) = k_0^{(1)}
+\end{equation}
+
+\begin{equation}\label{eq:k_ins_2}
+    k_{ins}^{(2)}(T) = k^{(2)}_0 + k^{(2)}_1 T
+\end{equation}
+
 \section{Parameter Calibration}
 
 \begin{align}\label{eq:bayes}
@@ -92,51 +100,118 @@ Some Text
 \begin{algorithm}
 \caption{Metropolis Random Walk}\label{euclid}
 \begin{algorithmic}[1]
-
-\State $\textit{stringlen} \gets \text{length of }\textit{string}$
-% \State $i \gets \textit{patlen}$
-% \BState \emph{top}:
-% \If {$i > \textit{stringlen}$} \Return false
-% \EndIf
-% \State $j \gets \textit{patlen}$
-% \BState \emph{loop}:
-% \If {$\textit{string}(i) = \textit{path}(j)$}
-% \State $j \gets j-1$.
-% \State $i \gets i-1$.
-% \State \textbf{goto} \emph{loop}.
-% \State \textbf{close};
-% \EndIf
-% \State $i \gets i+\max(\textit{delta}_1(\textit{string}(i)),\textit{delta}_2(j))$.
-% \State \textbf{goto} \emph{top}.
+\State Initialize $\theta^{(0)}$
+\State Initialize $\sigma_e^2$
+\State Initialize $i = 0$
+\While {$a < Samples$}
+    \State Propose: $\theta^{\star} = \theta^{(i)} + e, \hspace{10pt} e \sim N(0, \sigma_e^2)$
+    \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},M)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)}, M)}$$
+        \If {Uniform(0,1) $< \text{min} \left\{1, \beta (\theta^{\star} | \theta^{(i-1)})\right \}$}
+            \State Accept Proposal: $\theta^{(i)} = \theta^{\star}$
+            \State $a+=1$
+        \Else
+            \State Reject Proposal: $\theta^{(i)} = \theta^{(i-1)}$
+        \EndIf
+    \While {$Tuning$}
+        \State $\sigma_e^2 = 2.4^2 Var(\theta^{(a-tune)}, \dots, \theta^{(a)}|D)/d$
+    \EndWhile
+    \State $i+=1$
+\EndWhile
 \end{algorithmic}
 \end{algorithm}
+
+\section{Calibration}
+
+\subsection{Experiments}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth, angle=-90]{../../../../../../dissertation-experimentation/media/photos/instrumentation/IMG_20190409_090942}
+    \caption{Cone calorimeter for calibration of DFT}
+    \label{fig:cone_dft}
+\end{figure}
+
+\subsection{Data Reduction}
+
+\begin{figure}[b!]
+    \centering
+    \subfigure{\includegraphics[width=0.4\textwidth]{../data/unsmoothed/5_kw_m2/plots/1903-02_05}}
+    \qquad
+    \subfigure{\includegraphics[width=0.4\textwidth]{../data/smoothed/5_kw_m2/plots/1903-02_05}}
+    \caption{Unsmoothed and smoothed temperature data for one DFT test}
+    \label{fig:tc_data}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{../data/residuals/5_kw_m2/1903-02_05}
+    \caption{Residuals from the Gaussian process fit}
+    \label{fig:gp_residuals}
+\end{figure}
 
 \section{Results}
 
 \begin{figure}[b!]
     \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist}}
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_1}}
     \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace}}
-    \caption{Histogram and trace plots for thermal conductivity of insulation, $k_{ins}$}
-    \label{fig:param_trace}
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_1}}
+    \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(1)}_{ins}$}
+    \label{fig:param_trace_1}
 \end{figure}
 
 \begin{figure}[b!]
     \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist}}
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_1}}
     \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace}}
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_1}}
     \caption{Histogram and trace plots for $\sigma_q^2$}
-    \label{fig:sigma_trace}
+    \label{fig:sigma_trace_1}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{../figures/calibrated_results}
-    \caption{Experimental setup for determining the jet velocity profile}
-    \label{fig:cal_results}
+    \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_1}
+    \caption{Calibrated results assuming $k^{(1)}_{ins}(T) = k^{(1)}_0$}
+    \label{fig:cal_results_1}
 \end{figure}
+
+\begin{figure}[b!]
+    \centering
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_2}}
+    \qquad
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_2}}
+
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_1_dft_5_kwm2_2}}
+    \qquad
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_1_dft_5_kwm2_2}}
+    \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(2)}_{ins}$. Top is $k^{(2)}_0$ and bottom is $k^{(2)}_1$.}
+    \label{fig:param_trace_2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{../figures/alpha_correlation}
+    \caption{Scatter plot showing the correlation between $k^{(2)}_0$ and $k^{(2)}_1$.}
+    \label{fig:alpha_correlation}
+\end{figure}
+
+\begin{figure}[b!]
+    \centering
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
+    \qquad
+    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_2}}
+    \caption{Histogram and trace plots for $\sigma_q^2$}
+    \label{fig:sigma_trace_2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_2}
+    \caption{Calibrated results assuming $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$}
+    \label{fig:cal_results_2}
+\end{figure}
+
 
 \section{Conclusions}
 
