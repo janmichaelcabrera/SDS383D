@@ -135,12 +135,6 @@ def plot_together(input_directory, output_directory, out_name, show=False):
         plt.show()
     plt.close()
 
-
-unsmoothed_directory = '../data/unsmoothed/5_kw_m2/'
-smoothed_directory = '../data/smoothed/5_kw_m2/'
-
-plotting_directory = '../data/residuals/5_kw_m2/'
-
-input_directories = unsmoothed_directory, smoothed_directory
-
-plot_residuals(input_directories, plotting_directory, show=False)
+input_directory = '../data/unsmoothed/5_kw_m2/'
+output_directory = '../data/unsmoothed/5_kw_m2/plots/'
+plot(input_directory, output_directory, show=False)
