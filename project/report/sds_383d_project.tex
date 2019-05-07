@@ -102,7 +102,7 @@ Some Text
 \begin{algorithmic}[1]
 \State Initialize $\theta^{(0)}$
 \State Initialize $\sigma_e^2$
-\State Initialize $i = 0$
+\State Initialize $i = 1$
 \While {$a < Samples$}
     \State Propose: $\theta^{\star} = \theta^{(i)} + e, \hspace{10pt} e \sim N(0, \sigma_e^2)$
     \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},M)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)}, M)}$$

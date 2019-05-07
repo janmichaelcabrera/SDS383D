@@ -39,11 +39,11 @@ DFT = Models(model_name, energy_storage, X, q_obs, k_init)
 # Get MLE
 k_hat = DFT.mle()
 
-# Run Metropolis algorithm
-alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=5000, tune_every=10, times_tune=100, cov_scale=10**-1)
+# # Run Metropolis algorithm
+# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=5000, tune_every=10, times_tune=100, cov_scale=10**-1)
 
-alpha_trace.save_trace()
-sigma_trace.save_trace()
+# alpha_trace.save_trace()
+# sigma_trace.save_trace()
 
 burn = 1000
 # Load traces
@@ -88,7 +88,7 @@ if plot == True:
     plt.ylabel('Heat Flux (kW/m$^2$)')
     plt.legend(loc=0)
     # plt.show()
-    plt.savefig(figures_directory+'calibrated_results_'+model_name+'.png')
+    plt.savefig(figures_directory+'calibrated_results_'+model_name+'.png', dpi=300)
 
     # Plot traces and histograms
     for p in range(len(k_init)):

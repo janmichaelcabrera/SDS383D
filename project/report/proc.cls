@@ -561,8 +561,8 @@ parsep=0pt, topsep=0pt, partopsep=0pt]\centering\item[\begLabel{#1}%
 \begin{flushright}
 \vspace*{-1.0mm}%
 \vspace*{-52pt}%%%%%%
-\tiny\textbf{\fontfamily{phv}\selectfont\@titleConf}\\%
-\tiny\textbf{\fontfamily{phv}\selectfont\@city}\\[16.0pt]%%%%%%%%%%
+% \tiny\textbf{\fontfamily{phv}\selectfont\@titleConf}\\%
+% \tiny\textbf{\fontfamily{phv}\selectfont\@city}\\[16.0pt]%%%%%%%%%%
 \Large\textbf{\fontfamily{phv}\selectfont\@PaperNumber}
 \end{flushright}
 
