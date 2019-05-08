@@ -213,11 +213,17 @@ class Models:
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d
-                t+=1
+                t += 1
+
+            # Reset iteration count for calculation of acceptance probability
+            elif t == tune_total:
+                print('Total steps for tuning: ', i)
+                i = 0
+                t += 1
 
             i += 1
 
         # Calculates the acceptance probability
-        self.p_accept = acceptance_count/i
+        self.p_accept = (acceptance_count - tune_total)/i
 
         return alpha_trace, sigma_trace

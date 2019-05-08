@@ -140,137 +140,204 @@ Some Text
 
     The following section introduces the parameter calibration framework used given the known incident heat flux measured by the Schmidt-Boelter gauge and the temperatures recorded from the DFT. 
 
-    \section{Parameter Calibration}
+\section{Parameter Calibration}
 
-    \subsection{Maximum Likelihood Estimate}
+    The parameter calibration process was completed in two different ways for each model. The first involved finding the parameters for the model that minimized the sum of the squared errors between the observed heat flux and the predicted heat flux from the model. The second involved construction of the posterior distributions for the parameters of interest using a Metropolis Random Walk algorithm. 
 
-    $$\sigma_{xy} \leq 0.9 \sigma_x \sigma_y$$
+    \subsection{Minimizing Residual Sum of Squared Errors}
+
+        Finding the parameters that minimizes the error between the predicted heat flux and the observed heat flux is a fairly straightforward process that is depicted by
+
+        \begin{equation}\label{eq:rss}
+            \hat{\theta}_{RSS} = \arg \min_{\theta}  \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2.
+        \end{equation}
+
+        \noindent A loss function is defined as the summation term on the right hand side of the equation. A Sequential Least Squares Programming (SLSQP) algorithm from the Python SciPy package is used to obtain $\hat{\theta}_{RSS}$. The results from this optimization step are saved and used to initiate the chains of the Metropolis Random Walk algorithm discussed later. 
+
+        % $$\sigma_{xy} \leq 0.9 \sigma_x \sigma_y$$
 
     \subsection{Full Posterior Distributions}
 
-    \begin{align}\label{eq:bayes}
-        P(\theta | D, M) &= P(\theta|M) \frac{P(D|\theta, M)}{P(D|M)}\\
-            &\propto P(\theta|M) P(D|\theta, M)
-    \end{align}
+        The posterior distribution for our parameters of interest given Bayes' Rule is the following
 
-    \noindent $D = \{q^{(inc,r)}_1, \dots, q^{(inc,r)}_n \}$
+        \begin{align}\label{eq:bayes}
+            P(\theta | D, \sigma_q^2, M_k) &= P(\theta|M_k) \frac{P(D|\theta, \sigma_q^2, M_k)}{P(D|M_k)}\\
+                &\propto P(\theta|M_k) P(D|\theta, \sigma_q^2, M_k),
+        \end{align}
 
-    \begin{equation}\label{eq:likelihood}
-        P(q_i^{(inc,r)}| \hat{q}_i^{(inc,r)}, \sigma_q^2) = \left(\frac{1}{2 \pi \sigma_q^2} \right)^{1/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \left( q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right]
-    \end{equation}
+        \noindent Where $D$ represents the set of $n$ heat flux observations during the course of a test ($D = \{q^{(inc,r)}_1, \dots, q^{(inc,r)}_n \}$), $M_k$ represents a particular model used to generate a set of $n$ predictions $\hat{q}^{(inc,r)}_i$, and $\sigma_q^2$ is the assumed error between the model predictions and the observed heat fluxes. Here we choose to adopt a Gaussian error model between the predicted and observed heat fluxes,
 
-    \begin{align}\label{eq:likelihood_2}
-        P(D| \theta, M) &= \prod_{i=1}^n P(q_i^{(inc,r)}| \hat{q}_i^{(inc,r)}, \sigma_q^2) \\
-        &= \left(\frac{1}{2 \pi \sigma_q^2} \right)^{n/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right]
-    \end{align}
+        \begin{equation}\label{eq:model}
+            q^{(inc,r)}_i = \hat{q}^{(inc,r)}_i + e_q; \hspace{10pt} e_q \sim N(0, \sigma_q^2). 
+        \end{equation}
 
-\section{Metropolis Random Walk}
+        \noindent Explicitly, the Gaussian error model for a single observation takes the form of, 
 
-\begin{algorithm}
-\caption{Metropolis Random Walk}\label{euclid}
-\begin{algorithmic}[1]
-\State Initialize $\theta^{(0)}$
-\State Initialize $\sigma_e^2$
-\State Initialize $i = 1$
-\While {$a < Samples$}
-    \State Propose: $\theta^{\star} = \theta^{(i)} + e, \hspace{10pt} e \sim N(0, \sigma_e^2)$
-    \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},M)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)}, M)}$$
-        \If {Uniform(0,1) $< \text{min} \left\{1, \beta (\theta^{\star} | \theta^{(i-1)})\right \}$}
-            \State Accept Proposal: $\theta^{(i)} = \theta^{\star}$
-            \State $a+=1$
-        \Else
-            \State Reject Proposal: $\theta^{(i)} = \theta^{(i-1)}$
-        \EndIf
-    \While {$Tuning$}
-        \State $\sigma_e^2 = 2.4^2 Var(\theta^{(a-tune)}, \dots, \theta^{(a)}|D)/d$
-    \EndWhile
-    \State $i+=1$
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
+        \begin{equation}\label{eq:likelihood}
+            P(q_i^{(inc,r)}| \hat{q}_i^{(inc,r)}, \sigma_q^2, M_k) = \left(\frac{1}{2 \pi \sigma_q^2} \right)^{1/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \left( q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right].
+        \end{equation}
+
+        \noindent The resulant likelihood for the set of $n$ independent observations is then,
+
+        \begin{align}\label{eq:likelihood_2}
+            P(D| \theta, \sigma_q^2, M_k) &= \prod_{i=1}^n P(q_i^{(inc,r)}| \hat{q}_i^{(inc,r)}, \sigma_q^2) \\
+            &= \left(\frac{1}{2 \pi \sigma_q^2} \right)^{n/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right].
+        \end{align}
+
+        \noindent Because there is no means to find a conjugate prior for $\theta$ with which to get an analytically closed form to the posterior for this given problem, a Metropolis Random Walk algorithm is used to sample from the conditional distribution.
+
+        Derivation of the conditional distribution for the model error term follows a similar logic:
+
+        \begin{equation}\label{eq:sigma_q}
+            P(\sigma_q^2 | D, \theta, M_k) \propto P(\sigma_q^2) P(D| \theta, \sigma_q^2, M_k).
+        \end{equation}
+
+        \noindent Here we choose to use an uninformative improper prior (i.e. $P(\sigma_q^2) \propto 1/\sigma_q^2$) and derive an analytical form of the conditional distribution. In this case the resultant conditional distribution will take the form of an Inverse-Gamma distribution parameterized by the following,
+
+        \begin{equation}\label{eq:sigma_q_conditional}
+            \sigma_q^2 | D, \theta, M_k \sim IG \left(\frac{n}{2},  \frac{1}{2}\sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2\right).
+        \end{equation}
+
+        \noindent A Gibbs sampling step is performed to sample from the conditional distribution above. Details of the Metropolis Random Walk algorithm are presented in the next section.
+
+    \subsection{Metropolis Random Walk}
+
+        A Metropolis Random Walk algorithm was written in Python in order to sample from the conditional distributions described in the previous section. The psuedo-code is summarized in algorithm~\ref{alg:metropolis}. The parameters of interest are initialized with the values found using equation~\ref{eq:rss}.   
+
+        \begin{algorithm}
+        \caption{Metropolis Random Walk}\label{alg:metropolis}
+        \begin{algorithmic}[1]
+        \State Initialize $\theta^{(0)}$
+        \State Initialize $\sigma_e^2$
+        \State Initialize $i = 1$
+        \While {$a < Samples$}
+            \State Propose: $\theta^{\star} = \theta^{(i)} + e, \hspace{10pt} e \sim N(0, \sigma_e^2)$
+            \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},\sigma_{q,i}^2,M_k)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)},\sigma_{q,i}^2, M_k)}$$
+                \If {Uniform(0,1) $< \text{min} \left\{1, \beta (\theta^{\star} | \theta^{(i-1)})\right \}$}
+                    \State Accept Proposal: $\theta^{(i)} = \theta^{\star}$
+                    \State $\sigma_{q,i}^2 | D, \theta, M_k \sim IG \left(\frac{n}{2},  \frac{1}{2}\sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2\right)$
+                    \State $a+=1$
+                \Else
+                    \State Reject Proposal: $\theta^{(i)} = \theta^{(i-1)}$
+                \EndIf
+            \While {$Tuning$}
+                \State $\sigma_e^2 = 2.4^2 Var(\theta^{(a-tune)}, \dots, \theta^{(a)}|D)/d$
+            \EndWhile
+            \State $i+=1$
+        \EndWhile
+        \end{algorithmic}
+        \end{algorithm}
+
+        While the number of accepted samples is less than the number of prescribed samples plus the tuning samples, the algorithm samples from the conditional distribution for $\theta$. A new value for theta, $\theta^{\star}$ is proposed by sampling from a Normal proposal distribution. The acceptance probability, $\beta$ is calculated and it is accepted if the minimum value between $\beta$ and one is greater than a uniform random draw between zero and one.
+
+        During tuning of the proposal covariance, the previous $t$ accepted samples are used to update the covariance of the proposal. Tuning occurs $T$ times before the algorithm is allowed to collect samples from the conditional distributions. Tuning of the covariance follows that presented in ref XXX. 
 
 \section{Results}
 
-\subsection{Data Reduction}
+    Results from the experiments and the parameter calibration for the two conduction models are presented in the following subsections. The data reduction section discusses the need for smoothing of the data, nd the parameter calibration section discusses the results from the fits. 
 
-\begin{figure}[b!]
-    \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../data/unsmoothed/5_kw_m2/plots/1903-02_05}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../data/smoothed/5_kw_m2/plots/1903-02_05}}
-    \caption{Unsmoothed and smoothed temperature data for one DFT test}
-    \label{fig:tc_data}
-\end{figure}
+    \subsection{Data Reduction}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.6\textwidth]{../data/residuals/5_kw_m2/1903-02_05}
-    \caption{Residuals from the Gaussian process fit}
-    \label{fig:gp_residuals}
-\end{figure}
+        It was noticed that there was significant bit noise in the temperature resulting in a stair-step-like function, left of figure~\ref{fig:tc_data}. Taking the gradient of a noisy signal such as this will result in unrealistic fluctuations of the predicted heat flux. For this reason the temperature data was smoothed.
 
-\section{Results}
+        \begin{figure}[h!]
+            \centering
+            \subfigure{\includegraphics[width=0.4\textwidth]{../data/unsmoothed/5_kw_m2/plots/1903-02_05}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../data/smoothed/5_kw_m2/plots/1903-02_05}}
+            \caption{Unsmoothed and smoothed temperature data for one DFT test}
+            \label{fig:tc_data}
+        \end{figure}
 
-\begin{figure}[b!]
-    \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_1}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_1}}
-    \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(1)}_{ins}$}
-    \label{fig:param_trace_1}
-\end{figure}
+        The temperature data was smoothed using Gaussian procces regression with a Matern (5,2) covariance function, and optimzed using the marginal likelihood, ref XXX. The resultant smoothed data is shown on the right of figure~\ref{fig:tc_data}. Here we choose to only use the smoothed data and ignore the resultant uncertainty in the fit since we will be passing these through a function to determine the predicted heat flux. Note, posterior predictive samples could be drawn, but we choose to ignore this step to make the analysis simpler.
 
-\begin{figure}[b!]
-    \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_1}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_1}}
-    \caption{Histogram and trace plots for $\sigma_q^2$}
-    \label{fig:sigma_trace_1}
-\end{figure}
+        Given the smoothed temperature, the models described by equations~\ref{eq:q_inc} through \ref{eq:k_ins_1}, and equations~\ref{eq:q_inc}, \ref{eq:q_net}, and \ref{eq:k_ins_2} calibrated. Results of the calibration are presented in the next section.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_1}
-    \caption{Calibrated results assuming $k^{(1)}_{ins}(T) = k^{(1)}_0$}
-    \label{fig:cal_results_1}
-\end{figure}
+        % \begin{figure}
+        %     \centering
+        %     \includegraphics[width=0.6\textwidth]{../data/residuals/5_kw_m2/1903-02_05}
+        %     \caption{Residuals from the Gaussian process fit}
+        %     \label{fig:gp_residuals}
+        % \end{figure}
 
-\begin{figure}[b!]
-    \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_2}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_2}}
+    \subsection{Parameter Calibration}
 
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_1_dft_5_kwm2_2}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_1_dft_5_kwm2_2}}
-    \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(2)}_{ins}$. Top is $k^{(2)}_0$ and bottom is $k^{(2)}_1$.}
-    \label{fig:param_trace_2}
-\end{figure}
+        \subsubsection{Model One - $k^{(1)}_{ins}(T) = k^{(1)}_0$:}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.6\textwidth]{../figures/alpha_correlation}
-    \caption{Scatter plot showing the correlation between $k^{(2)}_0$ and $k^{(2)}_1$.}
-    \label{fig:alpha_correlation}
-\end{figure}
+        Twenty-thousand samples from the conditional distribution for model one were sampled using the Metropolis Random Walk Algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples of 0.41 was close to the optimal of 0.45, described in ref XXX.
 
-\begin{figure}[b!]
-    \centering
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
-    \qquad
-    \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_2}}
-    \caption{Histogram and trace plots for $\sigma_q^2$}
-    \label{fig:sigma_trace_2}
-\end{figure}
+        \begin{figure}[b!]
+            \centering
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_1}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_1}}
+            \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(1)}_{ins}$}
+            \label{fig:param_trace_1}
+        \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_2}
-    \caption{Calibrated results assuming $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$}
-    \label{fig:cal_results_2}
-\end{figure}
+        \begin{figure}[b!]
+            \centering
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_1}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_1}}
+            \caption{Histogram and trace plots for $\sigma_q^2$}
+            \label{fig:sigma_trace_1}
+        \end{figure}
+
+        Parameter histograms and traces are presented in figures~\ref{fig:param_trace_1} and \ref{fig:sigma_trace_1} for the thermal conductivity and model error terms respectively. The predicted results from the model are shown in figure~\ref{fig:cal_results_1}. In this figure, the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distribution shown in figure~\ref{fig:param_trace_1}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter trace in figure~\ref{fig:param_trace_1}. 
+
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_1}
+            \caption{Calibrated results assuming $k^{(1)}_{ins}(T) = k^{(1)}_0$}
+            \label{fig:cal_results_1}
+        \end{figure}
+
+        \subsubsection{Model Two - $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$:}
+
+        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of XXX tuning steps. The resultant ratio of accepted to total samples was XXX. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234 ref XXX. 
+
+        \begin{figure}[b!]
+            \centering
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_0_dft_5_kwm2_2}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_0_dft_5_kwm2_2}}
+
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_hist_1_dft_5_kwm2_2}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/alpha_trace_1_dft_5_kwm2_2}}
+            \caption{Histogram and trace plots for thermal conductivity of insulation, $k^{(2)}_{ins}$. Top is $k^{(2)}_0$ and bottom is $k^{(2)}_1$.}
+            \label{fig:param_trace_2}
+        \end{figure}
+
+        Parameter histograms and traces are presented in figures~\ref{fig:param_trace_2} and \ref{fig:sigma_trace_2} for the thermal conductivity and model error terms respectively. Figure~\ref{fig:alpha_correlation} shows the correlation between the samples from the parameter traces shown in figure~\ref{fig:param_trace_2}. 
+
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=0.6\textwidth]{../figures/alpha_correlation}
+            \caption{Scatter plot showing the correlation between $k^{(2)}_0$ and $k^{(2)}_1$.}
+            \label{fig:alpha_correlation}
+        \end{figure}
+
+
+
+        \begin{figure}[b!]
+            \centering
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
+            \qquad
+            \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_2}}
+            \caption{Histogram and trace plots for $\sigma_q^2$}
+            \label{fig:sigma_trace_2}
+        \end{figure}
+
+        The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}. 
+
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_2}
+            \caption{Calibrated results assuming $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$}
+            \label{fig:cal_results_2}
+        \end{figure}
 
 
 \section{Conclusions}
