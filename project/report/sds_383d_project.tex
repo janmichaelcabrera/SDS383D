@@ -142,7 +142,7 @@ Some Text
 
 \section{Parameter Calibration}
 
-    The parameter calibration process was completed in two different ways for each model. The first involved finding the parameters for the model that minimized the sum of the squared errors between the observed heat flux and the predicted heat flux from the model. The second involved construction of the posterior distributions for the parameters of interest using a Metropolis Random Walk algorithm. 
+    The parameter calibration process was completed in two different ways for each model. The first involved finding the parameters for the model that minimized the sum of the squared errors between the observed heat flux and the predicted heat flux from the model. The second involved construction of the conditional distributions for the parameters of interest using a Metropolis Random Walk algorithm. 
 
     \subsection{Minimizing Residual Sum of Squared Errors}
 
@@ -156,9 +156,9 @@ Some Text
 
         % $$\sigma_{xy} \leq 0.9 \sigma_x \sigma_y$$
 
-    \subsection{Full Posterior Distributions}
+    \subsection{Full Conditional Distributions}
 
-        The posterior distribution for our parameters of interest given Bayes' Rule is the following
+        The conditional distribution for our parameters of interest given Bayes' Rule is the following
 
         \begin{align}\label{eq:bayes}
             P(\theta | D, \sigma_q^2, M_k) &= P(\theta|M_k) \frac{P(D|\theta, \sigma_q^2, M_k)}{P(D|M_k)}\\
@@ -184,7 +184,7 @@ Some Text
             &= \left(\frac{1}{2 \pi \sigma_q^2} \right)^{n/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right].
         \end{align}
 
-        \noindent Because there is no means to find a conjugate prior for $\theta$ with which to get an analytically closed form to the posterior for this given problem, a Metropolis Random Walk algorithm is used to sample from the conditional distribution.
+        \noindent Because there is no means to find a conjugate prior for $\theta$ with which to get an analytically closed form to the conditional for this given problem, a Metropolis Random Walk algorithm is used to sample from the conditional distribution.
 
         Derivation of the conditional distribution for the model error term follows a similar logic:
 
@@ -286,7 +286,7 @@ Some Text
 
         Parameter histograms and traces are presented in figures~\ref{fig:param_trace_1} and \ref{fig:sigma_trace_1} for the thermal conductivity and model error terms respectively. The predicted results from the model are shown in figure~\ref{fig:cal_results_1}. In this figure, the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distribution shown in figure~\ref{fig:param_trace_1}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter trace in figure~\ref{fig:param_trace_1}. 
 
-        \begin{figure}[h!]
+        \begin{figure}[!]
             \centering
             \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_1}
             \caption{Calibrated results assuming $k^{(1)}_{ins}(T) = k^{(1)}_0$}
@@ -319,9 +319,7 @@ Some Text
             \label{fig:alpha_correlation}
         \end{figure}
 
-
-
-        \begin{figure}[b!]
+        \begin{figure}[!]
             \centering
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
             \qquad
@@ -332,17 +330,16 @@ Some Text
 
         The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}. 
 
-        \begin{figure}[h!]
+        \begin{figure}[!]
             \centering
             \includegraphics[width=0.8\textwidth]{../figures/calibrated_results_dft_5_kwm2_2}
             \caption{Calibrated results assuming $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$}
             \label{fig:cal_results_2}
         \end{figure}
 
-
 \section{Conclusions}
 
-
+    
 
 \acknowledgements
 
