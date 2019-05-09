@@ -31,7 +31,7 @@ q_obs[60:360] =5
 # Wrapper for data inputs to model
 X = [data.tc_1, data.tc_2, data.time]
 
-k_init = [-4.1962, 1]
+k_init = [-4.1962,1]
 model_name = 'dft_5_kwm2_2'
 # Initialize stats models
 DFT = Models(model_name, energy_storage, X, q_obs, k_init)
@@ -72,7 +72,7 @@ q_hat_mh = energy_storage(X, alpha=k_hat_mh)
 q_hat_lower = energy_storage(X, alpha=[k_hat_lower])
 q_hat_upper = energy_storage(X, alpha=[k_hat_upper])
 
-plot = True
+plot = False
 if plot == True:
     # Plot results
     plt.figure()

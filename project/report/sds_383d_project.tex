@@ -18,7 +18,7 @@
 \address[1]{Department of Mechanical Engineering, The University of Texas at Austin, Austin, TX 78712}
 
 \abstract{
-Some Text
+    Measuring heat flux is important for characterizing fire scenarios and can be expensive to accomplish. Differential Flame Thermometers (DFT) are relatively simple, robust devices to measure heat flux but require extensive data reduction to get accurate results. Presented here is a framework for calibration of DFT's using a Cone Calorimeter and using a Metropolis Random Walk algorithm to quantify uncertainty. Two conduction models are calibrated for the insulation in the Energy Storage Method (ESM) of ASTM E3057. Both models overpredict the expected thermal conductivity at room temperature significantly. The predictor for the model error term is also quite large, approximately 20\% of the observed value, suggesting that the ESM model may not correctly characterize the physics of the problem.
 }
 
 \keywords{Directional Flame Thermometer, Heat Flux, Uncertainty Quantification, MCMC}
@@ -30,7 +30,7 @@ Some Text
 
     Measuring the heat flux, or the amount of energy reaching a sensor per unit area per unit time, is of great import for characterization of fire scene phenomenon. However, doing so accurately is a difficult task because most sensors either do not take into account all the relevant physical effects or are not robust enough to withstand the severe environments of compartment fires. There are commercially available sensors that can be used to measure heat flux such as Gardon and Schmidt-Boelter gauges. These sensors require liquid cooling, are calibrated to measure radiative heat transfer thus creating large errors when other modes of heat transfer are important, are generally quite expensive, and also not suitable to the environments a fire scientist is interested in. 
 
-    An official American Society for Testing and Materials (ASTM) standard was relased in 2016 (ref XXX) for a device called the Directional Flame Thermometer (DFT) (ASTM E3057, Standard Test Method for Measuring Heat Flux Using Directional Flame Thermometers with Advanced Data Analysis Techniques). The DFT is a relatively low cost device first used in the UK (ref XXX) and later modified and adapted to the needs of Sandia National Laboratories (SNL) (ref XXX). The DFT is of simple construction and does not require cooling. An example of one modified for our purposes is shown in figure~\ref{fig:dft}. 
+    An official American Society for Testing and Materials (ASTM) standard was relased in 2016 for a device called the Directional Flame Thermometer (DFT) (ASTM E3057, Standard Test Method for Measuring Heat Flux Using Directional Flame Thermometers with Advanced Data Analysis Techniques~\cite{astm:3057}). The DFT is a relatively low cost device first used in the UK and later modified and adapted to the needs of Sandia National Laboratories (SNL)~\cite{Fry:1989,Nakos:2018}. The DFT is of simple construction and does not require cooling. An example of one modified for our purposes is shown in figure~\ref{fig:dft}. 
 
     \begin{figure}[h!]
         \centering
@@ -39,11 +39,11 @@ Some Text
         \label{fig:dft}
     \end{figure}
 
-    The device is constructed of two 75~mm by 75~mm square by 1.6~mm thick 304S stainless steel plates, each plate instrumented on the inner surface with 24~gauge type-K thermocouples. These plates compress nominal 12~kg/m$^3$, 25.4~mm thick ceramic fiber insulation to 19.0~mm. Each plate is coated on the exterior with a high emissivity, high temperature coating. 
+    The device is constructed of two 75~mm by 75~mm square by 1.6~mm thick 304 stainless steel plates, each plate instrumented on the inner surface with 24~gauge type-K thermocouples. These plates compress nominal 12~kg/m$^3$, 25.4~mm thick ceramic fiber insulation to 19.0~mm. Each plate is coated on the exterior with a high emissivity, high temperature coating. 
 
     While the pros of a DFT are its relative simplicity and low cost, the major con of the DFT is in reduction of sampled temperature data into an accurate representation of the incident heat flux. In contrast, Gardon and Schmidt-Boelter gauges generally have a near linear voltage response with incoming heat flux.
 
-    In this report I while introduce a quick derivation of the model used to derive the heat flux at the DFT given sampled temeprature data. I will then discuss the parameters we wish to characterize and the Bayesian framework with which this is done. Afterwards, I will discuss the use of a Metropolis Random Walk algorithm for this calibration and uncertainty quantification on two different models for our parameter of interest. Finally, I will conclude with a discussion on places in the model development and calibration methodology that we aim to improve on in the future.
+    In this report I introduce a quick derivation of the model used to derive the heat flux at the DFT given sampled temeprature data. I will then discuss the parameters we wish to characterize and the Bayesian framework with which this is done. Afterwards, I will discuss the use of a Metropolis Random Walk algorithm for this calibration and uncertainty quantification on two different models for our parameter of interest. Finally, I will conclude with a discussion on places in the model development and calibration methodology that we aim to improve on in the future.
 
 \section{DFT Model}
 
@@ -103,7 +103,7 @@ Some Text
         q_{inc,r} = (q_{net}/\varepsilon_f) + \sigma (T_f^4 - T_{surf}^4) + h/\varepsilon_f (T_f - T_{\infty}).
     \end{equation}
 
-    What is left is to model $q_{net}$ the energy stored within the DFT. A full derivation is beyond the scope of this report. The equation used is in reference to the Energy Storage Method (ESM) outlined in ASTM E3057:
+    What is left is to model $q_{net}$ the energy stored within the DFT. A full derivation is beyond the scope of this report so we choose to use the simplified equation presented in ASTM E3057 as the Energy Storage Method (ESM):
 
     \begin{equation}\label{eq:esm}
         q_{net} = \left(\rho_s c_{p,s}(T) l_s \frac{dT_{DFT}}{dt} \right) + \left( k_{ins}(T) \frac{T_f - T_r}{l_{ins}} \right) + \left(\rho_{ins} c_{p,ins}(T) l_{ins} \frac{dT_{ins}}{dt}\right).
@@ -111,7 +111,7 @@ Some Text
 
     \noindent The first term on the right hand side represents the energy stored in the top plate of the DFT were $\rho_s$, $c_{p,s}(T)$, and $l_s$ are the density, constant pressure specific heat, and thickness of the plate respectivetly. The second term represents energy lost through the insulation to the back plate where $k_{ins}(T)$ is the thermal conducitivity of the insulation, and the third term is the energy stored within the insulation where $\rho_{ins}$, $c_{p,ins}(T)$, and $l_{ins}$ are the density, constant pressure specific heat, and thickness of the insulation respectively. 
 
-    The thermal properties of 304S stainless steel is well characterized within the literature. The density and specific heat of the insulation is also fairly well known. However, the thermal conductivity of the compressed insulation is difficult to accurately characterize. In calibration of the incident heat flux to the DFT, we choose to characterize two different models for the thermal conductivity of the insulation. The first model assumes that there is no temperature dependence,
+    The thermal properties of 304 stainless steel are well characterized within the literature. The density and specific heat of the insulation are also fairly well known. However, the thermal conductivity of the compressed insulation is difficult to accurately characterize. In calibration of the incident heat flux to the DFT, we choose to characterize two different models for the thermal conductivity of the insulation. The first model assumes that there is no temperature dependence,
 
     \begin{equation}\label{eq:k_ins_1}
         k_{ins}^{(1)}(T) = k_0^{(1)}.
@@ -127,7 +127,7 @@ Some Text
     
 \section{Calibration Procedure}
 
-    Calibration of an instrument is generally done by referencing a more accurate instrument. The DFT's were calibrated against a Schmidt-Boelter gauge that is accurate to within $\pm 3\%$ of the reading. The radiant element in an ASTM E1354 Cone Calorimeter was used to produce the necessary incident heat flux on both the Schmidt-Boelter gauge and the DFT. Figure~\ref{fig:cone_dft} shows the DFT beneath the heating element. 
+    Calibration of an instrument is generally done by referencing a more accurate instrument. The DFT's were calibrated against a Schmidt-Boelter gauge that is accurate to within $\pm 3\%$ of the reading. The radiant element in an ASTM E1354 Cone Calorimeter was used to produce the necessary incident heat flux on both the Schmidt-Boelter gauge and the DFT~\cite{conecal}. Figure~\ref{fig:cone_dft} shows the DFT beneath the heating element. 
 
     \begin{figure}[h!]
         \centering
@@ -136,7 +136,7 @@ Some Text
         \label{fig:cone_dft}
     \end{figure}
 
-    The Schmidt-Boelter gauge was placed with its top surface 25~mm from the bottom of the heating elements and the cone temperature was set such that the incident heat flux on the gauge was 5~kW/m$^2$. The two thermocouples on the DFT were connected to a temperature logger and one minute of pre-test data was collected. The radiation shield on the Cone Calorimeter was put in place and the DFT was moved onto the platform such that when one minute had elapsed, the radiation shield would be opened allowing the DFT to receive the heat flux from the heating element. The DFT was also placed such that the front plate was 25~mm away from the bottom of the heating elements. The DFT was exposed to the heat flux for five minutes at which point the radiation shield was re-engaged and a further minute of post-test data was taken. In total seven minutes of data was taken. This process was repeated for each of the 20 DFTs made, however for brevity, the data of one test will be presented. 
+    The Schmidt-Boelter gauge was placed with its top surface 25~mm from the bottom of the heating elements and the cone temperature was set such that the incident heat flux on the gauge was 5~kW/m$^2$. The two thermocouples on the DFT were connected to a temperature logger. The DFT was left outside of the heating element of the Cone Calorimeter and one minute of pre-test data was collected. The radiation shield on the Cone Calorimeter was put in place and the DFT was moved onto the platform such that when one minute had elapsed, the radiation shield would be opened allowing the DFT to receive the heat flux from the heating element. The DFT was also placed such that the front plate was 25~mm away from the bottom of the heating elements. The DFT was exposed to the heat flux for five minutes at which point the radiation shield was re-engaged, the DFT moved away from the Cone Calorimeter, and a further minute of post-test data was taken. In total seven minutes of data was taken. This process was repeated for each of 20 DFTs made, however for brevity, the data of one test will be presented. 
 
     The following section introduces the parameter calibration framework used given the known incident heat flux measured by the Schmidt-Boelter gauge and the temperatures recorded from the DFT. 
 
@@ -152,7 +152,7 @@ Some Text
             \hat{\theta}_{RSS} = \arg \min_{\theta}  \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2.
         \end{equation}
 
-        \noindent A loss function is defined as the summation term on the right hand side of the equation. A Sequential Least Squares Programming (SLSQP) algorithm from the Python SciPy package is used to obtain $\hat{\theta}_{RSS}$. The results from this optimization step are saved and used to initiate the chains of the Metropolis Random Walk algorithm discussed later. 
+        \noindent A loss function is defined as the summation term on the right hand side of the equation. A Sequential Least Squares Programming (SLSQP) algorithm from the Python SciPy package was used to obtain $\hat{\theta}_{RSS}$. The results from this optimization step were saved and used to initiate the chains of the Metropolis Random Walk algorithm discussed later. 
 
         % $$\sigma_{xy} \leq 0.9 \sigma_x \sigma_y$$
 
@@ -184,7 +184,7 @@ Some Text
             &= \left(\frac{1}{2 \pi \sigma_q^2} \right)^{n/2} \text{exp} \left[-\frac{1}{2 \sigma_q^2} \sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2 \right].
         \end{align}
 
-        \noindent Because there is no means to find a conjugate prior for $\theta$ with which to get an analytically closed form to the conditional for this given problem, a Metropolis Random Walk algorithm is used to sample from the conditional distribution.
+        \noindent Because there is no means to find a conjugate prior for $\theta$ with which to get an analytically closed form to the conditional distribution for this given problem, a Metropolis Random Walk algorithm was used to sample from the conditional distribution.
 
         Derivation of the conditional distribution for the model error term follows a similar logic:
 
@@ -212,10 +212,10 @@ Some Text
         \State Initialize $i = 1$
         \While {$a < Samples$}
             \State Propose: $\theta^{\star} = \theta^{(i)} + e, \hspace{10pt} e \sim N(0, \sigma_e^2)$
-            \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},\sigma_{q,i}^2,M_k)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)},\sigma_{q,i}^2, M_k)}$$
+            \State Acceptance Probability: $$\beta (\theta^{\star} | \theta^{(i-1)}) = \frac{P(\theta^{\star})P(D|\theta^{\star},\sigma_{q,i,k}^2,M_k)}{P(\theta^{(i-1)})P(D|\theta^{(i-1)},\sigma_{q,i,k}^2, M_k)}$$
                 \If {Uniform(0,1) $< \text{min} \left\{1, \beta (\theta^{\star} | \theta^{(i-1)})\right \}$}
                     \State Accept Proposal: $\theta^{(i)} = \theta^{\star}$
-                    \State $\sigma_{q,i}^2 | D, \theta, M_k \sim IG \left(\frac{n}{2},  \frac{1}{2}\sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2\right)$
+                    \State $\sigma_{q,i,k}^2 | D, \theta, M_k \sim IG \left(\frac{n}{2},  \frac{1}{2}\sum_{i=1}^n \left(q_i^{(inc,r)} - \hat{q}_i^{(inc,r)} \right)^2\right)$
                     \State $a+=1$
                 \Else
                     \State Reject Proposal: $\theta^{(i)} = \theta^{(i-1)}$
@@ -228,9 +228,9 @@ Some Text
         \end{algorithmic}
         \end{algorithm}
 
-        While the number of accepted samples is less than the number of prescribed samples plus the tuning samples, the algorithm samples from the conditional distribution for $\theta$. A new value for theta, $\theta^{\star}$ is proposed by sampling from a Normal proposal distribution. The acceptance probability, $\beta$ is calculated and it is accepted if the minimum value between $\beta$ and one is greater than a uniform random draw between zero and one.
+        While the number of accepted samples is less than the number of prescribed samples plus the tuning samples, the algorithm samples from the conditional distribution for $\theta$. A new value for theta, $\theta^{\star}$, is proposed by sampling from a Normal proposal distribution. The acceptance probability, $\beta$, is calculated and it is accepted if the minimum value between $\beta$ and one is greater than a uniform random draw between zero and one.
 
-        During tuning of the proposal covariance, the previous $t$ accepted samples are used to update the covariance of the proposal. Tuning occurs $T$ times before the algorithm is allowed to collect samples from the conditional distributions. Tuning of the covariance follows that presented in ref XXX. 
+        During tuning of the proposal covariance, the previous $t$ accepted samples are used to update the covariance of the proposal. Tuning occurs $T$ times before the algorithm is allowed to collect samples from the conditional distributions. Tuning of the covariance follows that presented in Niemi~\cite{Niemi:2019}. 
 
 \section{Results}
 
@@ -240,7 +240,7 @@ Some Text
 
         It was noticed that there was significant bit noise in the temperature resulting in a stair-step-like function, left of figure~\ref{fig:tc_data}. Taking the gradient of a noisy signal such as this will result in unrealistic fluctuations of the predicted heat flux. For this reason the temperature data was smoothed.
 
-        \begin{figure}[h!]
+        \begin{figure}[!]
             \centering
             \subfigure{\includegraphics[width=0.4\textwidth]{../data/unsmoothed/5_kw_m2/plots/1903-02_05}}
             \qquad
@@ -249,9 +249,9 @@ Some Text
             \label{fig:tc_data}
         \end{figure}
 
-        The temperature data was smoothed using Gaussian procces regression with a Matern (5,2) covariance function, and optimzed using the marginal likelihood, ref XXX. The resultant smoothed data is shown on the right of figure~\ref{fig:tc_data}. Here we choose to only use the smoothed data and ignore the resultant uncertainty in the fit since we will be passing these through a function to determine the predicted heat flux. Note, posterior predictive samples could be drawn, but we choose to ignore this step to make the analysis simpler.
+        The temperature data was smoothed using Gaussian procces regression with a Matern (5,2) covariance function, and optimzed using the marginal likelihood~\cite{Rasmussen:2006}. The resultant smoothed data is shown on the right of figure~\ref{fig:tc_data}. Here we choose to only use the smoothed data and ignore the resultant uncertainty in the fit since we will be passing these through a function to determine the predicted heat flux.
 
-        Given the smoothed temperature, the models described by equations~\ref{eq:q_inc} through \ref{eq:k_ins_1}, and equations~\ref{eq:q_inc}, \ref{eq:q_net}, and \ref{eq:k_ins_2} calibrated. Results of the calibration are presented in the next section.
+        Given the smoothed temperature, the models described by equations~\ref{eq:q_inc} through \ref{eq:k_ins_1}, and equations~\ref{eq:q_inc}, \ref{eq:esm}, and \ref{eq:k_ins_2} are calibrated. Results of the calibration are presented in the next section.
 
         % \begin{figure}
         %     \centering
@@ -264,7 +264,7 @@ Some Text
 
         \subsubsection{Model One - $k^{(1)}_{ins}(T) = k^{(1)}_0$:}
 
-        Twenty-thousand samples from the conditional distribution for model one were sampled using the Metropolis Random Walk Algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples of 0.41 was close to the optimal of 0.45, described in ref XXX.
+        Twenty-thousand samples from the conditional distribution for model one were sampled using the Metropolis Random Walk Algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples of 0.41 was close to the optimal of 0.45, described in Roberts et al~\cite{Roberts:1997}.
 
         \begin{figure}[b!]
             \centering
@@ -280,7 +280,7 @@ Some Text
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_1}}
             \qquad
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_1}}
-            \caption{Histogram and trace plots for $\sigma_q^2$}
+            \caption{Histogram and trace plots for $\sigma_{q,(1)}^2$}
             \label{fig:sigma_trace_1}
         \end{figure}
 
@@ -295,7 +295,7 @@ Some Text
 
         \subsubsection{Model Two - $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$:}
 
-        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of XXX tuning steps. The resultant ratio of accepted to total samples was XXX. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234 ref XXX. 
+        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of XXX tuning steps. The resultant ratio of accepted to total samples was XXX. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234~\cite{Roberts:1997}. 
 
         \begin{figure}[b!]
             \centering
@@ -324,7 +324,7 @@ Some Text
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
             \qquad
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_trace_dft_5_kwm2_2}}
-            \caption{Histogram and trace plots for $\sigma_q^2$}
+            \caption{Histogram and trace plots for $\sigma_{q,(2)}^2$}
             \label{fig:sigma_trace_2}
         \end{figure}
 
@@ -337,18 +337,36 @@ Some Text
             \label{fig:cal_results_2}
         \end{figure}
 
+        \begin{table}[!]
+        \centering
+        \caption{Calibration results for models one and two}
+        \begin{tabular}{ccc}
+            \hline
+            - & mean & standard deviation \\
+            \hline
+            $k_0^{(1)}$ (W/m$\cdot$K)       & 0.312     & 0.024 \\
+            $\sigma_{q, (1)}^2$ (kW/m$^2$)  & 0.980     & 0.067 \\
+            \hline
+            $k_0^{(2)}$ (W/m$\cdot$K)       & -3.356    & 0.730 \\
+            $k_{1}^{(2)}$ (W/m$\cdot$K)     & 0.011     & 0.002 \\
+            $\sigma_{q, (2)}^2$ (kW/m$^2$)  & 0.920     & 0.065 \\
+            \hline
+        \end{tabular}
+        \label{tbl:cal_results}
+        \end{table}
+
+        Results from the two calibrations are summarized in table~\ref{tbl:cal_results}. 
+
+
+
 \section{Conclusions}
 
     
-
-\acknowledgements
-
-This work is supported by the JB (Java Bean) Association under Award No. 8675309.
-
+\clearpage
 %% References with bibTeX database:
 \bibliographystyle{Bibliography_Style}
 \scriptsize{
-\bibliography{../../../../dissertation-experimentation/References}
+\bibliography{../../../../../../dissertation-experimentation/References}
 }
 
 \end{document}
