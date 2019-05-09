@@ -32,18 +32,18 @@ q_obs[60:360] =5
 X = [data.tc_1, data.tc_2, data.time]
 
 k_init = [-4.1962,1]
-model_name = 'dft_5_kwm2_2'
+model_name = 'dft_5_kwm2_2b'
 # Initialize stats models
 DFT = Models(model_name, energy_storage, X, q_obs, k_init)
 
 # Get MLE
 k_hat = DFT.mle()
 
-# # Run Metropolis algorithm
-# alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=5000, tune_every=10, times_tune=100, cov_scale=10**-1)
-
-# alpha_trace.save_trace()
-# sigma_trace.save_trace()
+# Run Metropolis algorithm
+alpha_trace, sigma_trace = DFT.metropolis_random_walk(samples=200, tune_every=5, times_tune=200, cov_scale=10**-2)
+print('Acceptance: ', DFT.p_accept)
+alpha_trace.save_trace()
+sigma_trace.save_trace()
 
 burn = 1000
 # Load traces
@@ -72,7 +72,7 @@ q_hat_mh = energy_storage(X, alpha=k_hat_mh)
 q_hat_lower = energy_storage(X, alpha=[k_hat_lower])
 q_hat_upper = energy_storage(X, alpha=[k_hat_upper])
 
-plot = False
+plot = True
 if plot == True:
     # Plot results
     plt.figure()

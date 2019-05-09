@@ -295,7 +295,7 @@
 
         \subsubsection{Model Two - $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$:}
 
-        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of XXX tuning steps. The resultant ratio of accepted to total samples was XXX. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234~\cite{Roberts:1997}. 
+        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples was 0.02. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234~\cite{Roberts:1997}. 
 
         \begin{figure}[b!]
             \centering
@@ -319,6 +319,10 @@
             \label{fig:alpha_correlation}
         \end{figure}
 
+        The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}.
+
+        A plot of the traces with coefficient zero on the x-axis and coefficient one on the y-axis for the second model is shown in figure~\ref{fig:alpha_correlation}. It is surprising how strongly negatively correlated the coefficients are despite the sampling covariance for the proposal distribution of the Metropolis Random Walk algorithm only containing diagonal elements (off diagonals were zero). The resultant correlation between the two coefficients was -0.9993. 
+
         \begin{figure}[!]
             \centering
             \subfigure{\includegraphics[width=0.4\textwidth]{../figures/sigma_hist_dft_5_kwm2_2}}
@@ -327,8 +331,6 @@
             \caption{Histogram and trace plots for $\sigma_{q,(2)}^2$}
             \label{fig:sigma_trace_2}
         \end{figure}
-
-        The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}. 
 
         \begin{figure}[!]
             \centering
@@ -355,12 +357,17 @@
         \label{tbl:cal_results}
         \end{table}
 
-        Results from the two calibrations are summarized in table~\ref{tbl:cal_results}. 
+        Results from the two calibrations are summarized in table~\ref{tbl:cal_results}. The coefficients for the second model are difficult to interpret directly. Over the course of an observation, the temperature of the insulation varies from roughly 290~K to 350~K. The resultant $k_{ins}^{(2)(T)}$ varies from -0.1 to 0.6~W/m$\cdot$K. Negative values here are not physical. Both models overpredict the thermal conductivity at higher temperatures and the second model displays an unrealistic dependence on temperature. 
 
-
+        The predictors for the model error term for each model are approximately 20\% that of the incident heat flux. This suggests that the ESM model may not be appropriate here for our modified DFTs.
 
 \section{Conclusions}
 
+    We presented a framework for the calibration of DFT's using a Cone Calorimeter and a Metropolis Random Walk algorithm for uncertainty quantification. Two conduction models were calibrated for the insulation in the ESM described in ASTM E3057 for modified DFT's. Both models showed unphysical values for the thermal conductivity and the second of the two models showed an unrealistic dependence on temperature. 
+
+    Much of the modeling error here was likely caused by the assumptions made in the use of the ESM model. The model only takes into account one dimensional conductive heat transfer through the insulation and also tends to overestimate the energy stored within the insulation. It is likely that because the size of the modified DFTs was smaller than that presented in the standard, conduction through the fasteners holding the DFT's together could not be ignored. 
+
+    Another area of improvement would be the assumption of the curve for the "observed" incident heat flux. Work is being done to obtain a "true" incident heat flux as measured by the Schmidt-Boelter gauge. Further work is being developed to more accurately model the heat transfer through the insulation as well as to account for conduction through the bolts of the DFT.
     
 \clearpage
 %% References with bibTeX database:
