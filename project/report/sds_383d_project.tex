@@ -30,7 +30,7 @@
 
     Measuring the heat flux, or the amount of energy reaching a sensor per unit area per unit time, is of great import for characterization of fire scene phenomenon. However, doing so accurately is a difficult task because most sensors either do not take into account all the relevant physical effects or are not robust enough to withstand the severe environments of compartment fires. There are commercially available sensors that can be used to measure heat flux such as Gardon and Schmidt-Boelter gauges. These sensors require liquid cooling, are calibrated to measure radiative heat transfer thus creating large errors when other modes of heat transfer are important, are generally quite expensive, and also not suitable to the environments a fire scientist is interested in. 
 
-    An official American Society for Testing and Materials (ASTM) standard was relased in 2016 for a device called the Directional Flame Thermometer (DFT) (ASTM E3057, Standard Test Method for Measuring Heat Flux Using Directional Flame Thermometers with Advanced Data Analysis Techniques~\cite{astm:3057}). The DFT is a relatively low cost device first used in the UK and later modified and adapted to the needs of Sandia National Laboratories (SNL)~\cite{Fry:1989,Nakos:2018}. The DFT is of simple construction and does not require cooling. An example of one modified for our purposes is shown in figure~\ref{fig:dft}. 
+    An official American Society for Testing and Materials (ASTM) standard was released in 2016 for a device called the Directional Flame Thermometer (DFT) (ASTM E3057, Standard Test Method for Measuring Heat Flux Using Directional Flame Thermometers with Advanced Data Analysis Techniques~\cite{astm:3057}). The DFT is a relatively low cost device first used in the UK and later modified and adapted to the needs of Sandia National Laboratories (SNL)~\cite{Fry:1989,Nakos:2018}. The DFT is of simple construction and does not require cooling. An example of one modified for our purposes is shown in figure~\ref{fig:dft}. 
 
     \begin{figure}[h!]
         \centering
@@ -43,7 +43,7 @@
 
     While the pros of a DFT are its relative simplicity and low cost, the major con of the DFT is in reduction of sampled temperature data into an accurate representation of the incident heat flux. In contrast, Gardon and Schmidt-Boelter gauges generally have a near linear voltage response with incoming heat flux.
 
-    In this report I introduce a quick derivation of the model used to derive the heat flux at the DFT given sampled temeprature data. I will then discuss the parameters we wish to characterize and the Bayesian framework with which this is done. Afterwards, I will discuss the use of a Metropolis Random Walk algorithm for this calibration and uncertainty quantification on two different models for our parameter of interest. Finally, I will conclude with a discussion on places in the model development and calibration methodology that we aim to improve on in the future.
+    In this report I introduce a quick derivation of the model used to derive the heat flux at the DFT given sampled temperature data. I will then discuss the parameters we wish to characterize and the Bayesian framework with which this is done. Afterwards, I will discuss the use of a Metropolis Random Walk algorithm for this calibration and uncertainty quantification on two different models for our parameter of interest. Finally, I will conclude with a discussion on places in the model development and calibration methodology that we aim to improve on in the future.
 
 \section{DFT Model}
 
@@ -85,7 +85,7 @@
         q_{emit} = \sigma \varepsilon_f (T_f^4 - T_{sur}^4),
     \end{equation}
 
-    \noindent where $\sigma$ is the Stefan-Boltzman constant, $\varepsilon_f$ is the emissivity of the front (top) of the DFT, $T_f$ is the front (top) temperature of the DFT, and $T_{sur}$ is the temperature of the surroundings far away from the DFT to which radiative losses are transfered. The reflected radiative heat transfer is simply one minus the absorped radiative heat transfer:
+    \noindent where $\sigma$ is the Stefan-Boltzman constant, $\varepsilon_f$ is the emissivity of the front (top) of the DFT, $T_f$ is the front (top) temperature of the DFT, and $T_{sur}$ is the temperature of the surroundings far away from the DFT to which radiative losses are transfered. The reflected radiative heat transfer is simply one minus the absorbed radiative heat transfer:
 
     \begin{equation}\label{eq:q_refl}
         q_{refl} = (1 - \alpha_f)q_{inc}.
@@ -97,7 +97,7 @@
         q_{conv} = h (T_f - T_{\infty}),
     \end{equation}
 
-    \noindent where $h$ is the heat transfer coefficient, $T_f$ is the front (top) temperature of the DFT, and $T_{\infty}$ is defined as the temperature of the surrounding fluid 'far' from the DFT. Combining equations~\ref{eq:q_emit} through \ref{eq:q_conv} with equation~\ref{eq:q_net}, asuming a thermally grey surface (i.e. $\alpha_f = \varepsilon_f$), and solving for $q_{inc,r}$ we get,
+    \noindent where $h$ is the heat transfer coefficient, $T_f$ is the front (top) temperature of the DFT, and $T_{\infty}$ is defined as the temperature of the surrounding fluid 'far' from the DFT. Combining equations~\ref{eq:q_emit} through \ref{eq:q_conv} with equation~\ref{eq:q_net}, assuming a thermally gray surface (i.e. $\alpha_f = \varepsilon_f$), and solving for $q_{inc,r}$ we get,
 
     \begin{equation}\label{eq:q_inc}
         q_{inc,r} = (q_{net}/\varepsilon_f) + \sigma (T_f^4 - T_{surf}^4) + h/\varepsilon_f (T_f - T_{\infty}).
@@ -109,7 +109,7 @@
         q_{net} = \left(\rho_s c_{p,s}(T) l_s \frac{dT_{DFT}}{dt} \right) + \left( k_{ins}(T) \frac{T_f - T_r}{l_{ins}} \right) + \left(\rho_{ins} c_{p,ins}(T) l_{ins} \frac{dT_{ins}}{dt}\right).
     \end{equation}
 
-    \noindent The first term on the right hand side represents the energy stored in the top plate of the DFT were $\rho_s$, $c_{p,s}(T)$, and $l_s$ are the density, constant pressure specific heat, and thickness of the plate respectivetly. The second term represents energy lost through the insulation to the back plate where $k_{ins}(T)$ is the thermal conducitivity of the insulation, and the third term is the energy stored within the insulation where $\rho_{ins}$, $c_{p,ins}(T)$, and $l_{ins}$ are the density, constant pressure specific heat, and thickness of the insulation respectively. 
+    \noindent The first term on the right hand side represents the energy stored in the top plate of the DFT were $\rho_s$, $c_{p,s}(T)$, and $l_s$ are the density, constant pressure specific heat, and thickness of the plate respectively. The second term represents energy lost through the insulation to the back plate where $k_{ins}(T)$ is the thermal conductivity of the insulation, and the third term is the energy stored within the insulation where $\rho_{ins}$, $c_{p,ins}(T)$, and $l_{ins}$ are the density, constant pressure specific heat, and thickness of the insulation respectively. 
 
     The thermal properties of 304 stainless steel are well characterized within the literature. The density and specific heat of the insulation are also fairly well known. However, the thermal conductivity of the compressed insulation is difficult to accurately characterize. In calibration of the incident heat flux to the DFT, we choose to characterize two different models for the thermal conductivity of the insulation. The first model assumes that there is no temperature dependence,
 
@@ -202,7 +202,7 @@
 
     \subsection{Metropolis Random Walk}
 
-        A Metropolis Random Walk algorithm was written in Python in order to sample from the conditional distributions described in the previous section. The psuedo-code is summarized in algorithm~\ref{alg:metropolis}. The parameters of interest are initialized with the values found using equation~\ref{eq:rss}.   
+        A Metropolis Random Walk algorithm was written in Python in order to sample from the conditional distributions described in the previous section. The pseudo-code is summarized in algorithm~\ref{alg:metropolis}. The parameters of interest are initialized with the values found using equation~\ref{eq:rss}.   
 
         \begin{algorithm}
         \caption{Metropolis Random Walk}\label{alg:metropolis}
@@ -234,7 +234,7 @@
 
 \section{Results}
 
-    Results from the experiments and the parameter calibration for the two conduction models are presented in the following subsections. The data reduction section discusses the need for smoothing of the data, nd the parameter calibration section discusses the results from the fits. 
+    Results from the experiments and the parameter calibration for the two conduction models are presented in the following subsections. The data reduction section discusses the need for smoothing of the data, and the parameter calibration section discusses the results from the fits. 
 
     \subsection{Data Reduction}
 
@@ -249,7 +249,7 @@
             \label{fig:tc_data}
         \end{figure}
 
-        The temperature data was smoothed using Gaussian procces regression with a Matern (5,2) covariance function, and optimzed using the marginal likelihood~\cite{Rasmussen:2006}. The resultant smoothed data is shown on the right of figure~\ref{fig:tc_data}. Here we choose to only use the smoothed data and ignore the resultant uncertainty in the fit since we will be passing these through a function to determine the predicted heat flux.
+        The temperature data was smoothed using Gaussian process regression with a Matern (5,2) covariance function, and optimized using the marginal likelihood~\cite{Rasmussen:2006}. The resultant smoothed data is shown on the right of figure~\ref{fig:tc_data}. Here we choose to only use the smoothed data and ignore the resultant uncertainty in the fit since we will be passing these through a function to determine the predicted heat flux.
 
         Given the smoothed temperature, the models described by equations~\ref{eq:q_inc} through \ref{eq:k_ins_1}, and equations~\ref{eq:q_inc}, \ref{eq:esm}, and \ref{eq:k_ins_2} are calibrated. Results of the calibration are presented in the next section.
 
@@ -284,7 +284,7 @@
             \label{fig:sigma_trace_1}
         \end{figure}
 
-        Parameter histograms and traces are presented in figures~\ref{fig:param_trace_1} and \ref{fig:sigma_trace_1} for the thermal conductivity and model error terms respectively. The predicted results from the model are shown in figure~\ref{fig:cal_results_1}. In this figure, the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distribution shown in figure~\ref{fig:param_trace_1}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter trace in figure~\ref{fig:param_trace_1}. 
+        Parameter histograms and traces are presented in figures~\ref{fig:param_trace_1} and \ref{fig:sigma_trace_1} for the thermal conductivity and model error terms respectively. The predicted results from the model are shown in figure~\ref{fig:cal_results_1}. In this figure, the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distribution shown in figure~\ref{fig:param_trace_1}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The gray band on the plot represents realizations of the prediction for each sample from the parameter trace in figure~\ref{fig:param_trace_1}. 
 
         \begin{figure}[!]
             \centering
@@ -295,7 +295,7 @@
 
         \subsubsection{Model Two - $k^{(2)}_{ins}(T) = k^{(2)}_0 + k^{(2)}_1 T$:}
 
-        Five-thousand samples from the conditional distirbutions for model two were sampled using the Metropolis Random Walk algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples was 0.02. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234~\cite{Roberts:1997}. 
+        Five-thousand samples from the conditional distributions for model two were sampled using the Metropolis Random Walk algorithm after a total of 1000 tuning steps. The resultant ratio of accepted to total samples was 0.02. Note that as the dimension of the sampler increases the optimal ratio asymptotically approaches 0.234~\cite{Roberts:1997}. 
 
         \begin{figure}[b!]
             \centering
@@ -319,7 +319,7 @@
             \label{fig:alpha_correlation}
         \end{figure}
 
-        The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The grey band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}.
+        The predicted results from the model are shown in figure~\ref{fig:cal_results_2}. Again, here the solid black line represents the "observed" heat flux, the solid red-line represents a prediction using a legacy high-order polynomial fit for the temperature response of the insulation thermal conductivity, the solid blue line represents the prediction given the mean of the distributions shown in figure~\ref{fig:param_trace_2}, and finally, the dashed green line represents the optimal fit from minimizing the residual sum of squared errors. The gray band on the plot represents realizations of the prediction for each sample from the parameter traces in figure~\ref{fig:param_trace_2}.
 
         A plot of the traces with coefficient zero on the x-axis and coefficient one on the y-axis for the second model is shown in figure~\ref{fig:alpha_correlation}. It is surprising how strongly negatively correlated the coefficients are despite the sampling covariance for the proposal distribution of the Metropolis Random Walk algorithm only containing diagonal elements (off diagonals were zero). The resultant correlation between the two coefficients was -0.9993. 
 
@@ -357,7 +357,7 @@
         \label{tbl:cal_results}
         \end{table}
 
-        Results from the two calibrations are summarized in table~\ref{tbl:cal_results}. The coefficients for the second model are difficult to interpret directly. Over the course of an observation, the temperature of the insulation varies from roughly 290~K to 350~K. The resultant $k_{ins}^{(2)(T)}$ varies from -0.1 to 0.6~W/m$\cdot$K. Negative values here are not physical. Both models overpredict the thermal conductivity at higher temperatures and the second model displays an unrealistic dependence on temperature. 
+        Results from the two calibrations are summarized in table~\ref{tbl:cal_results}. The coefficients for the second model are difficult to interpret directly. Over the course of an observation, the temperature of the insulation varies from roughly 290~K to 350~K. The resultant $k_{ins}^{(2)(T)}$ varies from -0.1 to 0.6~W/m$\cdot$K. Negative values here are not physical. Both models over-predict the thermal conductivity at higher temperatures and the second model displays an unrealistic dependence on temperature. 
 
         The predictors for the model error term for each model are approximately 20\% that of the incident heat flux. This suggests that the ESM model may not be appropriate here for our modified DFTs.
 

@@ -175,6 +175,7 @@ class Models:
 
         i = 0
         t = 0
+        temp = -1
         # Begin sampling
         while acceptance_count < samples+tune_total:
             # Perform Gibbs sampling step on \sigma^2
@@ -202,21 +203,23 @@ class Models:
                 self.y_hat = y_hat_star
                 # Iterate acceptance count
                 acceptance_count += 1
-
                 # Append alpha trace
                 alpha_trace.update_trace(alpha.copy())
                 # Append sigma trace
                 sigma_trace.update_trace(sigma_sq.copy())
 
             # Tune variance of proposal distribution
-            if (acceptance_count+1) % tune_every == 0 and t < tune_total:
+            if (acceptance_count+1) % tune_every == 0 and t < times_tune and acceptance_count != temp:
                 # New epsilon_cov = 2.4^2 S_b / d
                 S = np.var(alpha_trace.trace[-tune_every:], axis=0)
                 epsilon_cov = 2.4**2 * np.diag(S)/d
                 t += 1
+                temp = acceptance_count
+                print(t, acceptance_count, tune_every/i)
+                i = 0
 
             # Reset iteration count for calculation of acceptance probability
-            elif t == tune_total:
+            elif t == times_tune:
                 print('Total steps for tuning: ', i)
                 i = 0
                 t += 1
